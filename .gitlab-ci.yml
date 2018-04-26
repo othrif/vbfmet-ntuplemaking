@@ -1,0 +1,94 @@
+# GitLab Continuous Integration configuration for the repository.
+#
+# It checks that:
+#  - The project's CMake configuration is functional;
+#  - The project can be built against the selected analysis release;
+#  - The project can be installed, packaged into a TGZ file, and have a Docker
+#    image be built out of.
+
+# "Global" build stages.
+stages:
+  - config
+  - build
+  - install
+  - docker
+
+# Set the behaviour of the CI build.
+variables:
+  GIT_STRATEGY: fetch
+  GIT_SUBMODULE_STRATEGY: recursive
+
+# Each job needs to start with setting up the release from the Docker image,
+# and making sure that all available CPU cores would be used for the build.
+before_script:
+  - source /home/atlas/release_setup.sh
+  - export MAKEFLAGS="-j`nproc` -l`nproc`"
+
+# Common configuration for all the "regular" jobs.
+.job_template: &build_job
+  tags:
+    - docker
+  image: atlas/analysisbase:21.2.25
+
+# Setup for configuring the build of the code in the repository.
+config:
+  <<: *build_job
+  stage: config
+  script:
+    - mkdir -p ci_build
+    - cd ci_build/
+    - cmake -DCTEST_USE_LAUNCHERS:BOOL=TRUE ../
+  artifacts:
+    paths:
+      - ci_build/
+    expire_in: 1 day
+
+# Setup for building the code in the repository.
+build:
+  <<: *build_job
+  stage: build
+  dependencies:
+    - config
+  script:
+    - cmake --build ci_build/
+  artifacts:
+    paths:
+      - ci_build/
+    expire_in: 1 day
+
+# Setup for installing the built results of the repository's code.
+install:
+  <<: *build_job
+  stage: install
+  dependencies:
+    - build
+  script:
+    - export DESTDIR=${PWD}/ci_install
+    - cmake --build ci_build/ --target install
+  artifacts:
+    paths:
+      - ci_install/
+    expire_in: 1 day
+
+# Setup for building RPM and TGZ files out of the repository's compiled code.
+package:
+  <<: *build_job
+  stage: install
+  dependencies:
+    - build
+  script:
+    - cd ci_build/
+    - cpack -G RPM
+  artifacts:
+    paths:
+      - ci_build/*.rpm
+    expire_in: 1 day
+
+# Setup for building a Docker image from the repository's compiled code.
+docker:
+  stage: docker
+  dependencies:
+    - package
+  tags:
+    - docker-image-build
+  script: echo
