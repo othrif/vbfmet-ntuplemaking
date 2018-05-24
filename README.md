@@ -22,13 +22,16 @@ source STAnalysisCode/VBFInvAnalysis/scripts/setupRelease.sh
 setupATLAS
 source setup.sh
 ```
+###  To compile for the first time or if you add files ###
+``` bash
+cbuild
+# alias	for: cd	build && cmake ../STAnalysisCode && make && source */setup.sh && cd ../run
+```
+
 ### To compile after modifying files (no new files)###
 ```
 build
-```
-### if you add files ###
-``` bash
-cbuild
+# alias for: cd build && make && source */setup.sh && cd ../run
 ```
 
 ### test run ###
