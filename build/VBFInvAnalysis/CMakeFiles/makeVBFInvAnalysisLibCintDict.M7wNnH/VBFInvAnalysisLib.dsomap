@@ -1,4 +1,0 @@
-[ libVBFInvAnalysisLib.so ]
-# List of selected classes
-class VBFInv
-header VBFInvAnalysis/VBFInv.h
