@@ -4,9 +4,18 @@
 
 [![pipeline status](https://gitlab.cern.ch/othrif/STAnalysisCode/badges/master/pipeline.svg)](https://gitlab.cern.ch/othrif/STAnalysisCode/commits/master)
 
-
 ## Developer ##
-Othmane Rifki: othmane.rifki@cern.ch
+Othmane Rifki (othmane.rifki@cern.ch) - DESY
+
+### Notes ###
+- Code runs on DAOD_EXOT5 using the `VBFInv` algorithm
+- Code runs on DAOD_TRUTH3 using `VBFInvTruth` algorithm
+- Output is a flat ntuple called `MiniNtuple`
+- CutBookkeeper output for histogram normalization is in `NumberEvents` histogram
+- SUSYTools is part of the repository temporarly (manual hack to fix a bug affecting PFlow jets cleaning)
+
+### Cutflow ###
+- Cutflow comparisons here: https://docs.google.com/spreadsheets/d/1f3oW_cepPiYlOh_BJNviGTWO6lgxOzUfLOOB-cvS1B8/edit#gid=1239952533
 
 ## Setting up the code ##
 ``` bash
@@ -36,8 +45,8 @@ build
 
 ### test run ###
 ``` bash
-# local with ASG test file (local file not needed) in debug mode
-runVBF.py -f $ASG_TEST_FILE_MC -n100 --debug
+# local with exact path to file in debug mode
+runVBF.py -f <path/file.root> -n100 --debug
 # local with folder containing datasets (one per subdirectory)
 runVBF.py -i <folder> -n100
 # local running on TRUTH3, need to specifiy the algorithm (-a)

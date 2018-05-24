@@ -24,7 +24,7 @@ echo "alias cbuild=\"cd \$TestArea/ && cmake \$TestArea/../STAnalysisCode && mak
 echo "alias build=\"cd \$TestArea/ && make && source \$TestArea/*/setup.sh && cd \$TestArea/.. && cd \$TestArea/../run\"" >> "setup.sh"
 echo "alias clean=\"rm -rf  \$TestArea/ setup.sh\"" >> "setup.sh"
 echo "echo \"Compile: cbuild, Recompile: build, Clean: clean\"" >> "setup.sh"
-echo "echo \"Test with runVBF.py -f \$ASG_TEST_FILE_MC -n10 --debug\"" >> "setup.sh"
+echo "echo \"Test with runVBF.py -f <DAOD_EXOT5 test file> -n10 --debug\"" >> "setup.sh"
 echo "cd \$TestArea/.." >> "setup.sh"
 echo "" >> "setup.sh"
 
