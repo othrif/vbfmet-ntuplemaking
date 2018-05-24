@@ -1,0 +1,52 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/SUSYTools_Default.conf"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/SUSYTools_VBF.conf"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/prwfiles"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/samples"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/vbfinv.conf"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/STAnalysisCode/VBFInvAnalysis/share/SUSYTools_Default.conf"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/STAnalysisCode/VBFInvAnalysis/share/SUSYTools_VBF.conf"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/STAnalysisCode/VBFInvAnalysis/share/vbfinv.conf"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/SUSYTools_Default.conf.rule"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/SUSYTools_VBF.conf.rule"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/prwfiles.rule"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/samples.rule"
+		},
+		{
+			"file" : "/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/data/VBFInvAnalysis/vbfinv.conf.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"VBFInvAnalysis"
+		],
+		"name" : "VBFInvAnalysisDataInstall"
+	}
+}

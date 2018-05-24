@@ -2,4 +2,4 @@
 # Files to ignore during the Docker image build.
 #
 .gitlab-ci.yml
-README
+README.md

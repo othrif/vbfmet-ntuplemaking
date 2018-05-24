@@ -1,0 +1,9 @@
+# Target labels
+ VBFInvAnalysis
+# Source files and their labels
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/bin/runVBF.py
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/bin/setupRelease.sh
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/STAnalysisCode/VBFInvAnalysis/scripts/runVBF.py
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/STAnalysisCode/VBFInvAnalysis/scripts/setupRelease.sh
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/bin/runVBF.py.rule
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/bin/setupRelease.sh.rule

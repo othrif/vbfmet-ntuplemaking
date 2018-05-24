@@ -1,0 +1,2 @@
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/SUSYTools/CMakeFiles/SUSYToolsDict.dsomap
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/VBFInvAnalysis/CMakeFiles/VBFInvAnalysisLib.dsomap

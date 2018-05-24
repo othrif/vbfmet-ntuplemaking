@@ -1,0 +1,5 @@
+# Target labels
+ VBFInvAnalysis
+# Source files and their labels
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/include/VBFInvAnalysis
+/nfs/dust/atlas/user/othrif/scratch/myNewNtupleMaker/build/x86_64-slc6-gcc62-opt/include/VBFInvAnalysis.rule
