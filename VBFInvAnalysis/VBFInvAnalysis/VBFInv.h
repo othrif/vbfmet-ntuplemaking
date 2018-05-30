@@ -17,6 +17,7 @@
 #include <TH1.h>
 #include <TTree.h>
 #include <TEnv.h>
+#include <TLorentzVector.h>
 
 // VBFInv classes
 #include <VBFInvAnalysis/contentHolder.h>
@@ -77,15 +78,19 @@ public:
   Double_t mjjSkimForSyst;
   Double_t detajjSkim;
   Double_t detajjSkimForSyst;
+  Double_t rebalancedJetPt;
   Bool_t doPileup;
   Bool_t doSystematics;
   Bool_t doSkim;
+  Bool_t doRnS;
 
 private:
   // Configuration, and any other types of variables go here.
 
   TH1D *m_NumberEvents; //!
   Analysis::CutFlowTool m_CutFlow; //!
+  TH1F *m_cflow_hist; //!
+  TH1F *m_cflow_hist_unw; //!
 
 // Analysis
    Bool_t m_isMC; //!

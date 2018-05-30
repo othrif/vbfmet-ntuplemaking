@@ -165,8 +165,6 @@ EL::StatusCode VBFInvTruth :: initialize ()
     m_tau_numNeutralPion = new std::vector<ULong_t>();
     m_tau_barcode = new std::vector<int>();
     m_tau_status = new std::vector<int>();
-    m_tau_pt_invis = new std::vector<double>();
-    m_tau_pt_vis = new std::vector<double>();
 
     m_boson_e = new std::vector<float>();
     m_boson_m = new std::vector<float>();
@@ -258,8 +256,6 @@ EL::StatusCode VBFInvTruth :: initialize ()
     truthTree->Branch ("tau_numNeutralPion", &m_tau_numNeutralPion);
     truthTree->Branch ("tau_barcode", &m_tau_barcode);
     truthTree->Branch ("tau_status", &m_tau_status);
-    truthTree->Branch ("tau_pt_invis", &m_tau_pt_invis);
-    truthTree->Branch ("tau_pt_vis", &m_tau_pt_vis);
 
     // Bosons
     truthTree->Branch ("nbosons", &m_nbosons);
@@ -393,131 +389,132 @@ EL::StatusCode VBFInvTruth :: execute ()
     xAOD::TEvent *event = wk()->xaodEvent();
     // Jets
     const xAOD::JetContainer* jets = nullptr;
-    bool hasTruthJets = event->retrieve(jets, "AntiKt4TruthDressedWZJets").isSuccess();
-    return EL::StatusCode::SUCCESS;
-    ANA_CHECK (evtStore()->retrieve( jets, "AntiKt4TruthDressedWZJets"));
 
-    if(hasTruthJets){
-        ANA_CHECK (evtStore()->retrieve( jets, "AntiKt4TruthJets"));
-        if(debug)
-            ANA_MSG_INFO("Found truth jet container: AntiKt4TruthJets");
-    } else {
+    static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
+    if (!failedLookingFor) {
+     if (!event->retrieve(jets, "AntiKt4TruthJets").isSuccess()) {
+        if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
         ANA_CHECK (evtStore()->retrieve( jets, "AntiKt4TruthDressedWZJets"));
-        if(debug)
-            ANA_MSG_INFO("Found truth jet container: AntiKt4TruthDressedWZJets");
+        failedLookingFor = kTRUE;
+    }
+    else {
+        if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthJets!");
+    }
+    } else {
+        if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
+        ANA_CHECK (evtStore()->retrieve( jets, "AntiKt4TruthDressedWZJets"));
     }
 
-
     // Electrons
-    const xAOD::TruthParticleContainer* els = nullptr;
-    ANA_CHECK (evtStore()->retrieve( els, "TruthElectrons"));
+const xAOD::TruthParticleContainer* els = nullptr;
+ANA_CHECK (evtStore()->retrieve( els, "TruthElectrons"));
 
     // Muons
-    const xAOD::TruthParticleContainer* mus = nullptr;
-    ANA_CHECK (evtStore()->retrieve( mus, "TruthMuons"));
+const xAOD::TruthParticleContainer* mus = nullptr;
+ANA_CHECK (evtStore()->retrieve( mus, "TruthMuons"));
 
     // Taus
-    const xAOD::TruthParticleContainer* taus = nullptr;
-    ANA_CHECK (evtStore()->retrieve( taus, "TruthTaus"));
+const xAOD::TruthParticleContainer* taus = nullptr;
+ANA_CHECK (evtStore()->retrieve( taus, "TruthTaus"));
 
     // Neutrinos
-    const xAOD::TruthParticleContainer* neus = nullptr;
-    ANA_CHECK (evtStore()->retrieve( neus, "TruthNeutrinos"));
+const xAOD::TruthParticleContainer* neus = nullptr;
+ANA_CHECK (evtStore()->retrieve( neus, "TruthNeutrinos"));
 
     // MET
-    const xAOD::MissingETContainer* met = nullptr;
-    ANA_CHECK (evtStore()->retrieve( met, "MET_Truth"));
+const xAOD::MissingETContainer* met = nullptr;
+ANA_CHECK (evtStore()->retrieve( met, "MET_Truth"));
 
     // Bosons
-    const xAOD::TruthParticleContainer* bosons = nullptr;
-    ANA_CHECK (evtStore()->retrieve( bosons, "TruthBoson"));
+const xAOD::TruthParticleContainer* bosons = nullptr;
+ANA_CHECK (evtStore()->retrieve( bosons, "TruthBoson"));
 
     // Neutrinos
-    const xAOD::TruthParticleContainer* neutrinos = nullptr;
-    ANA_CHECK (evtStore()->retrieve( neutrinos, "TruthNeutrinos"));
+const xAOD::TruthParticleContainer* neutrinos = nullptr;
+ANA_CHECK (evtStore()->retrieve( neutrinos, "TruthNeutrinos"));
 
     // TruthEvents
-    const xAOD::TruthEventContainer* truthE = nullptr;
-    ANA_CHECK( m_event->retrieve( truthE, "TruthEvents" ) );
+const xAOD::TruthEventContainer* truthE = nullptr;
+ANA_CHECK( m_event->retrieve( truthE, "TruthEvents" ) );
 
     //-----------------------------------------------------------------------
     //  Overlap Removal
     //-----------------------------------------------------------------------
 
     // Jets - leptons
-    for (const auto& truthJ_itr : *jets){
-        if (truthJ_itr->pt() > 25000.)
-        {
-            dec_passOR(*truthJ_itr) = true;
+for (const auto& truthJ_itr : *jets){
+    if (truthJ_itr->pt() > 25000.)
+    {
+        dec_passOR(*truthJ_itr) = true;
             // overlap with electrons
-            for (const auto&  elec_itr : *els){
-                if(elec_itr->pt() > 7000){
-                    float dR = xAOD::P4Helpers::deltaR2( truthJ_itr, elec_itr, true);
-                    ANA_MSG_DEBUG("jet pt=" << truthJ_itr->pt() << ", el pt=" << elec_itr->pt() << ", DR=" << sqrt(dR) );
-                    if (dR < (0.2 * 0.2)) {
-                        dec_passOR(*truthJ_itr) = false;
-                        ANA_MSG_DEBUG("jet-el OR: Rejecting jet!" );
-                        break;
-                    }
-                }
-            }
-                // overlap with muons
-            for (const auto&  mu_itr : *mus){
-                if(mu_itr->pt() > 5000){
-                    float dR = xAOD::P4Helpers::deltaR2( truthJ_itr, mu_itr, true);
-                    ANA_MSG_DEBUG("jet pt=" << truthJ_itr->pt() << ", mu pt=" << mu_itr->pt() << ", DR=" << sqrt(dR) );
-                    if (dR < (0.2 * 0.2)) {
-                        dec_passOR(*truthJ_itr) = false;
-                        ANA_MSG_DEBUG("jet-mu OR: Rejecting jet!" );
-                        break;
-                    }
+        for (const auto&  elec_itr : *els){
+            if(elec_itr->pt() > 7000){
+                float dR = xAOD::P4Helpers::deltaR2( truthJ_itr, elec_itr, true);
+                ANA_MSG_DEBUG("jet pt=" << truthJ_itr->pt() << ", el pt=" << elec_itr->pt() << ", DR=" << sqrt(dR) );
+                if (dR < (0.2 * 0.2)) {
+                    dec_passOR(*truthJ_itr) = false;
+                    ANA_MSG_DEBUG("jet-el OR: Rejecting jet!" );
+                    break;
                 }
             }
         }
-        else{
-            dec_passOR(*truthJ_itr) = false;
-            ANA_MSG_DEBUG("jet-lep OR: Does not pass due to jet pt < 25 GeV!" );
+                // overlap with muons
+        for (const auto&  mu_itr : *mus){
+            if(mu_itr->pt() > 5000){
+                float dR = xAOD::P4Helpers::deltaR2( truthJ_itr, mu_itr, true);
+                ANA_MSG_DEBUG("jet pt=" << truthJ_itr->pt() << ", mu pt=" << mu_itr->pt() << ", DR=" << sqrt(dR) );
+                if (dR < (0.2 * 0.2)) {
+                    dec_passOR(*truthJ_itr) = false;
+                    ANA_MSG_DEBUG("jet-mu OR: Rejecting jet!" );
+                    break;
+                }
+            }
         }
     }
+    else{
+        dec_passOR(*truthJ_itr) = false;
+        ANA_MSG_DEBUG("jet-lep OR: Does not pass due to jet pt < 25 GeV!" );
+    }
+}
     // Electrons - Jets
-    for (const auto&  elec_itr : *els){
-        if(elec_itr->pt() > 7000){
-            dec_passOR(*elec_itr) = true;
+for (const auto&  elec_itr : *els){
+    if(elec_itr->pt() > 7000){
+        dec_passOR(*elec_itr) = true;
+        for (const auto& truthJ_itr : *jets)
+            if (truthJ_itr->pt() > 25000. && truthJ_itr->auxdata< bool >("passTruthOR")){
+                float dR = xAOD::P4Helpers::deltaR2( elec_itr, truthJ_itr, true);
+                if (dR < (0.4 * 0.4)) {
+                    dec_passOR(*elec_itr) = false;
+                    ANA_MSG_DEBUG("el-jet OR: Rejecting el!" );
+                    break;
+                }
+            }
+        }
+        else {
+            dec_passOR(*elec_itr) = false;
+            ANA_MSG_DEBUG("el-jet OR: Does not pass due to el pt < 7 GeV!" );
+        }
+    }
+
+    // Muons - Jets
+    for (const auto&  mu_itr : *mus){
+        if(mu_itr->pt() > 5000){
+            dec_passOR(*mu_itr) = true;
             for (const auto& truthJ_itr : *jets)
                 if (truthJ_itr->pt() > 25000. && truthJ_itr->auxdata< bool >("passTruthOR")){
-                    float dR = xAOD::P4Helpers::deltaR2( elec_itr, truthJ_itr, true);
+                    float dR = xAOD::P4Helpers::deltaR2( mu_itr, truthJ_itr, true);
                     if (dR < (0.4 * 0.4)) {
-                        dec_passOR(*elec_itr) = false;
-                        ANA_MSG_DEBUG("el-jet OR: Rejecting el!" );
+                        dec_passOR(*mu_itr) = false;
+                        ANA_MSG_DEBUG("mu-jet OR: Rejecting mu!" );
                         break;
                     }
                 }
             }
             else {
-                dec_passOR(*elec_itr) = false;
-                ANA_MSG_DEBUG("el-jet OR: Does not pass due to el pt < 7 GeV!" );
+                dec_passOR(*mu_itr) = false;
+                ANA_MSG_DEBUG("mu-jet OR: Does not pass due to mu pt < 5 GeV!" );
             }
         }
-
-    // Muons - Jets
-        for (const auto&  mu_itr : *mus){
-            if(mu_itr->pt() > 5000){
-                dec_passOR(*mu_itr) = true;
-                for (const auto& truthJ_itr : *jets)
-                    if (truthJ_itr->pt() > 25000. && truthJ_itr->auxdata< bool >("passTruthOR")){
-                        float dR = xAOD::P4Helpers::deltaR2( mu_itr, truthJ_itr, true);
-                        if (dR < (0.4 * 0.4)) {
-                            dec_passOR(*mu_itr) = false;
-                            ANA_MSG_DEBUG("mu-jet OR: Rejecting mu!" );
-                            break;
-                        }
-                    }
-                }
-                else {
-                    dec_passOR(*mu_itr) = false;
-                    ANA_MSG_DEBUG("mu-jet OR: Does not pass due to mu pt < 5 GeV!" );
-                }
-            }
 
 
 
@@ -526,67 +523,67 @@ EL::StatusCode VBFInvTruth :: execute ()
     //-----------------------------------------------------------------------
 
     // Jets
-            int njet25=0;
-            for (const auto& truthJ_itr : *jets){
-             if (truthJ_itr->pt() > 25000. && truthJ_itr->auxdata< bool >("passTruthOR")) {
-                m_jet_E->push_back(truthJ_itr->e());
-                m_jet_pt->push_back(truthJ_itr->pt());
-                m_jet_eta->push_back(truthJ_itr->eta());
-                m_jet_phi->push_back(truthJ_itr->phi());
-                m_jet_m->push_back(truthJ_itr->m());
-                m_jet_label->push_back(truthJ_itr->auxdata<int>("PartonTruthLabelID"));
-                njet25++;
-            }
-        }
-        m_njets = njet25;
-
-    // Electrons
-        int nel7=0;
-        for (const auto& elec_itr : *els)
-         if (elec_itr->pt() > 7000. && elec_itr->auxdata< bool >("passTruthOR")) {
-            m_el_m->push_back(elec_itr->m());
-            m_el_pt->push_back(elec_itr->pt());
-            m_el_eta->push_back(elec_itr->eta());
-            m_el_phi->push_back(elec_itr->phi());
-            m_el_type->push_back(elec_itr->auxdata<uint>("classifierParticleType"));
-            m_el_origin->push_back(elec_itr->auxdata<uint>("classifierParticleOrigin"));
-            m_el_ptcone30->push_back(elec_itr->auxdata<float>("ptcone30"));
-            m_el_etcone20->push_back(elec_itr->auxdata<float>("etcone20"));
-            m_el_pdgid->push_back(elec_itr->pdgId());
-            nel7++;
-        }
-        m_nels = nel7;
-
-    // Muons
-        int nmu5=0;
-        for (const auto& mu_itr : *mus){
-         if (mu_itr->pt() > 5000. && mu_itr->auxdata< bool >("passTruthOR")) {
-            m_mu_m->push_back(mu_itr->m());
-            m_mu_pt->push_back(mu_itr->pt());
-            m_mu_eta->push_back(mu_itr->eta());
-            m_mu_phi->push_back(mu_itr->phi());
-            m_mu_type->push_back(mu_itr->auxdata<uint>("classifierParticleType"));
-            m_mu_origin->push_back(mu_itr->auxdata<uint>("classifierParticleOrigin"));
-            m_mu_ptcone30->push_back(mu_itr->auxdata<float>("ptcone30"));
-            m_mu_etcone20->push_back(mu_itr->auxdata<float>("etcone20"));
-            m_mu_pdgid->push_back(mu_itr->pdgId());
-            nmu5++;
+        int njet25=0;
+        for (const auto& truthJ_itr : *jets){
+           if (truthJ_itr->pt() > 25000. && truthJ_itr->auxdata< bool >("passTruthOR")) {
+            m_jet_E->push_back(truthJ_itr->e());
+            m_jet_pt->push_back(truthJ_itr->pt());
+            m_jet_eta->push_back(truthJ_itr->eta());
+            m_jet_phi->push_back(truthJ_itr->phi());
+            m_jet_m->push_back(truthJ_itr->m());
+            m_jet_label->push_back(truthJ_itr->auxdata<int>("PartonTruthLabelID"));
+            njet25++;
         }
     }
-    m_nmus = nmu5;
+    m_njets = njet25;
+
+    // Electrons
+    int nel7=0;
+    for (const auto& elec_itr : *els)
+       if (elec_itr->pt() > 7000. && elec_itr->auxdata< bool >("passTruthOR")) {
+        m_el_m->push_back(elec_itr->m());
+        m_el_pt->push_back(elec_itr->pt());
+        m_el_eta->push_back(elec_itr->eta());
+        m_el_phi->push_back(elec_itr->phi());
+        m_el_type->push_back(elec_itr->auxdata<uint>("classifierParticleType"));
+        m_el_origin->push_back(elec_itr->auxdata<uint>("classifierParticleOrigin"));
+        m_el_ptcone30->push_back(elec_itr->auxdata<float>("ptcone30"));
+        m_el_etcone20->push_back(elec_itr->auxdata<float>("etcone20"));
+        m_el_pdgid->push_back(elec_itr->pdgId());
+        nel7++;
+    }
+    m_nels = nel7;
+
+    // Muons
+    int nmu5=0;
+    for (const auto& mu_itr : *mus){
+       if (mu_itr->pt() > 5000. && mu_itr->auxdata< bool >("passTruthOR")) {
+        m_mu_m->push_back(mu_itr->m());
+        m_mu_pt->push_back(mu_itr->pt());
+        m_mu_eta->push_back(mu_itr->eta());
+        m_mu_phi->push_back(mu_itr->phi());
+        m_mu_type->push_back(mu_itr->auxdata<uint>("classifierParticleType"));
+        m_mu_origin->push_back(mu_itr->auxdata<uint>("classifierParticleOrigin"));
+        m_mu_ptcone30->push_back(mu_itr->auxdata<float>("ptcone30"));
+        m_mu_etcone20->push_back(mu_itr->auxdata<float>("etcone20"));
+        m_mu_pdgid->push_back(mu_itr->pdgId());
+        nmu5++;
+    }
+}
+m_nmus = nmu5;
 
     // taus
-    int ntau5=0;
-    for (const auto& tau_itr : *taus)
+int ntau5=0;
+for (const auto& tau_itr : *taus)
            if (tau_itr->pt() > 5000. /*&& tau_itr->auxdata< bool >("passTruthOR")*/) {
-        m_tau_m->push_back(tau_itr->m());
-    m_tau_pt->push_back(tau_itr->pt());
-    m_tau_eta->push_back(tau_itr->eta());
-    m_tau_phi->push_back(tau_itr->phi());
-    m_tau_type->push_back(tau_itr->auxdata<uint>("classifierParticleType"));
-    m_tau_origin->push_back(tau_itr->auxdata<uint>("classifierParticleOrigin"));
-    m_tau_pdgid->push_back(tau_itr->pdgId());
-    m_tau_IsHadronicTau->push_back(tau_itr->auxdata<char>("IsHadronicTau"));
+    m_tau_m->push_back(tau_itr->m());
+m_tau_pt->push_back(tau_itr->pt());
+m_tau_eta->push_back(tau_itr->eta());
+m_tau_phi->push_back(tau_itr->phi());
+m_tau_type->push_back(tau_itr->auxdata<uint>("classifierParticleType"));
+m_tau_origin->push_back(tau_itr->auxdata<uint>("classifierParticleOrigin"));
+m_tau_pdgid->push_back(tau_itr->pdgId());
+m_tau_IsHadronicTau->push_back(tau_itr->auxdata<char>("IsHadronicTau"));
     m_tau_m_invis->push_back(-1.);//tau_itr->auxdata<double>("m_invis"));
     m_tau_m_vis->push_back(-1.);//tau_itr->auxdata<double>("m_vis"));
     m_tau_numCharged->push_back(tau_itr->auxdata<ULong_t>("numCharged"));
@@ -595,8 +592,6 @@ EL::StatusCode VBFInvTruth :: execute ()
     m_tau_numNeutralPion->push_back(tau_itr->auxdata<ULong_t>("numNeutralPion"));
     m_tau_barcode->push_back(tau_itr->auxdata<int>("barcode"));
     m_tau_status->push_back(tau_itr->auxdata<int>("status"));
-    m_tau_pt_invis->push_back(tau_itr->auxdata<double>("pt_invis"));
-    m_tau_pt_vis->push_back(tau_itr->auxdata<double>("pt_vis"));
     ntau5++;
 }
 m_ntaus = ntau5;

@@ -87,8 +87,6 @@ public:
   std::vector<ULong_t> *m_tau_numNeutralPion; //!
   std::vector<int> *m_tau_barcode; //!
   std::vector<int> *m_tau_status; //!
-  std::vector<double> *m_tau_pt_invis; //!
-  std::vector<double> *m_tau_pt_vis; //!
 
   int m_nbosons; //!
   std::vector<float> *m_boson_e; //!

@@ -92,6 +92,12 @@ namespace Analysis {
       Int_t n_el;
       Int_t n_el_baseline;
 
+      Float_t GenMET_pt;
+      Float_t GenMET_phi;
+      Float_t TrueMHT_pt;
+      Float_t TrueMHT_phi;
+
+
 public:
       outEvent(TString name = "", Bool_t doTrim = kFALSE);
       ~outEvent();

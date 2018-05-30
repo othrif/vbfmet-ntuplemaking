@@ -6,46 +6,56 @@ import ROOT
 import re
 import os
 import shutil
+import sys
 
 # Take some arguments from the command line:
-parser = argparse.ArgumentParser( description = "VBF invisible ntuple making job", add_help=True )
+parser = argparse.ArgumentParser( description = "VBF invisible ntuple making job", add_help=True , fromfile_prefix_chars='@')
 
 # Submit job
 parser.add_argument( "-s", "--submitDir", type = str, dest = "submitDir", default = "submitDir", help = "Submission directory" )
 parser.add_argument( "-v", "--version", type = str, dest = "version", default = "vXX", help = "Ntuple version in the grid" )
 parser.add_argument( "-f", "--inputFile", type = str, dest = "input", default = "", help = "Input file to process" )
 parser.add_argument( "-t", "--inputList", type = str, dest = "txt", default = "", help = "Comma-separated list of text files containing file paths" )
-parser.add_argument( "-g", "--inputDatasets", type = str, dest="rucio", default="", help = "Comma-separated list of input Rucio datasets" )
-parser.add_argument( "-l", "--inputDatasetLists", type = str, dest="ruciolist", default = "", help = "Comma-separated list of text files containing one Rucio sample per line (empty lines or lines starting with # are ignored)" )
-parser.add_argument( "-i", "--inputDirs", type = str, dest = "dir", default="", help = "Comma-separated list of input directories (they will be scanned for samples, one per subdirectory)" )
+parser.add_argument( "-i", "--inputDirs", type = str, dest = "dir", default = "", help = "Comma-separated list of input directories (they will be scanned for samples, one per subdirectory)" )
+parser.add_argument( "-g", "--inputRucio", type = str, dest="rucio", default = "", help = "Comma-separated list of input Rucio datasets" )
+parser.add_argument( "-l", "--inputRucioLists", type = str, dest="ruciolist", default = "", help = "Comma-separated list of text files containing one Rucio sample per line (empty lines or lines starting with # are ignored)" )
 parser.add_argument( "-n", "--nevents", type = int, dest = 'nmax', help="Maximum number of events to process for all the datasets")
 parser.add_argument( "-k", "--nskip", type = int, dest = "nskip", help="Number of events to skip for all the datasets")
 parser.add_argument( "-r", "--replicationSite", type = str, dest = "replicationSite", default = "DESY-HH_LOCALGROUPDISK", help="Name of disk where to replicate output of grid jobs" )
 parser.add_argument( "-w", "--overwrite", dest = "overwrite", action = "store_false", default = True, help = "don't overwrite previous submitDir")
-parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "grid"], help = "driver to be used (local, grid)", metavar="driver")
+parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "prun"], help = "driver to be used (local, grid)", metavar="driver")
 parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
 parser.add_argument( "-u", "--user", type=str, dest="userName", default=os.environ["USER"], help="username for grid jobs", metavar="userName")
 
 # Algorithm configuration
-parser.add_argument('--debug', dest='debug', action='store_true', default=False, help='run in debug mode in ST')
-parser.add_argument('--verbose', dest='verbose', action='store_true', default=False, help='run in verbose mode with my output')
+parser.add_argument("--debug", dest='debug', action='store_true', default=False, help='run in debug mode in ST')
+parser.add_argument("--verbose", dest='verbose', action='store_true', default=False, help='run in verbose mode with my output')
 parser.add_argument("--configFile", type=str, dest="configFile", default="VBFInvAnalysis/vbfinv.conf", help="name of the config file to use", metavar="configFile")
 parser.add_argument("--doSyst", dest="doSystematics", action="store_true", default=False, help="do systematic variations")
 parser.add_argument("--noPileup", dest="noPileup", action="store_true", default=False, help="no pileup reweighting")
 parser.add_argument("--doSkim", dest="doSkim", action="store_true", default=False, help="Apply skimming")
-parser.add_argument("--pt1Skim", type=int, dest="pt1Skim", default=200000, help="leading jet pt skim (nominal tree), in MeV", metavar="cut")
-parser.add_argument("--pt1SkimForSyst", type=int, dest="pt1SkimForSyst", default=200000, help="leading jet pt skim (systematics), in MeV", metavar="cut")
-parser.add_argument("--pt2Skim", type=int, dest="pt2Skim", default=200000, help="subleading jet pt skim (nominal tree), in MeV", metavar="cut")
-parser.add_argument("--pt2SkimForSyst", type=int, dest="pt2SkimForSyst", default=200000, help="subleading jet pt skim (systematics), in MeV", metavar="cut")
-parser.add_argument("--metSkim", type=int, dest="metSkim", default=100000, help="MET skim (nominal tree), in MeV", metavar="cut")
-parser.add_argument("--metSkimForSyst", type=int, dest="metSkimForSyst", default=100000, help="MET skim (systematics), in MeV", metavar="cut")
-parser.add_argument("--mjjSkim", type=int, dest="mjjSkim", default=500000, help="jet invariant mass skim (nominal tree), in MeV", metavar="cut")
-parser.add_argument("--mjjSkimForSyst", type=int, dest="mjjSkimForSyst", default=500000, help="jet invariant mass skim (systematics), in MeV", metavar="cut")
-parser.add_argument("--detajjSkim", type=int, dest="detajjSkim", default=2.5, help="jet DEta skim (nominal tree)", metavar="cut")
-parser.add_argument("--detajjSkimForSyst", type=int, dest="detajjSkimForSyst", default=2.5, help="jet DEta skim (systematics)V", metavar="cut")
+parser.add_argument("--pt1Skim", type=float, dest="pt1Skim", default=25000, help="leading jet pt skim (nominal tree), in MeV", metavar="cut")
+parser.add_argument("--pt1SkimForSyst", type=float, dest="pt1SkimForSyst", default=25000, help="leading jet pt skim (systematics), in MeV", metavar="cut")
+parser.add_argument("--pt2Skim", type=float, dest="pt2Skim", default=25000, help="subleading jet pt skim (nominal tree), in MeV", metavar="cut")
+parser.add_argument("--pt2SkimForSyst", type=float, dest="pt2SkimForSyst", default=25000, help="subleading jet pt skim (systematics), in MeV", metavar="cut")
+parser.add_argument("--metSkim", type=float, dest="metSkim", default=100000, help="MET skim (nominal tree), in MeV", metavar="cut")
+parser.add_argument("--metSkimForSyst", type=float, dest="metSkimForSyst", default=100000, help="MET skim (systematics), in MeV", metavar="cut")
+parser.add_argument("--mjjSkim", type=float, dest="mjjSkim", default=200000, help="jet invariant mass skim (nominal tree), in MeV", metavar="cut")
+parser.add_argument("--mjjSkimForSyst", type=float, dest="mjjSkimForSyst", default=200000, help="jet invariant mass skim (systematics), in MeV", metavar="cut")
+parser.add_argument("--detajjSkim", type=float, dest="detajjSkim", default=2.5, help="jet DEta skim (nominal tree)", metavar="cut")
+parser.add_argument("--detajjSkimForSyst", type=float, dest="detajjSkimForSyst", default=2.5, help="jet DEta skim (systematics)V", metavar="cut")
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
-args = parser.parse_args()
+parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
+args, unknown = parser.parse_known_args()
+
+print "\nArguments used:"
+print "------------------------------------------------"
+print "Command entered: " , " ".join(sys.argv[:])
+print "Configuration:"
+print args
+print "------------------------------------------------"
+print "\n"
 
 # Overwrite submitDir
 if args.overwrite:
@@ -125,6 +135,7 @@ if( args.algoName == "VBFInv" ):
   alg.mjjSkimForSyst = args.mjjSkimForSyst
   alg.detajjSkim = args.detajjSkim
   alg.detajjSkimForSyst = args.detajjSkimForSyst
+  alg.doRnS = args.doRnS
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
@@ -156,7 +167,7 @@ job.outputAdd (output);
 if (args.driver == 'local'):
     driver = ROOT.EL.DirectDriver()
     driver.submit( job, args.submitDir )
-elif (args.driver == 'grid'):
+elif (args.driver == 'prun'):
     dset_name_mask = 'user.{user}.{tag}.%in:name[2]%.%in:name[3]%.%in:name[6]%'.format(user=args.userName, tag=args.version)
     print dset_name_mask, len(dset_name_mask)
     driver = ROOT.EL.PrunDriver()

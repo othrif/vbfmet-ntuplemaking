@@ -98,6 +98,11 @@ n_el_baseline = -9999;
 n_mu = -9999;
 n_mu_baseline = -9999;
 
+GenMET_pt  = -9999;
+GenMET_phi  = -9999;
+TrueMHT_pt  = -9999;
+TrueMHT_phi  = -9999;
+
 return;
 }
 
@@ -196,6 +201,11 @@ void Analysis::outEvent::attachToTree(TTree *tree)
   tree->Branch(prefix + "n_el_baseline", &n_el_baseline);
   tree->Branch(prefix + "n_mu_baseline", &n_mu_baseline);
 
+  tree->Branch(prefix + "GenMET_pt", &GenMET_pt);
+  tree->Branch(prefix + "GenMET_phi", &GenMET_phi);
+  tree->Branch(prefix + "TrueMHT_pt", &TrueMHT_pt);
+  tree->Branch(prefix + "TrueMHT_phi", &TrueMHT_phi);
+
   return;
 }
 
@@ -204,9 +214,5 @@ void Analysis::outEvent::setTriggers(const std::vector<std::string> &trigs)
  for (auto &trigName : trigs) {
   trigger[trigName] = 0;
 }
-passGRL = 0;
-passTrigger = 0;
-passPV = 0;
-passJetClean = 0;
-passDetErr = 0;
+
 }

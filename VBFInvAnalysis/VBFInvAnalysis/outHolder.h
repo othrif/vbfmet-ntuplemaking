@@ -2,6 +2,7 @@
 #define __Analysis_outHolder__
 
 #include <VBFInvAnalysis/outEvent.h>
+#include <VBFInvAnalysis/outRnSmear.h>
 #include <VBFInvAnalysis/outMET.h>
 #include <VBFInvAnalysis/outMuon.h>
 #include <VBFInvAnalysis/outElectron.h>
@@ -20,6 +21,7 @@ namespace Analysis {
 
    public:
       outEvent evt;
+      outRnSmear rns;
       std::map<TString, outMET> met;
       std::map<TString, outMuon> mu;
       std::map<TString, outElectron> el;

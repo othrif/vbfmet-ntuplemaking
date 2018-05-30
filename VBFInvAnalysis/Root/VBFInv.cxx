@@ -66,11 +66,13 @@ detajjSkimForSyst(0),
 doPileup(true),
 doSystematics(false),
 doSkim(false),
+doRnS(false),
 m_isMC(false),
 m_isAFII(false),
 m_eventCounter(0),
 m_determinedDerivation(false),
 m_isEXOT5(false),
+rebalancedJetPt(20000.),
 m_grl("GoodRunsListSelectionTool/grl", this),
 m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this)
 {
@@ -422,10 +424,13 @@ if(doPileup && m_isMC){
      m_CutFlow.printUnw();
      m_CutFlow.print();
 
-     TH1F *cflow_hist = m_CutFlow.createTH1F();
-     TH1F *cflow_hist_unw = m_CutFlow.createTH1Fraw();
-     wk()->addOutput(cflow_hist);
-     wk()->addOutput(cflow_hist_unw);
+  // Cutflow
+     m_cflow_hist = m_CutFlow.createTH1F();
+     m_cflow_hist_unw = m_CutFlow.createTH1Fraw();
+
+     TFile *outputFile = wk()->getOutputFile (outputName);
+     m_cflow_hist->SetDirectory(outputFile);
+     m_cflow_hist_unw->SetDirectory(outputFile);
 
      return EL::StatusCode::SUCCESS;
    }
@@ -963,8 +968,13 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
  cand.reset();
 
+ // Deal with Rebalance and Smear first:
+ if(doRnS && !m_isMC ) {
+  cand.rns.rnsPSweight = cand.rns.getPSweight(m_susytools_handle, event,content.eventInfo->runNumber(), debug);
+}
+
    // trigger
- for (auto &kv : cand.evt.trigger) {
+for (auto &kv : cand.evt.trigger) {
   kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
 }
    cand.evt.passTrigger = cand.evt.trigger["HLT_xe70"] || // standard 2015
@@ -998,6 +1008,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
    // MC-only information
+
    if (m_isMC) {
       // Record all weights
     cand.evt.mcEventWeight     = content.eventInfo->mcEventWeight();
@@ -1044,11 +1055,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
         const xAOD::TruthParticleContainer * truthP(0);
         ANA_CHECK(event->retrieve(truthP, "TruthParticles"));
         for (const auto& truthJ_itr : *truthJets) {
-         if (truthJ_itr->pt() > 20000. && fabs(truthJ_itr->eta()) < 2.8) {
+         if (truthJ_itr->pt() > 20000. ) { // no eta cut
           float minDR2 = 9999999.;
                   // for each jet, loop over all electrons and muons passing basic cuts to check if the jets should be counted or not
           for (const auto& truthP_itr : *truthP) {
-           if (truthP_itr->pt() > 25000. && fabs(truthP_itr->eta()) < 2.5 && truthP_itr->status() == 1 && (abs(truthP_itr->pdgId()) == 11 || abs(truthP_itr->pdgId()) == 13)) {
+           if (truthP_itr->pt() > 25000. && truthP_itr->status() == 1 && (abs(truthP_itr->pdgId()) == 11 || abs(truthP_itr->pdgId()) == 13)) { // no eta cut
             if (xAOD::P4Helpers::isInDeltaR(*truthJ_itr, *truthP_itr, 0.2, true)) {
              float dR2 = xAOD::P4Helpers::deltaR2(truthJ_itr, truthP_itr, true);
              if (dR2 < minDR2) {
@@ -1130,6 +1141,55 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
      cand.evt.truth_V_bare_eta = truth_V_bare.Eta();
      cand.evt.truth_V_bare_phi = truth_V_bare.Phi();
      cand.evt.truth_V_bare_m = truth_V_bare.M();
+
+    // -- Generator MET  and MHT --
+    // MET calculated from all status==1 gen particles
+    // MHT calculated from all status==1 gen particles matched (dR < 0.4) to jets above rebalancing threshold
+
+    // get truth container of interest
+     const xAOD::TruthParticleContainer* genparticles = nullptr;
+     ANA_CHECK(event->retrieve(genparticles, "TruthParticles"));
+
+     TLorentzVector vgenMET(0, 0, 0, 0);
+     TLorentzVector vtrueMHTreb(0, 0, 0, 0);
+
+     for ( const auto* it : *genparticles ) {
+            if (it->pt() > 0. && it->status() == 1 && !(it->hasDecayVtx())) { // status() == 1 for pythia samples
+              if (abs(it->pdgId()) == 12 || abs(it->pdgId()) == 14 || abs(it->pdgId()) == 16 )
+                vgenMET += it->p4();
+              if (abs(it->pdgId()) == 12 || abs(it->pdgId()) == 14 || abs(it->pdgId()) == 16 || abs(it->pdgId()) == 11 || abs(it->pdgId()) == 13 || abs(it->pdgId()) == 15 )
+                if (debug)
+                  ANA_MSG_INFO("truth lepton (pt, eta, phi, status): " << it->pdgId() << ", " << it->pt()/1000. << ", " << it->eta() << ", " << it->phi() << ", " << it->status());
+              bool particleAdded = false;
+
+              // loop over reco jet container
+              for (auto jet : content.goodJets)
+                if (!particleAdded && jet->pt() > rebalancedJetPt) {
+
+                  if (xAOD::P4Helpers::isInDeltaR(*jet, *it, 0.4, true)) {
+                   float dR2 = xAOD::P4Helpers::deltaR2(jet, it, true);
+                   if (dR2 < 0.4 * 0.4) {
+                    vtrueMHTreb += it->p4();
+                    particleAdded = true;
+                  }
+                }
+              }
+            }
+          }
+
+          cand.evt.GenMET_pt = vgenMET.Pt();
+          cand.evt.GenMET_phi = vgenMET.Phi();
+          cand.evt.TrueMHT_pt = vtrueMHTreb.Pt();
+          cand.evt.TrueMHT_phi = vtrueMHTreb.Phi();
+
+          // Generator MET and HT
+          if(debug) {
+            print("Generator MET pt",cand.evt.GenMET_pt);
+            print("Generator MET phi",cand.evt.GenMET_phi);
+            print("True MHT pt",cand.evt.TrueMHT_pt);
+            print("Truth MHT phi",cand.evt.TrueMHT_phi);
+          }
+
 
    } // done with MC only
 

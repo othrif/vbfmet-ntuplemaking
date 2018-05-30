@@ -35,6 +35,14 @@ void Analysis::outJet::reset()
    PartonTruthLabelID.clear();
    ConeTruthLabelID.clear();
 
+   NTracks.clear();
+   SumPtTracks.clear();
+   TrackWidth.clear();
+   HighestJVFVtx.clear();
+   FracSamplingMax.clear();
+   HECFrac.clear();
+   EMFrac.clear();
+
    return;
 }
 
@@ -63,7 +71,13 @@ void Analysis::outJet::attachToTree(TTree *tree)
    tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
    tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
 
-
+   tree->Branch(prefix + "NTracks", &NTracks);
+   tree->Branch(prefix + "SumPtTracks", &SumPtTracks);
+   tree->Branch(prefix + "TrackWidth", &TrackWidth);
+   tree->Branch(prefix + "HighestJVFVtx", &HighestJVFVtx);
+   tree->Branch(prefix + "FracSamplingMax", &FracSamplingMax);
+   tree->Branch(prefix + "HECFrac", &HECFrac);
+   tree->Branch(prefix + "EMFrac", &EMFrac);
 
    return;
 }
@@ -89,16 +103,74 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    input.btagging()->MVx_discriminant("MV2c10", tmp_btag_weight);
    btag_weight.push_back(tmp_btag_weight);
 
+// number of charged tracks within a jet
+   std::vector<int>  tmp_numtrk_vec;
+   input.getAttribute("NumTrkPt500", tmp_numtrk_vec);
+
+// momentum fraction carried by charged tracks
+   std::vector<float>  tmp_sumpttrk_vec;
+   input.getAttribute("SumPtTrkPt500", tmp_sumpttrk_vec);
+
+// width charged tracks
+   std::vector<float> tmp_trkwidth_vec;
+   input.getAttribute("TrackWidthPt1000", tmp_trkwidth_vec);
+
+// which vertex
+   int vtx = 0;
+   float maxSumPt = -1;
+   for (unsigned int i = 0; i < tmp_sumpttrk_vec.size(); ++i) {
+      if (tmp_sumpttrk_vec.at(i) > maxSumPt) {
+        maxSumPt = tmp_sumpttrk_vec.at(i);
+        vtx = i;
+     }}
+
+     float tmp_sumpttrk;
+     float tmp_trkwidth;
+     int tmp_numtrk;
+   if (tmp_sumpttrk_vec.size() > 0 /*&& susytools_handle->GetPrimVtx()*/) {
+     tmp_sumpttrk = tmp_sumpttrk_vec[vtx];
+     tmp_numtrk = tmp_numtrk_vec[vtx];
+     tmp_trkwidth = tmp_trkwidth_vec[vtx];
+  }
+  else {
+   tmp_sumpttrk = 0;
+   tmp_numtrk = 0;
+   tmp_trkwidth = 0.;}
+
+   HighestJVFVtx.push_back(tmp_sumpttrk);
+   SumPtTracks.push_back(tmp_sumpttrk);
+   NTracks.push_back(tmp_numtrk);
+   TrackWidth.push_back(tmp_trkwidth);
+
+   double tmp_FracSamplingMax(-9999.);
+   input.getAttribute("FracSamplingMax", tmp_FracSamplingMax);
+   FracSamplingMax.push_back(tmp_FracSamplingMax);
+
+   double tmp_HECFrac(-9999.);
+   input.getAttribute("HECFrac", tmp_HECFrac);
+   HECFrac.push_back(tmp_HECFrac);
+
+   double tmp_EMFrac(-9999.);
+   input.getAttribute("EMFrac", tmp_EMFrac);
+   EMFrac.push_back(tmp_EMFrac);
+
    // decorations from SUSYTools
+   // FwdJVT is applied in passJvt given that FwdJet.doJVT: true in ST config
    static SG::AuxElement::Accessor<char> acc_passOR("passOR");
    static SG::AuxElement::Accessor<char> acc_passJvt("passJvt");
    static SG::AuxElement::ConstAccessor<char> acc_bjet("bjet");
    static SG::AuxElement::ConstAccessor<float> acc_jvt("Jvt");
 
-   // ?TODO? check if exists
-   passOR.push_back(acc_passOR(input));
-   passJvt.push_back(acc_passJvt(input));
-
+   if (acc_passOR.isAvailable(input)) {
+      passOR.push_back(acc_passOR(input));
+   } else {
+      passOR.push_back(9999);
+   }
+   if (acc_passJvt.isAvailable(input)) {
+      passJvt.push_back(acc_passJvt(input));
+   } else {
+      passJvt.push_back(9999);
+   }
    if (acc_bjet.isAvailable(input)) {
       isbjet.push_back(acc_bjet(input));
    } else {

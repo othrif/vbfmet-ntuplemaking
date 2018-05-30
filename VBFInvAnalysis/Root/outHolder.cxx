@@ -15,7 +15,7 @@ Analysis::outHolder::~outHolder()
 void Analysis::outHolder::reset()
 {
    evt.reset();
-
+   rns.reset();
    for (auto &kv : met) kv.second.reset();
    for (auto &kv : mu) kv.second.reset();
    for (auto &kv : el) kv.second.reset();
@@ -33,6 +33,7 @@ void Analysis::outHolder::attachToTree(TTree *tree)
 {
    // first, set trimming if appropriate
    evt.setDoTrim(m_doTrim);
+   rns.setDoTrim(m_doTrim);
    for (auto &kv : met) kv.second.setDoTrim(m_doTrim);
    for (auto &kv : mu)  kv.second.setDoTrim(m_doTrim);
    for (auto &kv : el)  kv.second.setDoTrim(m_doTrim);
@@ -45,6 +46,7 @@ void Analysis::outHolder::attachToTree(TTree *tree)
       m_attachedTree = tree; // do NOT take ownership
 
       evt.attachToTree(tree);
+      rns.attachToTree(tree);
 
       for (auto &kv : met) kv.second.attachToTree(tree);
       for (auto &kv : mu)  kv.second.attachToTree(tree);
