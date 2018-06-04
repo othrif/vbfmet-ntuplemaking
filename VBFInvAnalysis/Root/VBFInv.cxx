@@ -12,6 +12,7 @@
 #include "xAODTruth/xAODTruthHelpers.h"
 #include <xAODBase/IParticleHelpers.h>
 #include "FourMomUtils/xAODP4Helpers.h"
+#include "xAODMetaData/FileMetaData.h"
 
 // Core include(s):
 #include "EventLoop/Job.h"
@@ -22,6 +23,7 @@
 #include <EventLoop/Worker.h>
 #include <EventLoop/OutputStream.h>
 #include "PathResolver/PathResolver.h"
+#include "AsgTools/AsgMetadataTool.h"
 
 // Local include(s):
 #include <VBFInvAnalysis/VBFInv.h>
@@ -31,8 +33,7 @@
 // Utils
 #include <boost/algorithm/string.hpp>
 
-#include "xAODMetaData/FileMetaData.h"
-#include "AsgTools/AsgMetadataTool.h"
+
 
 // Declare the class to ROOT:
 ClassImp( VBFInv )
