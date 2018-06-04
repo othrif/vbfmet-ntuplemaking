@@ -23,7 +23,7 @@ parser.add_argument( "-n", "--nevents", type = int, dest = 'nmax', help="Maximum
 parser.add_argument( "-k", "--nskip", type = int, dest = "nskip", help="Number of events to skip for all the datasets")
 parser.add_argument( "-r", "--replicationSite", type = str, dest = "replicationSite", default = "DESY-HH_LOCALGROUPDISK", help="Name of disk where to replicate output of grid jobs" )
 parser.add_argument( "-w", "--overwrite", dest = "overwrite", action = "store_false", default = True, help = "don't overwrite previous submitDir")
-parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "prun"], help = "driver to be used (local, grid)", metavar="driver")
+parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "prun"], help = "driver to be used (local, prun)", metavar="driver")
 parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
 parser.add_argument( "-u", "--user", type=str, dest="userName", default=os.environ["USER"], help="username for grid jobs", metavar="userName")
 
@@ -120,6 +120,7 @@ alg.SetName( args.algoName )
 # Algorithm args:
 alg.outputName = "MiniNtuple"
 alg.debug = args.debug
+alg.verbose = args.verbose
 if( args.algoName == "VBFInv" ):
   alg.config_file = args.configFile
   alg.doPileup = not args.noPileup

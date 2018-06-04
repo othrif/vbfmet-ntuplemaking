@@ -164,17 +164,17 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    if (acc_passOR.isAvailable(input)) {
       passOR.push_back(acc_passOR(input));
    } else {
-      passOR.push_back(9999);
+      passOR.push_back(-9999);
    }
    if (acc_passJvt.isAvailable(input)) {
       passJvt.push_back(acc_passJvt(input));
    } else {
-      passJvt.push_back(9999);
+      passJvt.push_back(-9999);
    }
    if (acc_bjet.isAvailable(input)) {
       isbjet.push_back(acc_bjet(input));
    } else {
-      isbjet.push_back(9999);
+      isbjet.push_back(-9999);
    }
    if (acc_jvt.isAvailable(input)) {
       jvt.push_back(acc_jvt(input));

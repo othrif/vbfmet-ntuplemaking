@@ -27,6 +27,7 @@ atlas_depends_on_subdirs(
    Event/xAOD/xAODBTaggingEfficiency
    Event/xAOD/xAODTrigger
    Event/xAOD/xAODCutFlow
+   Event/xAOD/xAODMetaData
    PhysicsAnalysis/ElectronPhotonID/ElectronPhotonSelectorTools
    PhysicsAnalysis/TauID/TauAnalysisTools
    PhysicsAnalysis/ElectronPhotonID/ElectronEfficiencyCorrection
@@ -57,7 +58,7 @@ atlas_add_library( VBFInvAnalysisLib
 
    AthContainers CxxUtils
    xAODRootAccess xAODCore xAODEgamma xAODTau xAODJet xAODMuon xAODMissingET
-   xAODEventInfo xAODTracking xAODCaloEvent xAODTruth xAODCutFlow xAODTrigger
+   xAODEventInfo xAODTracking xAODCaloEvent xAODTruth xAODCutFlow xAODTrigger xAODMetaData
    GoodRunsListsLib PileupReweightingLib PathResolver TrigConfxAODLib TrigDecisionToolLib TriggerMatchingToolLib
    MuonMomentumCorrectionsLib FourMomUtils IsolationSelectionLib IsolationCorrectionsLib
    ElectronPhotonSelectorToolsLib TauAnalysisToolsLib ElectronEfficiencyCorrectionLib

@@ -31,6 +31,9 @@
 // Utils
 #include <boost/algorithm/string.hpp>
 
+#include "xAODMetaData/FileMetaData.h"
+#include "AsgTools/AsgMetadataTool.h"
+
 // Declare the class to ROOT:
 ClassImp( VBFInv )
 
@@ -45,6 +48,7 @@ ClassImp( VBFInv )
 VBFInv :: VBFInv ()
 :
 debug(false),
+verbose(false),
 config_file(""),
 ST_config_file(""),
 prw_file(""),
@@ -63,6 +67,7 @@ mjjSkim(0),
 mjjSkimForSyst(0),
 detajjSkim(0),
 detajjSkimForSyst(0),
+rebalancedJetPt(20000.),
 doPileup(true),
 doSystematics(false),
 doSkim(false),
@@ -72,7 +77,6 @@ m_isAFII(false),
 m_eventCounter(0),
 m_determinedDerivation(false),
 m_isEXOT5(false),
-rebalancedJetPt(20000.),
 m_grl("GoodRunsListSelectionTool/grl", this),
 m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this)
 {
@@ -95,10 +99,11 @@ EL::StatusCode VBFInv :: histInitialize()
  ANA_MSG_INFO("in histInitialize");
 
    // Events processed before derivation
- m_NumberEvents = new TH1D("NumberEvents", "Number Events", 3, 0, 3);
+ m_NumberEvents = new TH1D("NumberEvents", "Number Events", 4, 0, 4);
  m_NumberEvents->GetXaxis()->SetBinLabel(1, "Raw");
  m_NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
  m_NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
+ m_NumberEvents->GetXaxis()->SetBinLabel(4, "XsecXEff");
 
   // CutFlow
  TString NameCut("Nominal");
@@ -160,9 +165,20 @@ if (allEventsCBK) {
 
 
 if(m_event->getEntries() && wk()->metaData()->castDouble("isData") != 1 ){
+  std::string xSecFilePath = "dev/PMGTools/PMGxsecDB_mc15.txt";
+  xSecFilePath = PathResolverFindCalibFile(xSecFilePath);
+  my_XsecDB = new SUSY::CrossSectionDB(xSecFilePath);
+  if (debug)
+    ANA_MSG_INFO("xsec DB initialized using file:" <<  xSecFilePath);
+  const xAOD::EventInfo *eventInfo = nullptr;
+  ANA_CHECK (evtStore()->retrieve (eventInfo, "EventInfo"));
+  float crossSection = my_XsecDB->xsectTimesEff(eventInfo->mcChannelNumber());
+  if (debug)
+    print("cross section", crossSection );
   m_NumberEvents->Fill(0., nEventsProcessed);
   m_NumberEvents->Fill(1., sumOfWeights);
   m_NumberEvents->Fill(2., sumOfWeightsSquared);
+  m_NumberEvents->Fill(3., crossSection);
 }
 
 
@@ -222,12 +238,25 @@ EL::StatusCode VBFInv::initialize() {
  const ST::ISUSYObjDef_xAODTool::DataSource datasource = (!m_isMC ? ST::ISUSYObjDef_xAODTool::Data : (m_isAFII ? ST::ISUSYObjDef_xAODTool::AtlfastII : ST::ISUSYObjDef_xAODTool::FullSim));
  ANA_CHECK(m_susytools_handle.setProperty("DataSource", datasource));
  ANA_CHECK(m_susytools_handle.setProperty("ConfigFile", ST_config_file.Data()));
- if(false/*debug*/){
+ if(verbose){
  ANA_CHECK( m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
  ANA_CHECK( m_susytools_handle.setProperty("DebugMode", true));
 }
   // Pile up configuration
+  xAOD::TEvent *event = wk()->xaodEvent();
 if(doPileup && m_isMC){
+      // get metadata
+  const xAOD::FileMetaData* fmd = nullptr;
+  std::string amiTag = "unknown";
+  if( event->retrieveMetaInput( fmd, "FileMetaData" ).isSuccess() ) {
+       if( !fmd->value( xAOD::FileMetaData::amiTag, amiTag ) ) {
+   ATH_MSG_ERROR( "The object is available, the variable is not." );
+       }
+     } else {
+       ATH_MSG_ERROR( "The object is not available." );
+     }
+  ANA_MSG_INFO("\n AMI Tag: " << amiTag);
+
   const xAOD::EventInfo *eventInfo = nullptr;
   ANA_CHECK (evtStore()->retrieve (eventInfo, "EventInfo"));
   std::vector<std::string> prw_conf;
@@ -240,8 +269,11 @@ if(doPileup && m_isMC){
         prw_lumicalc.push_back(PathResolverFindCalibFile("GoodRunsLists/data15_13TeV/20170619/PHYS_StandardGRL_All_Good_25ns_276262-284484_OflLumi-13TeV-008.root")); // 2015 LumiCalc
         prw_lumicalc.push_back(PathResolverFindCalibFile("GoodRunsLists/data16_13TeV/20180129/PHYS_StandardGRL_All_Good_25ns_297730-311481_OflLumi-13TeV-009.root")); // 2016 LumiCalc
         break;
-        case 300000 :
-        mc_campaign="mc16d";
+    case 300000 :
+        if( amiTag.find("r10201")!=std::string::npos)
+          mc_campaign = "mc16d";
+        else
+          mc_campaign = "mc16c";
         prw_lumicalc.push_back(PathResolverFindCalibFile("GoodRunsLists/data17_13TeV/20180309/physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
         prw_conf.push_back(PathResolverFindCalibFile("GoodRunsLists/data17_13TeV/20180309/physics_25ns_Triggerno17e33prim.actualMu.OflLumi-13TeV-010.root")); // 2017 ActualMu
         break;
@@ -637,14 +669,8 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
       dec_new_d0sig(*mu) = HelperFunctions::getD0sig(mu, content.eventInfo);
       dec_new_z0(*mu) = HelperFunctions::getZ0(mu, primary_vertex_z);
       dec_new_z0sig(*mu) = HelperFunctions::getZ0sig(mu);
-
-      // Scale Factors
-      if (m_isMC) {
-        dec_lep_tot_SF(*mu) =  m_susytools_handle->GetSignalMuonSF(*mu, true, true);
-      }
-
-//      if(debug)
-//        ANA_MSG_INFO("d0  >>  " << HelperFunctions::getD0sig(mu, content.eventInfo) << ", z0 >> " << HelperFunctions::getZ0(mu, primary_vertex_z));
+      if(debug)
+        ANA_MSG_INFO("d0  >>  " << HelperFunctions::getD0sig(mu, content.eventInfo) << ", z0 >> " << HelperFunctions::getZ0(mu, primary_vertex_z));
       content.allMuons.push_back(mu);
     }
   }
@@ -668,11 +694,6 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
           dec_new_d0sig(*el) = HelperFunctions::getD0sig(el, content.eventInfo);
           dec_new_z0(*el) = HelperFunctions::getZ0(el, primary_vertex_z);
           dec_new_z0sig(*el) = HelperFunctions::getZ0sig(el);
-
-          // SF
-          if (m_isMC) {
-          dec_lep_tot_SF(*el) =  m_susytools_handle->GetSignalElecSF(*el, true, true, true, true, "singleLepton"); // reco, id, trigger, iso
-        }
         content.allElectrons.push_back(el);
       }
     }
@@ -977,11 +998,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 for (auto &kv : cand.evt.trigger) {
   kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
 }
-   cand.evt.passTrigger = cand.evt.trigger["HLT_xe70"] || // standard 2015
-   cand.evt.trigger["HLT_xe80_tc_lcw_L1XE50"] || cand.evt.trigger["HLT_xe90_mht_L1XE50"] || cand.evt.trigger["HLT_xe100_mht_L1XE50"] || cand.evt.trigger["HLT_xe110_mht_L1XE50"] || cand.evt.trigger["HLT_xe130_mht_L1XE50"] ||
-   cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] || cand.evt.trigger["HLT_e120_lhloose"] ||
-   cand.evt.trigger["HLT_e26_lhtight_nod0_ivarloose"] || cand.evt.trigger["HLT_e60_lhmedium_nod0"] || cand.evt.trigger["HLT_e140_lhloose_nod0"];
-
+cand.evt.passTrigger = -1;
    // raw event info
    cand.evt.runNumber = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
    cand.evt.eventNumber = (ULong64_t)content.eventInfo->eventNumber();
@@ -989,6 +1006,20 @@ for (auto &kv : cand.evt.trigger) {
    cand.evt.bcid = content.eventInfo->bcid();
    cand.evt.averageIntPerXing = content.eventInfo->averageInteractionsPerCrossing();
    cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
+
+// Which year are we in?
+  cand.evt.year = (m_isMC) ? m_susytools_handle->treatAsYear() : 0; // RandomRunNumber from the PRWTool
+
+  Bool_t is2015(kFALSE);
+/*  Bool_t is2016(kFALSE);
+  Bool_t is2017(kFALSE);
+  Bool_t is2018(kFALSE);*/
+
+   if ((cand.evt.year == 0 && cand.evt.runNumber >= 276262 && cand.evt.runNumber <= 284484) || cand.evt.year == 2015) is2015 = kTRUE; // data2015
+/*   if ((cand.evt.year == 0 && cand.evt.runNumber >= 296939 && cand.evt.runNumber<=311481 ) || cand.evt.year == 2016) is2016 = kTRUE; // data2016
+   if ((cand.evt.year == 0 && cand.evt.runNumber >= 324320 && cand.evt.runNumber<=341649 ) || cand.evt.year == 2017) is2017 = kTRUE; // data2017
+  if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197) || cand.evt.year == 2018) is2018 = kTRUE; // data2018*/
+
 
    // event-level artifacts from system flags
    cand.evt.flag_lar = (content.eventInfo->errorState(xAOD::EventInfo::LAr) == xAOD::EventInfo::Error );
@@ -1015,9 +1046,27 @@ for (auto &kv : cand.evt.trigger) {
     cand.evt.mcEventWeights    = content.eventInfo->mcEventWeights();
     cand.evt.puWeight          = m_susytools_handle->GetPileupWeight();
     cand.evt.btagSFWeight      = m_susytools_handle->BtagSF(&content.goodJets);
-    cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true); // btag, jvt
-//    cand.evt.elSFWeight        = m_susytools_handle->GetTotalElectronSF(content.electrons, true, true, false, true);
-//    cand.evt.muSFWeight        = m_susytools_handle->GetTotalMuonSF(content.muons, true, true, "");
+
+// GetTotalJetSF(jets, bool btagSF, bool jvtSF)
+    cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
+
+    // Lepton Scale Facgtors
+    // See definition of Trig.Singlelep20XX in SUSYObjDef_xAOD.cxx
+    // You can modify it in the ST config under Trigger SFs configuration
+    // Total Electron SF: GetTotalElectronSF(const xAOD::ElectronContainer& electrons, const bool recoSF, const bool idSF, const bool triggerSF, const bool isoSF, const std::string& trigExpr, const bool chfSF)
+    cand.evt.elSFWeight        = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
+    cand.evt.elSFTrigWeight    = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
+    // Total Muon SF: GetTotalMuonTriggerSF(const xAOD::MuonContainer& sfmuons, const std::string& trigExpr)
+    cand.evt.muSFWeight        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
+    cand.evt.muSFTrigWeight    = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false, is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50" : "HLT_mu24_imedium_OR_HLT_mu50" );
+    if(debug)
+    {
+      print("Electron SF", cand.evt.elSFWeight);
+      print("Electron Trig SF", cand.evt.elSFTrigWeight);
+      print("Muon SF", cand.evt.muSFWeight);
+      print("Muon Trig SF", cand.evt.muSFTrigWeight);
+    }
+
 
       // PDF
     const xAOD::TruthEventContainer *truthE(nullptr);
@@ -1037,6 +1086,11 @@ for (auto &kv : cand.evt.trigger) {
             // ignore this variable, when unavailable
             // see https://twiki.cern.ch/twiki/bin/view/AtlasProtected/MC15aKnownIssues
     }
+  }
+
+   // Rebalance and Smear
+  if(doRnS && !m_isMC ) {
+    cand.rns.rnsPSweight = cand.rns.getPSweight(m_susytools_handle, event,content.eventInfo->runNumber(), debug);
   }
 
       // Truth
@@ -1157,9 +1211,10 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
             if (it->pt() > 0. && it->status() == 1 && !(it->hasDecayVtx())) { // status() == 1 for pythia samples
               if (abs(it->pdgId()) == 12 || abs(it->pdgId()) == 14 || abs(it->pdgId()) == 16 )
                 vgenMET += it->p4();
-              if (abs(it->pdgId()) == 12 || abs(it->pdgId()) == 14 || abs(it->pdgId()) == 16 || abs(it->pdgId()) == 11 || abs(it->pdgId()) == 13 || abs(it->pdgId()) == 15 )
+              if (abs(it->pdgId()) == 12 || abs(it->pdgId()) == 14 || abs(it->pdgId()) == 16 || abs(it->pdgId()) == 11 || abs(it->pdgId()) == 13 || abs(it->pdgId()) == 15 ){
                 if (debug)
                   ANA_MSG_INFO("truth lepton (pt, eta, phi, status): " << it->pdgId() << ", " << it->pt()/1000. << ", " << it->eta() << ", " << it->phi() << ", " << it->status());
+              }
               bool particleAdded = false;
 
               // loop over reco jet container

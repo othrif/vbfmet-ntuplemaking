@@ -18,6 +18,7 @@ void Analysis::outEvent::reset()
 {
 
     // General
+ year = 0;
  runNumber = -9999;
  eventNumber = 0;
  lumiBlock = -9999;
@@ -40,6 +41,9 @@ void Analysis::outEvent::reset()
  jvtSFWeight = 1.0;
  elSFWeight = 1.0;
  muSFWeight = 1.0;
+ elSFTrigWeight = 1.0;
+ muSFTrigWeight = 1.0;
+
 
   // PDF
  pdf_id1 = -9999;
@@ -110,6 +114,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
 {
    const TString prefix = (name() != "") ? name() + "_" : ""; // no prefix by default
 
+ tree->Branch(prefix + "year", &year);
    tree->Branch(prefix + "runNumber", &runNumber);
    tree->Branch(prefix + "eventNumber", &eventNumber);
    tree->Branch(prefix + "lumiBlock", &lumiBlock);
@@ -126,11 +131,14 @@ void Analysis::outEvent::attachToTree(TTree *tree)
   tree->Branch(prefix + "jvtSFWeight", &jvtSFWeight);
   tree->Branch(prefix + "elSFWeight", &elSFWeight);
   tree->Branch(prefix + "muSFWeight", &muSFWeight);
+ tree->Branch(prefix + "elSFTrigWeight", &elSFWeight);
+  tree->Branch(prefix + "muSFTrigWeight", &muSFWeight);
+
 
   if (!doTrim()) {
       for (auto &itrig : trigger) {
     const TString trigName = itrig.first;
-    if (trigName  == "HLT_xe70"
+    /*if (trigName  == "HLT_xe70"
       || trigName == "HLT_xe80_tc_lcw_L1XE50"
       || trigName == "HLT_xe90_mht_L1XE50"
       || trigName == "HLT_xe100_mht_L1XE50"
@@ -138,7 +146,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       || trigName == "HLT_xe130_mht_L1XE50"
       || trigName == "HLT_xe120_L1XE50"
       || trigName == "HLT_xe110_L1XE50"
-      )
+      )*/
     tree->Branch(prefix + "trigger_" + trigName, &itrig.second);
   }
 

@@ -10,7 +10,7 @@
 #include <PathResolver/PathResolver.h>
 #include <AsgAnalysisInterfaces/IGoodRunsListSelectionTool.h>
 #include <SUSYTools/ISUSYObjDef_xAODTool.h>
-#include <VBFInvAnalysis/VBFInv_Defs.h>
+#include <SUSYTools/SUSYCrossSection.h>
 
 // ROOT include(s):
 #include <TROOT.h>
@@ -23,6 +23,7 @@
 #include <VBFInvAnalysis/contentHolder.h>
 #include <VBFInvAnalysis/outHolder.h>
 #include <VBFInvAnalysis/CutFlowTool.h>
+#include <VBFInvAnalysis/VBFInv_Defs.h>
 
 class VBFInv : public EL::Algorithm {
 
@@ -55,11 +56,14 @@ public:
  void printTrackMET(std::shared_ptr<xAOD::MissingETContainer> met, TString label);
  void print(TString label, float val);
 
+SUSY::CrossSectionDB *my_XsecDB;  //!
+
    /// Name of the outputs
  std::string outputName = "HADAHA";
 
    // config file
   Bool_t debug;
+  Bool_t verbose;
   TString config_file;
   TString ST_config_file;
   TString prw_file;

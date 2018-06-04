@@ -24,11 +24,20 @@ void Analysis::outMuon::reset()
    ptvarcone20.clear();
    etcone20.clear();
    topoetcone20.clear();
+   ptcone30.clear();
+   ptvarcone30.clear();
+   etcone30.clear();
+   topoetcone30.clear();
+   ptcone40.clear();
+   ptvarcone40.clear();
+   etcone40.clear();
+   topoetcone40.clear();
    d0.clear();
    d0sig.clear();
    z0.clear();
    z0sig.clear();
-   SF.clear();
+   truthType.clear();
+   truthOrigin.clear();
 
    return;
 }
@@ -50,7 +59,19 @@ void Analysis::outMuon::attachToTree(TTree *tree)
    tree->Branch(prefix + "ptvarcone20", &ptvarcone20);
    tree->Branch(prefix + "etcone20", &etcone20);
    tree->Branch(prefix + "topoetcone20", &topoetcone20);
-   tree->Branch(prefix + "SF", &SF);
+   tree->Branch(prefix + "ptcone30", &ptcone30);
+   tree->Branch(prefix + "ptvarcone30", &ptvarcone30);
+   tree->Branch(prefix + "etcone30", &etcone30);
+   tree->Branch(prefix + "topoetcone30", &topoetcone30);
+   tree->Branch(prefix + "ptcone40", &ptcone40);
+   tree->Branch(prefix + "ptvarcone40", &ptvarcone40);
+   tree->Branch(prefix + "etcone40", &etcone40);
+   tree->Branch(prefix + "topoetcone40", &topoetcone40);
+   tree->Branch(prefix + "truthType", &truthType);
+   tree->Branch(prefix + "truthOrigin", &truthOrigin);
+   tree->Branch(prefix + "truthType", &truthType);
+   tree->Branch(prefix + "truthOrigin", &truthOrigin);
+
 
    return;
 }
@@ -65,20 +86,44 @@ void Analysis::outMuon::add(const xAOD::Muon &input)
    m.push_back(input.m());
 
    Float_t tmp_ptcone20(-9999);
+   Float_t tmp_ptcone30(-9999);
+   Float_t tmp_ptcone40(-9999);
    Float_t tmp_etcone20(-9999);
+   Float_t tmp_etcone30(-9999);
+   Float_t tmp_etcone40(-9999);
    Float_t tmp_topoetcone20(-9999);
-
+   Float_t tmp_topoetcone30(-9999);
+   Float_t tmp_topoetcone40(-9999);
    input.isolation(tmp_ptcone20, xAOD::Iso::IsolationType::ptcone20);
+   input.isolation(tmp_ptcone30, xAOD::Iso::IsolationType::ptcone30);
+   input.isolation(tmp_ptcone40, xAOD::Iso::IsolationType::ptcone40);
    input.isolation(tmp_etcone20, xAOD::Iso::IsolationType::etcone20);
+   input.isolation(tmp_etcone30, xAOD::Iso::IsolationType::etcone30);
+   input.isolation(tmp_etcone40, xAOD::Iso::IsolationType::etcone40);
    input.isolation(tmp_topoetcone20, xAOD::Iso::IsolationType::topoetcone20);
+   input.isolation(tmp_topoetcone30, xAOD::Iso::IsolationType::topoetcone30);
+   input.isolation(tmp_topoetcone40, xAOD::Iso::IsolationType::topoetcone40);
    ptcone20.push_back(tmp_ptcone20);
+   ptcone30.push_back(tmp_ptcone30);
+   ptcone40.push_back(tmp_ptcone40);
    etcone20.push_back(tmp_etcone20);
+   etcone30.push_back(tmp_etcone30);
+   etcone40.push_back(tmp_etcone40);
    topoetcone20.push_back(tmp_topoetcone20);
-
+   topoetcone30.push_back(tmp_topoetcone30);
+   topoetcone40.push_back(tmp_topoetcone40);
 
    static SG::AuxElement::ConstAccessor<float> acc_ptvarcone20("ptvarcone20");
+   static SG::AuxElement::ConstAccessor<float> acc_ptvarcone30("ptvarcone30");
+   static SG::AuxElement::ConstAccessor<float> acc_ptvarcone40("ptvarcone40");
    if (acc_ptvarcone20.isAvailable(input)) {
       ptvarcone20.push_back(acc_ptvarcone20(input));
+   }
+   if (acc_ptvarcone30.isAvailable(input)) {
+      ptvarcone30.push_back(acc_ptvarcone30(input));
+   }
+   if (acc_ptvarcone40.isAvailable(input)) {
+      ptvarcone40.push_back(acc_ptvarcone40(input));
    }
 
    static SG::AuxElement::ConstAccessor<float> acc_new_d0("new_d0");
@@ -97,14 +142,17 @@ void Analysis::outMuon::add(const xAOD::Muon &input)
       z0sig.push_back(-9999);
    }
 
-  static SG::AuxElement::ConstAccessor<float> acc_lep_tot_SF("lep_tot_SF");
-   Float_t tmp_lep_tot_SF(-9999);
-   try {
-      tmp_lep_tot_SF =  acc_lep_tot_SF(input);
-   } catch (SG::ExcBadAuxVar) {
-      tmp_lep_tot_SF = 1.0;
-   }
-   SF.push_back(tmp_lep_tot_SF);
+   static SG::AuxElement::ConstAccessor<int> acc_truthType("truthType");
+   static SG::AuxElement::ConstAccessor<int> acc_truthOrigin("truthOrigin");
+
+      try {
+     truthType.push_back( acc_truthType(input) );
+     truthOrigin.push_back( acc_truthOrigin(input) );
+} catch (SG::ExcBadAuxVar) {
+     truthType.push_back( -9999 );
+     truthOrigin.push_back( -9999 );
+}
+
 
    return;
 }

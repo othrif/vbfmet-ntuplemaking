@@ -13,6 +13,7 @@ namespace Analysis {
    class outEvent : public outObject {
    public:
       // event variables
+            Int_t year;
       Int_t runNumber;
       ULong64_t eventNumber;
       Int_t lumiBlock;
@@ -25,6 +26,8 @@ namespace Analysis {
       Float_t puWeight;
       Float_t elSFWeight;
       Float_t muSFWeight;
+      Float_t elSFTrigWeight;
+      Float_t muSFTrigWeight;
       Float_t btagSFWeight;
       Float_t jvtSFWeight;
 

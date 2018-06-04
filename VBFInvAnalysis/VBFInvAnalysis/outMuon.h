@@ -17,11 +17,20 @@ namespace Analysis {
       std::vector<Float_t> ptvarcone20;
       std::vector<Float_t> etcone20;
       std::vector<Float_t> topoetcone20;
+      std::vector<Float_t> ptcone30;
+      std::vector<Float_t> ptvarcone30;
+      std::vector<Float_t> etcone30;
+      std::vector<Float_t> topoetcone30;
+      std::vector<Float_t> ptcone40;
+      std::vector<Float_t> ptvarcone40;
+      std::vector<Float_t> etcone40;
+      std::vector<Float_t> topoetcone40;
       std::vector<Float_t> d0;
       std::vector<Float_t> d0sig;
       std::vector<Float_t> z0;
       std::vector<Float_t> z0sig;
-      std::vector<Float_t> SF;
+      std::vector<Int_t> truthType;
+      std::vector<Int_t> truthOrigin;
 
    public:
       outMuon(TString name = "", Bool_t doTrim = kFALSE);
