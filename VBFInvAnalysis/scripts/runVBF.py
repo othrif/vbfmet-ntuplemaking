@@ -172,8 +172,12 @@ elif (args.driver == 'prun'):
     dset_name_mask = 'user.{user}.{tag}.%in:name[2]%.%in:name[3]%.%in:name[6]%'.format(user=args.userName, tag=args.version)
     print dset_name_mask, len(dset_name_mask)
     driver = ROOT.EL.PrunDriver()
-    driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '5')
-    driver.options().setString('nc_optGridNfilesPerJob', '5')
+    if options.doSystematics:
+      driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '1')
+      driver.options().setString('nc_optGridNfilesPerJob', '1')
+    else:
+      driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '5')
+      driver.options().setString('nc_optGridNfilesPerJob', '5')
     driver.options().setString('nc_outputSampleName', dset_name_mask)
     driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
     if args.replicationSite != None:

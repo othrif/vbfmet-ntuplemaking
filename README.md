@@ -12,7 +12,6 @@ Othmane Rifki (othmane.rifki@cern.ch) - DESY
 - Code runs on DAOD_TRUTH3 using `VBFInvTruth` algorithm
 - Output is a flat ntuple called `MiniNtuple`
 - CutBookkeeper output for histogram normalization is in `NumberEvents` histogram
-- SUSYTools is part of the repository temporarly (manual hack to fix a bug affecting PFlow jets cleaning)
 
 ### Cutflow ###
 - Cutflow comparisons here: https://docs.google.com/spreadsheets/d/1f3oW_cepPiYlOh_BJNviGTWO6lgxOzUfLOOB-cvS1B8/edit#gid=1239952533
