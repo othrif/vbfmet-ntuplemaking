@@ -172,7 +172,7 @@ elif (args.driver == 'prun'):
     dset_name_mask = 'user.{user}.{tag}.%in:name[2]%.%in:name[3]%.%in:name[6]%'.format(user=args.userName, tag=args.version)
     print dset_name_mask, len(dset_name_mask)
     driver = ROOT.EL.PrunDriver()
-    if options.doSystematics:
+    if args.doSystematics:
       driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '1')
       driver.options().setString('nc_optGridNfilesPerJob', '1')
     else:

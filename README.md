@@ -51,7 +51,7 @@ runVBF.py -i <folder> -n100
 # local running on TRUTH3, need to specifiy the algorithm (-a)
 runVBF.py -i <folder> -n100 -a VBFInvTruth
 # grid submission with file containing list of datasets (one per line)
-runVBF.py -l <rucio list> -u $USER -v <Ntuple version> --driver grid
+runVBF.py -l <rucio list> -u $USER -v <Ntuple version> --driver prun
 ```
 See more options in the runVBF.py help:
 ``` bash
