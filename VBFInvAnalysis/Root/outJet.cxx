@@ -42,6 +42,9 @@ void Analysis::outJet::reset()
    FracSamplingMax.clear();
    HECFrac.clear();
    EMFrac.clear();
+   fch.clear();
+
+
 
    return;
 }
@@ -78,6 +81,7 @@ void Analysis::outJet::attachToTree(TTree *tree)
    tree->Branch(prefix + "FracSamplingMax", &FracSamplingMax);
    tree->Branch(prefix + "HECFrac", &HECFrac);
    tree->Branch(prefix + "EMFrac", &EMFrac);
+   tree->Branch(prefix + "fch", &fch);
 
    return;
 }
@@ -110,6 +114,8 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 // momentum fraction carried by charged tracks
    std::vector<float>  tmp_sumpttrk_vec;
    input.getAttribute("SumPtTrkPt500", tmp_sumpttrk_vec);
+   Float_t tmp_fch = (tmp_sumpttrk_vec.size() > 0) ? tmp_sumpttrk_vec[0] /   input.pt() : 0;
+   fch.push_back(tmp_fch);
 
 // width charged tracks
    std::vector<float> tmp_trkwidth_vec;

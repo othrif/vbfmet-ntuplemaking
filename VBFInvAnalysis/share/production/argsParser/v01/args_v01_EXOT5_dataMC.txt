@@ -1,0 +1,36 @@
+###############################################
+# Grid submission arguments
+###############################################
+--algo=VBFInv
+--driver=prun
+--version=v01
+--inputRucioLists=/nfs/dust/atlas/user/othrif/myBookKeeping/ntupleProduction/listProduction/list_v01_EXOT5_dataMC.txt
+--replicationSite=DESY-HH_LOCALGROUPDISK
+--user=othrif
+###############################################
+# Algorithm configuration
+###############################################
+--configFile=VBFInvAnalysis/vbfinv.conf
+#--doSyst
+#--noPileup
+#--doSkim
+--pt1Skim=25000
+--pt1SkimForSyst=25000
+--pt2Skim=25000
+--pt2SkimForSyst=25000
+--metSkim=100000
+--metSkimForSyst=100000
+--mjjSkim=200000
+--mjjSkimForSyst=200000
+--detajjSkim=2.5
+--detajjSkimForSyst=2.5
+###############################################
+# Other
+###############################################
+--submitDir=submitDir
+--inputDirs=
+#--nevents=100
+#--debug
+--inputRucio=
+--inputFile=
+--inputList=

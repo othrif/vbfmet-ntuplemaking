@@ -175,9 +175,11 @@ elif (args.driver == 'prun'):
     if args.doSystematics:
       driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '1')
       driver.options().setString('nc_optGridNfilesPerJob', '1')
+      #--nGBPerJob=4
     else:
       driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '5')
       driver.options().setString('nc_optGridNfilesPerJob', '5')
+      #--nGBPerJob=10
     driver.options().setString('nc_outputSampleName', dset_name_mask)
     driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
     if args.replicationSite != None:

@@ -345,7 +345,6 @@ if(doPileup && m_isMC){
     m_tree.clear();
    //m_cand.clear();
 
-
   //
   // TTree
   //
@@ -390,7 +389,7 @@ if(doPileup && m_isMC){
       m_cand[thisSyst].mu["mu"] = Analysis::outMuon("mu", trim);
       m_cand[thisSyst].el["el"] = Analysis::outElectron("el", trim);
       m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", trim);
-//m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
+      //m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
 
       // trim non-nominal trees (might be redundant)
       m_cand[thisSyst].setDoTrim(trim);

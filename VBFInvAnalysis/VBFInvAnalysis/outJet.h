@@ -31,6 +31,7 @@ namespace Analysis {
       std::vector<Float_t> FracSamplingMax;
       std::vector<Float_t> HECFrac;
       std::vector<Float_t> EMFrac;
+      std::vector<Float_t> fch;
 
    public:
       outJet(TString name = "", Bool_t doTrim = kFALSE);
