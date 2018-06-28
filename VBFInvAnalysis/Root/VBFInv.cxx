@@ -357,7 +357,9 @@ if(doPileup && m_isMC){
   // Histograms
   //
     if(m_event->getEntries() && wk()->metaData()->castDouble("isData") != 1){
+      m_NumberEventsinNtuple = m_NumberEvents;
       m_NumberEvents->SetDirectory(outputFileHist);
+      m_NumberEventsinNtuple->SetDirectory(outputFile);
     }
 
 

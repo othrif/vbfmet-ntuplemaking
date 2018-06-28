@@ -128,6 +128,7 @@ public:
   UInt_t m_ChannelNumber; //!
 
   TH1D *NumberEvents; //!
+  TH1D *NumberEventsinNtuple; //!
 
   xAOD::TEvent *m_event;  //!
 
