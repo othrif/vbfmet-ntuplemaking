@@ -197,7 +197,9 @@ EL::StatusCode VBFInvTruth :: initialize ()
     TFile *outputFileHist = wk()->getOutputFile (outputNameHist);
     ANA_MSG_INFO("Tree output name is " << outputName);
     TFile *outputFile = wk()->getOutputFile (outputName);
+    NumberEventsinNtuple = NumberEvents;
     NumberEvents->SetDirectory(outputFileHist);
+    NumberEventsinNtuple->SetDirectory(outputFile);
     truthTree = new TTree("MiniNtuple", "a truth Tree");
     truthTree->SetDirectory(outputFile);
 

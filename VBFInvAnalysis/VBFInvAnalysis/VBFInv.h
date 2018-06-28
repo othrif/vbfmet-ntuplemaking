@@ -93,6 +93,7 @@ private:
   // Configuration, and any other types of variables go here.
 
   TH1D *m_NumberEvents; //!
+  TH1D *m_NumberEventsinNtuple; //!  
   Analysis::CutFlowTool m_CutFlow; //!
   TH1F *m_cflow_hist; //!
   TH1F *m_cflow_hist_unw; //!
