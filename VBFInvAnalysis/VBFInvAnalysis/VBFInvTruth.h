@@ -31,6 +31,7 @@ private:
 public:
 
  std::string outputName = "HADAHA";
+ std::string outputNameHist = "hist";
  bool debug;
  bool skipCBK;
  bool MultiWeight;

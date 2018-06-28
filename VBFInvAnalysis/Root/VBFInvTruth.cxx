@@ -193,9 +193,11 @@ EL::StatusCode VBFInvTruth :: initialize ()
     m_parton_pdfid2 = new std::vector<int>();
     m_parton_pp = new std::vector<int>();
 
+    ANA_MSG_INFO("Histogram output name is " << outputNameHist);
+    TFile *outputFileHist = wk()->getOutputFile (outputNameHist);
     ANA_MSG_INFO("Tree output name is " << outputName);
     TFile *outputFile = wk()->getOutputFile (outputName);
-    NumberEvents->SetDirectory(outputFile);
+    NumberEvents->SetDirectory(outputFileHist);
     truthTree = new TTree("MiniNtuple", "a truth Tree");
     truthTree->SetDirectory(outputFile);
 
