@@ -21,7 +21,7 @@ Othmane Rifki (othmane.rifki@cern.ch) - DESY
 kinit $USER@CERN.CH
 setupATLAS
 lsetup git
-git clone https://:@gitlab.cern.ch:8443/othrif/STAnalysisCode.git
+git clone https://gitlab.cern.ch/VBFInv/STAnalysisCode.git
 source STAnalysisCode/VBFInvAnalysis/scripts/setupRelease.sh
 ```
 
