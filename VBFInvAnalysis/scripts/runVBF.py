@@ -119,6 +119,7 @@ alg = getattr( ROOT, args.algoName )()
 alg.SetName( args.algoName )
 # Algorithm args:
 alg.outputName = "MiniNtuple"
+alg.outputNameHist = "hist"
 alg.debug = args.debug
 alg.verbose = args.verbose
 if( args.algoName == "VBFInv" ):
@@ -162,7 +163,9 @@ if args.nskip > 0:
 
 # define an output
 output = ROOT.EL.OutputStream  ("MiniNtuple")
+outputHist = ROOT.EL.OutputStream ("hist")
 job.outputAdd (output);
+job.outputAdd (outputHist)
 
 # Run the job:
 if (args.driver == 'local'):

@@ -60,6 +60,7 @@ SUSY::CrossSectionDB *my_XsecDB;  //!
 
    /// Name of the outputs
  std::string outputName = "HADAHA";
+ std::string outputNameHist = "hist"; //saves cutbookkeeper info to seperate file
 
    // config file
   Bool_t debug;
