@@ -14,7 +14,7 @@ namespace Analysis {
       Float_t phi;
 
    public:
-      outMET(TString name = "", Bool_t doTrim = kFALSE);
+      outMET(TString name = "", Bool_t doTrim = kFALSE, Bool_t doDetail = kFALSE);
       ~outMET();
       void reset();
       void attachToTree(TTree *tree);

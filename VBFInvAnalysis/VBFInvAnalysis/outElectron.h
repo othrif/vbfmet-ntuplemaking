@@ -32,9 +32,9 @@ namespace Analysis {
       std::vector<Float_t> z0sig;
       std::vector<Int_t> truthType;
       std::vector<Int_t> truthOrigin;
-
+      bool details;
    public:
-      outElectron(TString name = "", Bool_t doTrim = kFALSE);
+      outElectron(TString name = "", Bool_t doTrim = kFALSE, Bool_t doDetail = kFALSE);
       ~outElectron();
       void reset();
       void attachToTree(TTree *tree);

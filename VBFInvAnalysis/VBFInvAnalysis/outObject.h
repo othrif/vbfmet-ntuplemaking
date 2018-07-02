@@ -11,15 +11,17 @@ namespace Analysis {
    private:
       TString m_name;
       Bool_t m_doTrim;
+      Bool_t m_doDetail;
       Bool_t m_write;
 
    public:
 
-      inline outObject(TString name = "", Bool_t doTrim = kFALSE)
+      inline outObject(TString name = "", Bool_t doTrim = kFALSE, Bool_t doDetail = kFALSE)
       {
          m_name = name;
          m_doTrim = doTrim;
          m_write = true;
+	 m_doDetail = doDetail;
       }
 
       inline TString name()
@@ -30,6 +32,11 @@ namespace Analysis {
       inline Bool_t doTrim()
       {
          return m_doTrim;
+      }
+
+      inline Bool_t doDetail()
+      {
+	return m_doDetail;
       }
 
       inline Bool_t write()

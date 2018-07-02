@@ -5,7 +5,7 @@
 
 #include <string>
 
-Analysis::outEvent::outEvent(TString name, Bool_t doTrim) : Analysis::outObject::outObject(name, doTrim)
+Analysis::outEvent::outEvent(TString name, Bool_t doTrim, Bool_t doDetail) : Analysis::outObject::outObject(name, doTrim, doDetail)
 {
  reset();
 }

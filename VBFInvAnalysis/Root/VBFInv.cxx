@@ -385,15 +385,15 @@ if(doPileup && m_isMC){
 
       // define all elements of the output tree
 
-      m_cand[thisSyst].met["met_tst"] = Analysis::outMET("met_tst", trim);
-      m_cand[thisSyst].met["met_tst_nomuon"] = Analysis::outMET("met_tst_nomuon", trim);
-      m_cand[thisSyst].met["met_tst_noelectron"] = Analysis::outMET("met_tst_noelectron", trim);
-      m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", trim);
-      m_cand[thisSyst].met["met_truth"] = Analysis::outMET("met_truth", trim);
-      m_cand[thisSyst].mu["mu"] = Analysis::outMuon("mu", trim);
-      m_cand[thisSyst].el["el"] = Analysis::outElectron("el", trim);
-      m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", trim);
-      //m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
+      m_cand[thisSyst].met["met_tst"] = Analysis::outMET("met_tst", trim, doMETDetail);
+      m_cand[thisSyst].met["met_tst_nomuon"] = Analysis::outMET("met_tst_nomuon", trim, doMETDetail);
+      m_cand[thisSyst].met["met_tst_noelectron"] = Analysis::outMET("met_tst_noelectron", trim, doMETDetail);
+      m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", trim, doMETDetail);
+      m_cand[thisSyst].met["met_truth"] = Analysis::outMET("met_truth", trim, doMETDetail);
+      m_cand[thisSyst].mu["mu"] = Analysis::outMuon("mu", trim, doMuonDetail);
+      m_cand[thisSyst].el["el"] = Analysis::outElectron("el", trim, doElectronDetail);
+      m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", trim, doJetDetail);
+      //m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim, doTauDetail);
 
       // trim non-nominal trees (might be redundant)
       m_cand[thisSyst].setDoTrim(trim);
