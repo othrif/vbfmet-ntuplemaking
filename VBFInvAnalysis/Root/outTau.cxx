@@ -4,7 +4,7 @@
 // ROOT include(s):
 #include <TTree.h>
 
-Analysis::outTau::outTau(TString name, Bool_t doTrim) : Analysis::outObject(name, doTrim)
+Analysis::outTau::outTau(TString name, Bool_t doTrim, Bool_t doDetail) : Analysis::outObject(name, doTrim, doDetail)
 {
    reset();
 }

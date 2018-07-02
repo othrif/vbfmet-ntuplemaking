@@ -2,7 +2,7 @@
 
 #include <TTree.h>
 
-Analysis::outMET::outMET(TString name, Bool_t doTrim) : Analysis::outObject::outObject(name, doTrim)
+Analysis::outMET::outMET(TString name, Bool_t doTrim, Bool_t doDetail) : Analysis::outObject::outObject(name, doTrim, doDetail)
 {
    reset();
 }
@@ -30,7 +30,7 @@ void Analysis::outMET::attachToTree(TTree *tree)
    tree->Branch(prefix + "etx", &etx);
    tree->Branch(prefix + "ety", &ety);
 
-   if (!doTrim()) {
+   if (!doTrim() || doDetail()) {
 
       tree->Branch(prefix + "sumet", &sumet);
       tree->Branch(prefix + "phi", &phi);

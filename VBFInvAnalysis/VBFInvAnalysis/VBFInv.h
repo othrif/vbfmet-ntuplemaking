@@ -89,6 +89,12 @@ SUSY::CrossSectionDB *my_XsecDB;  //!
   Bool_t doSkim;
   Bool_t doRnS;
 
+  Bool_t doElectronDetail = false;
+  Bool_t doMuonDetail = false;
+  Bool_t doJetDetail = false;
+  Bool_t doMETDetail = false;
+  Bool_t doEventDetail = false;
+  
 private:
   // Configuration, and any other types of variables go here.
 

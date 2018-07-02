@@ -1,6 +1,6 @@
 #include "VBFInvAnalysis/outRnSmear.h"
 
-Analysis::outRnSmear::outRnSmear(TString name, Bool_t doTrim) : Analysis::outObject::outObject(name, doTrim)
+Analysis::outRnSmear::outRnSmear(TString name, Bool_t doTrim, Bool_t doDetail) : Analysis::outObject::outObject(name, doTrim, doDetail)
 {
  reset();
 }

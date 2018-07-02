@@ -102,7 +102,7 @@ namespace Analysis {
 
 
 public:
-      outEvent(TString name = "", Bool_t doTrim = kFALSE);
+      outEvent(TString name = "", Bool_t doTrim = kFALSE, Bool_t doDetail = kFALSE);
       ~outEvent();
       void reset();
       void attachToTree(TTree *tree);
