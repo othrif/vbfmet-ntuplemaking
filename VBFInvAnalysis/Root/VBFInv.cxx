@@ -1325,15 +1325,17 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
                                invis// invisible particles
                                ));
  ANA_CHECK(m_susytools_handle->GetMETSig(*met,
-  myMETsig,
-                              jet, // use all objects (before OR and after corrections) for MET utility
+			      myMETsig,
+			      /*
+			      jet, // use all objects (before OR and after corrections) for MET utility
                               el,
                               mu,
                               ph,
                               0, // tau term
+			      */
                               doTST,
-                              doJVT,
-                              invis// invisible particles
+                              doJVT
+			      //invis
                               ));
 
  xAOD::MissingETContainer::const_iterator met_it = met->find("Final");
