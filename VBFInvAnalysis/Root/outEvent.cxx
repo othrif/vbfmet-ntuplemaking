@@ -92,6 +92,7 @@ passGRL = -9999;
 passTrigger = -9999;
 passPV = -9999;
 passJetClean = -9999;
+passJetCleanTight = -9999;
 passDetErr = -9999;
 
 n_vx   = -9999;
@@ -199,6 +200,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
   tree->Branch(prefix + "passTrigger", &passTrigger);
   tree->Branch(prefix + "passPV", &passPV);
   tree->Branch(prefix + "passJetClean", &passJetClean);
+  tree->Branch(prefix + "passJetCleanTight", &passJetCleanTight);
   tree->Branch(prefix + "passDetErr", &passDetErr);
 
   tree->Branch(prefix + "n_vx", &n_vx);
