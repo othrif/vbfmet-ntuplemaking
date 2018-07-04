@@ -33,6 +33,7 @@ namespace Analysis {
       Bool_t passTrigger;
       Bool_t passPV;
       Bool_t passJetClean;
+      Bool_t passJetCleanTight;
       Bool_t passDetErr;
 
       //

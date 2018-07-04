@@ -940,8 +940,15 @@ if (m_isMC) {
   if( !passesJetClean && doSkim){
     return EL::StatusCode::SUCCESS;
   }
+
+  static SG::AuxElement::Accessor<char> acc_eventCleanTight("DFCommonJets_eventClean_TightBad");
+  if(debug)
+    print("eventClean_TightBad", (bool)acc_eventCleanTight(*content.eventInfo));
+  Bool_t passesJetCleanTight = !(acc_eventCleanTight(*content.eventInfo) == 0);
+  
   m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
   content.passJetClean = passesJetClean;
+  content.passJetCleanTight = passesJetCleanTight;
 
   //-----------------------------------------------------------------------
   // Fill tree
@@ -1039,6 +1046,7 @@ cand.evt.passTrigger = -1;
    cand.evt.passTrigger = content.passTrigger;
    cand.evt.passDetErr = content.passDetErr;
    cand.evt.passJetClean = content.passJetClean;
+   cand.evt.passJetCleanTight = content.passJetCleanTight;
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)

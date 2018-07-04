@@ -77,6 +77,7 @@ namespace Analysis {
       Int_t passTrigger;
       Int_t passPV;
       Int_t passJetClean;
+      Int_t passJetCleanTight;
       Int_t passDetErr;
 
       Int_t flag_lar;
