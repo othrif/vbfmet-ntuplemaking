@@ -941,10 +941,15 @@ if (m_isMC) {
     return EL::StatusCode::SUCCESS;
   }
 
-  static SG::AuxElement::Accessor<char> acc_eventCleanTight("DFCommonJets_eventClean_TightBad");
-  if(debug)
-    print("eventClean_TightBad", (bool)acc_eventCleanTight(*content.eventInfo));
-  Bool_t passesJetCleanTight = !(acc_eventCleanTight(*content.eventInfo) == 0);
+  Bool_t passesJetCleanTight = true;
+  static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
+  for (auto jet : content.allJets) {
+    if(debug)
+      print("jetClean_TightBad", (bool)acc_jetCleanTight(*jet));
+    if (acc_jetCleanTight(*jet) == 0) {
+      passesJetCleanTight = false;
+    }
+  }
   
   m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
   content.passJetClean = passesJetClean;
