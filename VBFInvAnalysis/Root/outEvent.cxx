@@ -102,6 +102,15 @@ n_el = -9999;
 n_el_baseline = -9999;
 n_mu = -9999;
 n_mu_baseline = -9999;
+jj_mass = -9999;
+jj_deta = -9999; 
+jj_dphi = -9999;
+met_tst_j1_dphi = -9999;
+met_tst_j2_dphi= -9999;
+met_tst_nomuon_j1_dphi= -9999;
+met_tst_nomuon_j2_dphi= -9999;
+met_tst_noelectron_j1_dphi= -9999;
+met_tst_noelectron_j2_dphi= -9999;
 
 GenMET_pt  = -9999;
 GenMET_phi  = -9999;
@@ -132,9 +141,8 @@ void Analysis::outEvent::attachToTree(TTree *tree)
   tree->Branch(prefix + "jvtSFWeight", &jvtSFWeight);
   tree->Branch(prefix + "elSFWeight", &elSFWeight);
   tree->Branch(prefix + "muSFWeight", &muSFWeight);
- tree->Branch(prefix + "elSFTrigWeight", &elSFWeight);
+  tree->Branch(prefix + "elSFTrigWeight", &elSFWeight);
   tree->Branch(prefix + "muSFTrigWeight", &muSFWeight);
-
 
   if (!doTrim()) {
       for (auto &itrig : trigger) {
@@ -210,6 +218,16 @@ void Analysis::outEvent::attachToTree(TTree *tree)
   tree->Branch(prefix + "n_mu", &n_mu);
   tree->Branch(prefix + "n_el_baseline", &n_el_baseline);
   tree->Branch(prefix + "n_mu_baseline", &n_mu_baseline);
+
+  tree->Branch(prefix + "jj_mass", &jj_mass);
+  tree->Branch(prefix + "jj_deta", &jj_deta);
+  tree->Branch(prefix + "jj_dphi", &jj_dphi);
+  tree->Branch(prefix + "met_tst_j1_dphi", &met_tst_j1_dphi);
+  tree->Branch(prefix + "met_tst_j2_dphi", &met_tst_j2_dphi);
+  tree->Branch(prefix + "met_tst_nomuon_j1_dphi", &met_tst_nomuon_j1_dphi);
+  tree->Branch(prefix + "met_tst_nomuon_j2_dphi", &met_tst_nomuon_j2_dphi);
+  tree->Branch(prefix + "met_tst_noelectron_j1_dphi", &met_tst_noelectron_j1_dphi);
+  tree->Branch(prefix + "met_tst_noelectron_j2_dphi", &met_tst_noelectron_j2_dphi);
 
   tree->Branch(prefix + "GenMET_pt", &GenMET_pt);
   tree->Branch(prefix + "GenMET_phi", &GenMET_phi);

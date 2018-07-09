@@ -71,7 +71,8 @@ namespace HelperFunctions {
   }
 
   void computeMaxjj(xAOD::JetContainer jets, double &e_DiJetMass_Max, double &e_JetsDEta_Max);
-
+  void computejj(xAOD::JetContainer jets, double &e_DiJetMass, double &e_JetsDEta, double &e_JetsDPhi);
+  void computeMETj(TLorentzVector met, xAOD::JetContainer jets, double &e_met_j1_dphi, double &e_met_j2_dphi);
 }
 
 #define SET_DUAL_TOOL( TOOLHANDLE, TOOLTYPE, TOOLNAME )        \

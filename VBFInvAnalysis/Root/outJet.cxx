@@ -62,9 +62,7 @@ void Analysis::outJet::attachToTree(TTree *tree)
    tree->Branch(prefix + "jvt", &jvt);
    tree->Branch(prefix + "passOR", &passOR);
    tree->Branch(prefix + "passJvt", &passJvt);
-   tree->Branch(prefix + "FracSamplingMax", &FracSamplingMax);
-   tree->Branch(prefix + "fch", &fch);
-
+  
    if (doDetail()) {
      tree->Branch(prefix + "raw_pt", &raw_pt);
      tree->Branch(prefix + "raw_eta", &raw_eta);
@@ -83,6 +81,8 @@ void Analysis::outJet::attachToTree(TTree *tree)
      tree->Branch(prefix + "HighestJVFVtx", &HighestJVFVtx);
      tree->Branch(prefix + "HECFrac", &HECFrac);
      tree->Branch(prefix + "EMFrac", &EMFrac);
+     tree->Branch(prefix + "FracSamplingMax", &FracSamplingMax);
+     tree->Branch(prefix + "fch", &fch);
    }
    return;
 }

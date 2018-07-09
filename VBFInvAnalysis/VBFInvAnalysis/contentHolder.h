@@ -36,6 +36,15 @@ namespace Analysis {
       Bool_t passJetCleanTight;
       Bool_t passDetErr;
 
+      Double_t jj_mass;
+      Double_t jj_deta;
+      Double_t jj_dphi;
+      Double_t met_tst_j1_dphi;
+      Double_t met_tst_j2_dphi;
+      Double_t met_tst_nomuon_j1_dphi;
+      Double_t met_tst_nomuon_j2_dphi;
+      Double_t met_tst_noelectron_j1_dphi;
+      Double_t met_tst_noelectron_j2_dphi;
       //
       // objects we do NOT own
       //
