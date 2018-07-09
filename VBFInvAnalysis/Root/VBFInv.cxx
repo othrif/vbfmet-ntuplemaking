@@ -763,10 +763,10 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
   for (auto jet : content.allJets){
     // Good jets: pt>25GeV, jet cleaning, |eta| < 4.8
     // Give user passOR, passJvt, passFJvt to decide on the jet
-      if (/*acc_signal(*jet) == 1 && acc_passOR(*jet) == 1 &&*/ acc_bad(*jet) == 0){
-    content.goodJets.push_back(jet);
+      if (acc_signal(*jet) == 1 && acc_passOR(*jet) == 1 && acc_bad(*jet) == 0){
+	content.goodJets.push_back(jet);
+      }
   }
-}
 
   //-- MUONS --
 for (auto muon : content.allMuons)
@@ -817,6 +817,15 @@ for (auto muon : content.allMuons)
           myMETsig_tst
           );
 
+ double met_tst_j1_dphi=-1., met_tst_j2_dphi=-1.;
+ HelperFunctions::computeMETj(myMET_tst, content.goodJets, met_tst_j1_dphi, met_tst_j2_dphi);
+ if (debug){
+   print("met_tst_j1_dphi: ", met_tst_j1_dphi);
+   print("met_tst_j2_dphi: ", met_tst_j2_dphi);
+ }
+ content.met_tst_j1_dphi = met_tst_j1_dphi;
+ content.met_tst_j2_dphi = met_tst_j2_dphi;
+
 // MET, with invisble muons
  TLorentzVector myMET_tst_nomuon;
  double myMETsig_tst_nomuon;
@@ -846,6 +855,15 @@ for (auto muon : content.allMuons)
  (*content.met_tst_nomuon)["Final"]->setMpy(mpy + py);
 }
 
+ double met_tst_nomuon_j1_dphi=-1., met_tst_nomuon_j2_dphi=-1.;
+ HelperFunctions::computeMETj(myMET_tst_nomuon, content.goodJets, met_tst_nomuon_j1_dphi, met_tst_nomuon_j2_dphi);
+ if (debug){
+   print("met_tst_nomuon_j1_dphi: ", met_tst_nomuon_j1_dphi);
+   print("met_tst_nomuon_j2_dphi: ", met_tst_nomuon_j2_dphi);
+ }
+ content.met_tst_nomuon_j1_dphi = met_tst_nomuon_j1_dphi;
+ content.met_tst_nomuon_j2_dphi = met_tst_nomuon_j2_dphi;
+
 // MET, with invisble electrons
 TLorentzVector myMET_tst_noelectron;
 double myMETsig_tst_noelectron;
@@ -874,6 +892,15 @@ getMET(content.met_tst_noelectron,
  (*content.met_tst_noelectron)["Final"]->setMpx(mpx + px);
  (*content.met_tst_noelectron)["Final"]->setMpy(mpy + py);
 }
+
+ double met_tst_noelectron_j1_dphi=-1., met_tst_noelectron_j2_dphi=-1.;
+ HelperFunctions::computeMETj(myMET_tst_noelectron, content.goodJets, met_tst_noelectron_j1_dphi, met_tst_noelectron_j2_dphi);
+ if (debug){
+   print("met_tst_noelectron_j1_dphi: ", met_tst_noelectron_j1_dphi);
+   print("met_tst_noelectron_j2_dphi: ", met_tst_noelectron_j2_dphi);
+ }
+ content.met_tst_noelectron_j1_dphi = met_tst_noelectron_j1_dphi;
+ content.met_tst_noelectron_j2_dphi = met_tst_noelectron_j2_dphi;
 
 // track MET
 getTrackMET(content.met_track,
@@ -974,6 +1001,17 @@ if (m_isMC) {
     print("Max DEta", detajjMax);
   }
 
+  double jj_deta = -1., jj_mass=-1., jj_dphi=-1.;
+  HelperFunctions::computejj(content.goodJets, jj_mass, jj_deta, jj_dphi);
+  if(debug){
+    print(" Mjj", jj_mass);
+    print(" DEta", jj_deta);
+    print(" DPhi", jj_dphi);
+  }
+  content.jj_mass = jj_mass;
+  content.jj_deta = jj_deta;
+  content.jj_dphi = jj_dphi;
+
   // Skimming
   Bool_t saveMe = ( met_nomuon_to_use.Mod() > metSkimToUse || met_noelectron_to_use.Mod() > metSkimToUse );
   if(saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::MET_skim, event_weight);
@@ -1055,6 +1093,18 @@ cand.evt.passTrigger = -1;
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
+
+   // jj and met_j
+   cand.evt.jj_mass = content.jj_mass;
+   cand.evt.jj_deta = content.jj_deta;
+   cand.evt.jj_dphi = content.jj_dphi;
+   cand.evt.met_tst_j1_dphi = content.met_tst_j1_dphi;
+   cand.evt.met_tst_j2_dphi = content.met_tst_j2_dphi;
+   cand.evt.met_tst_nomuon_j1_dphi = content.met_tst_nomuon_j1_dphi;
+   cand.evt.met_tst_nomuon_j2_dphi = content.met_tst_nomuon_j2_dphi;
+   cand.evt.met_tst_noelectron_j1_dphi = content.met_tst_noelectron_j1_dphi;
+   cand.evt.met_tst_noelectron_j2_dphi = content.met_tst_noelectron_j2_dphi;
+
    // MC-only information
 
    if (m_isMC) {
@@ -1066,7 +1116,7 @@ cand.evt.passTrigger = -1;
 
 // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
     cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
-
+    
     // Lepton Scale Facgtors
     // See definition of Trig.Singlelep20XX in SUSYObjDef_xAOD.cxx
     // You can modify it in the ST config under Trigger SFs configuration
@@ -1084,8 +1134,7 @@ cand.evt.passTrigger = -1;
       print("Muon Trig SF", cand.evt.muSFTrigWeight);
     }
 
-
-      // PDF
+  // PDF
     const xAOD::TruthEventContainer *truthE(nullptr);
     if (!event->retrieve(truthE, "TruthEvents").isSuccess()) {
      ANA_MSG_ERROR("Failed to retrieve Truth container");
