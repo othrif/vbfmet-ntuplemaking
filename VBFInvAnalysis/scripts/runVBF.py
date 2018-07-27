@@ -44,6 +44,11 @@ parser.add_argument("--mjjSkim", type=float, dest="mjjSkim", default=200000, hel
 parser.add_argument("--mjjSkimForSyst", type=float, dest="mjjSkimForSyst", default=200000, help="jet invariant mass skim (systematics), in MeV", metavar="cut")
 parser.add_argument("--detajjSkim", type=float, dest="detajjSkim", default=2.5, help="jet DEta skim (nominal tree)", metavar="cut")
 parser.add_argument("--detajjSkimForSyst", type=float, dest="detajjSkimForSyst", default=2.5, help="jet DEta skim (systematics)V", metavar="cut")
+parser.add_argument("--doElectronDetail", dest="doElectronDetail", action="store_true", default=False, help="add detailed branches for electrons")
+parser.add_argument("--doMuonDetail", dest="doMuonDetail", action="store_true", default=False, help="add detailed branches for muons")
+parser.add_argument("--doJetDetail", dest="doJetDetail", action="store_true", default=False, help="add detailed branches for jets")
+parser.add_argument("--doMETDetail", dest="doMETDetail", action="store_true", default=False, help="add detailed branches for met")
+parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
@@ -137,6 +142,11 @@ if( args.algoName == "VBFInv" ):
   alg.mjjSkimForSyst = args.mjjSkimForSyst
   alg.detajjSkim = args.detajjSkim
   alg.detajjSkimForSyst = args.detajjSkimForSyst
+  alg.doElectronDetail = args.doElectronDetail
+  alg.doMuonDetail = args.doMuonDetail
+  alg.doJetDetail = args.doJetDetail
+  alg.doMETDetail = args.doMETDetail
+  alg.doEventDetail = args.doEventDetail
   alg.doRnS = args.doRnS
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
