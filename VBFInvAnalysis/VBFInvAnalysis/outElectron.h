@@ -34,7 +34,7 @@ namespace Analysis {
       std::vector<Int_t> truthOrigin;
       bool details;
    public:
-      outElectron(TString name = "", Bool_t doTrim = kFALSE, Bool_t doDetail = kFALSE);
+      outElectron(TString name = "", Bool_t doTrim = kFALSE);
       ~outElectron();
       void reset();
       void attachToTree(TTree *tree);

@@ -19,7 +19,7 @@ namespace Analysis {
 
    public:
 
-      outTau(TString name = "", Bool_t doTrim = false, Bool_t doDetail = kFALSE);
+      outTau(TString name = "", Bool_t doTrim = false);
       ~outTau() {};
 
       void reset();

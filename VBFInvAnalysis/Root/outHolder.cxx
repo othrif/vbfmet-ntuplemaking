@@ -31,23 +31,12 @@ void Analysis::outHolder::setDoTrim(Bool_t val)
 
 void Analysis::outHolder::attachToTree(TTree *tree)
 {
-   // first, set trimming if appropriate
-   evt.setDoTrim(m_doTrim);
-   rns.setDoTrim(m_doTrim);
-   for (auto &kv : met) kv.second.setDoTrim(m_doTrim);
-   for (auto &kv : mu)  kv.second.setDoTrim(m_doTrim);
-   for (auto &kv : el)  kv.second.setDoTrim(m_doTrim);
-   for (auto &kv : jet) kv.second.setDoTrim(m_doTrim);
-   //for (auto &kv : ph) kv.second.setDoTrim(m_doTrim);
-   //for (auto &kv : tau) kv.second.setDoTrim(m_doTrim);
-
    // then, attach to TTree
    if (tree != m_attachedTree) {
       m_attachedTree = tree; // do NOT take ownership
 
       evt.attachToTree(tree);
       rns.attachToTree(tree);
-
       for (auto &kv : met) kv.second.attachToTree(tree);
       for (auto &kv : mu)  kv.second.attachToTree(tree);
       for (auto &kv : el)  kv.second.attachToTree(tree);

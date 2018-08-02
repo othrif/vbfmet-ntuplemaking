@@ -13,7 +13,7 @@ namespace Analysis {
    class outEvent : public outObject {
    public:
       // event variables
-            Int_t year;
+      Int_t year;
       Int_t runNumber;
       ULong64_t eventNumber;
       Int_t lumiBlock;
@@ -31,6 +31,7 @@ namespace Analysis {
       Float_t btagSFWeight;
       Float_t jvtSFWeight;
 
+/*
       Int_t pdf_id1;
       Int_t pdf_id2;
       Float_t pdf_x1;
@@ -38,55 +39,56 @@ namespace Analysis {
       Float_t pdf_pdf1;
       Float_t pdf_pdf2;
       Float_t pdf_scale;
+      */
 
       Int_t n_jet_truth;
-      Float_t truth_jet1_pt;
-      Float_t truth_jet1_eta;
-      Float_t truth_jet1_phi;
-      Float_t truth_jet1_m;
-      Float_t truth_jet2_pt;
-      Float_t truth_jet2_eta;
-      Float_t truth_jet2_phi;
-      Float_t truth_jet2_m;
+      std::vector<Float_t> truth_jet_pt;
+      std::vector<Float_t> truth_jet_eta;
+      std::vector<Float_t> truth_jet_phi;
+      std::vector<Float_t> truth_jet_m;
 
-      Float_t truth_V_bare_pt;
+ /*     Float_t truth_V_bare_pt;
       Float_t truth_V_bare_eta;
       Float_t truth_V_bare_phi;
-      Float_t truth_V_bare_m;
+      Float_t truth_V_bare_m;*/
 
       Float_t truth_V_dressed_pt;
       Float_t truth_V_dressed_eta;
       Float_t truth_V_dressed_phi;
       Float_t truth_V_dressed_m;
 
+      Int_t n_el_truth;
       std::vector<Float_t> truth_el_pt;
       std::vector<Float_t> truth_el_eta;
       std::vector<Float_t> truth_el_phi;
       std::vector<Float_t> truth_el_m;
       std::vector<Int_t>   truth_el_status;
 
+      Int_t n_mu_truth;
       std::vector<Float_t> truth_mu_pt;
       std::vector<Float_t> truth_mu_eta;
       std::vector<Float_t> truth_mu_phi;
       std::vector<Float_t> truth_mu_m;
       std::vector<Int_t>   truth_mu_status;
 
+/*
+      Int_t n_tau_truth;
+      std::vector<Float_t> truth_tau_pt;
+      std::vector<Float_t> truth_tau_eta;
+      std::vector<Float_t> truth_tau_phi;
+      std::vector<Float_t> truth_tau_m;
+      std::vector<Int_t>   truth_tau_status;
+      */
+
       std::map<TString, Int_t> trigger;
+      Int_t trigger_lep;
 
       Int_t passGRL;
-      Int_t passTrigger;
+//      Int_t passTrigger;
       Int_t passPV;
-      Int_t passJetClean;
+      Int_t passJetCleanLoose;
       Int_t passJetCleanTight;
       Int_t passDetErr;
-
-      Int_t flag_lar;
-      Int_t flag_tile;
-      Int_t flag_sct;
-      Int_t flag_core;
-      Int_t flag_bib;
-      Int_t flag_bib_raw;
-
 
       Int_t n_vx;
       Int_t n_jet;
@@ -95,24 +97,21 @@ namespace Analysis {
       Double_t jj_dphi;
       Double_t met_tst_j1_dphi;
       Double_t met_tst_j2_dphi;
-      Double_t met_tst_nomuon_j1_dphi;
-      Double_t met_tst_nomuon_j2_dphi;
-      Double_t met_tst_noelectron_j1_dphi;
-      Double_t met_tst_noelectron_j2_dphi;
+      Double_t met_tst_nolep_j1_dphi;
+      Double_t met_tst_nolep_j2_dphi;
+//      Double_t met_tst_nomuon_j1_dphi;
+//      Double_t met_tst_nomuon_j2_dphi;
+//      Double_t met_tst_noelectron_j1_dphi;
+//      Double_t met_tst_noelectron_j2_dphi;
       Int_t n_bjet;
       Int_t n_mu;
       Int_t n_mu_baseline;
       Int_t n_el;
       Int_t n_el_baseline;
 
-      Float_t GenMET_pt;
-      Float_t GenMET_phi;
-      Float_t TrueMHT_pt;
-      Float_t TrueMHT_phi;
-
 
 public:
-      outEvent(TString name = "", Bool_t doTrim = kFALSE, Bool_t doDetail = kFALSE);
+      outEvent(TString name = "", Bool_t doTrim = kFALSE);
       ~outEvent();
       void reset();
       void attachToTree(TTree *tree);

@@ -3,7 +3,7 @@
 #include <TTree.h>
 #include <xAODEgamma/EgammaxAODHelpers.h>
 
-Analysis::outElectron::outElectron(TString name, Bool_t doTrim, Bool_t doDetail) : Analysis::outObject::outObject(name, doTrim, doDetail)
+Analysis::outElectron::outElectron(TString name, Bool_t doTrim) : Analysis::outObject::outObject(name, doTrim)
 {
    reset();
 }
@@ -52,7 +52,7 @@ void Analysis::outElectron::attachToTree(TTree *tree)
    tree->Branch(prefix + "eta", &eta);
    tree->Branch(prefix + "phi", &phi);
    tree->Branch(prefix + "m", &m);
-   if (doDetail()) {
+   if (!doTrim()) {
      tree->Branch(prefix + "ptcone20", &ptcone20);
      tree->Branch(prefix + "ptvarcone20", &ptvarcone20);
      tree->Branch(prefix + "etcone20", &etcone20);
@@ -83,7 +83,7 @@ void Analysis::outElectron::add(const xAOD::Electron &input)
    eta.push_back(input.eta());
    phi.push_back(input.phi());
    m.push_back(input.m());
-   if (doDetail()) {
+   if (!doTrim()) {
      static SG::AuxElement::ConstAccessor<float> acc_new_d0("new_d0");
      static SG::AuxElement::ConstAccessor<float> acc_new_d0sig("new_d0sig");
      static SG::AuxElement::ConstAccessor<float> acc_new_z0("new_z0");
@@ -137,10 +137,10 @@ void Analysis::outElectron::add(const xAOD::Electron &input)
      ptvarcone40.push_back(tmp_ptvarcone40);
      etcone40.push_back(tmp_etcone40);
      topoetcone40.push_back(tmp_topoetcone40);
-     
+
      static SG::AuxElement::ConstAccessor<int> acc_truthType("truthType");
      static SG::AuxElement::ConstAccessor<int> acc_truthOrigin("truthOrigin");
-     
+
      try {
        truthType.push_back( acc_truthType(input) );
        truthOrigin.push_back( acc_truthOrigin(input) );

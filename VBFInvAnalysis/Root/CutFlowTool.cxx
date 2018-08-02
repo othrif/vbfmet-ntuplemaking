@@ -54,7 +54,7 @@ void Analysis::CutFlowTool::resetCounter()
 
 void Analysis::CutFlowTool::print()
 {
-   Info("CutFlowTool", "Printing %s cutflow:", name_.Data());
+   Info("CutFlowTool", "Printing %s weighted cutflow:", name_.Data());
    Info("CutFlowTool", "|	CUT		 | EVENTS\t| ABS. EFF.\t| REL. EFF. |");
    std::map<UInt_t, TString>::iterator it;
    for (it = cuts_map_.begin(); it != cuts_map_.end(); it++) {

@@ -14,7 +14,7 @@ namespace Analysis {
       Float_t rnsPSweight;
 
 public:
-      outRnSmear(TString name = "", Bool_t doTrim = kFALSE, Bool_t doDetail = kFALSE);
+      outRnSmear(TString name = "", Bool_t doTrim = kFALSE);
       ~outRnSmear();
       void reset();
       void attachToTree(TTree *tree);

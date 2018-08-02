@@ -10,7 +10,6 @@
 #include <PathResolver/PathResolver.h>
 #include <AsgAnalysisInterfaces/IGoodRunsListSelectionTool.h>
 #include <SUSYTools/ISUSYObjDef_xAODTool.h>
-#include <SUSYTools/SUSYCrossSection.h>
 
 // ROOT include(s):
 #include <TROOT.h>
@@ -56,8 +55,6 @@ public:
  void printTrackMET(std::shared_ptr<xAOD::MissingETContainer> met, TString label);
  void print(TString label, float val);
 
-SUSY::CrossSectionDB *my_XsecDB;  //!
-
    /// Name of the outputs
  std::string outputName = "HADAHA";
  std::string outputNameHist = "hist"; //saves cutbookkeeper info to seperate file
@@ -87,19 +84,19 @@ SUSY::CrossSectionDB *my_XsecDB;  //!
   Bool_t doPileup;
   Bool_t doSystematics;
   Bool_t doSkim;
+  Bool_t doTrim;
   Bool_t doRnS;
+  Bool_t doElectronDetail;
+  Bool_t doMuonDetail;
+  Bool_t doJetDetail;
+  Bool_t doMETDetail;
+  Bool_t doEventDetail;
 
-  Bool_t doElectronDetail = false;
-  Bool_t doMuonDetail = false;
-  Bool_t doJetDetail = false;
-  Bool_t doMETDetail = false;
-  Bool_t doEventDetail = false;
-  
 private:
   // Configuration, and any other types of variables go here.
 
   TH1D *m_NumberEvents; //!
-  TH1D *m_NumberEventsinNtuple; //!  
+  TH1D *m_NumberEventsinNtuple; //!
   Analysis::CutFlowTool m_CutFlow; //!
   TH1F *m_cflow_hist; //!
   TH1F *m_cflow_hist_unw; //!

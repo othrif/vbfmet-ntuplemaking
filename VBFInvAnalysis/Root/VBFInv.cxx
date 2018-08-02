@@ -33,8 +33,6 @@
 // Utils
 #include <boost/algorithm/string.hpp>
 
-
-
 // Declare the class to ROOT:
 ClassImp( VBFInv )
 
@@ -72,7 +70,13 @@ rebalancedJetPt(20000.),
 doPileup(true),
 doSystematics(false),
 doSkim(false),
+doTrim(false),
 doRnS(false),
+doElectronDetail(false),
+doMuonDetail(false),
+doJetDetail(false),
+doMETDetail(false),
+doEventDetail(false),
 m_isMC(false),
 m_isAFII(false),
 m_eventCounter(0),
@@ -100,11 +104,10 @@ EL::StatusCode VBFInv :: histInitialize()
  ANA_MSG_INFO("in histInitialize");
 
    // Events processed before derivation
- m_NumberEvents = new TH1D("NumberEvents", "Number Events", 4, 0, 4);
+ m_NumberEvents = new TH1D("NumberEvents", "Number Events", 3, 0, 3);
  m_NumberEvents->GetXaxis()->SetBinLabel(1, "Raw");
  m_NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
  m_NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
- m_NumberEvents->GetXaxis()->SetBinLabel(4, "XsecXEff");
 
   // CutFlow
  TString NameCut("Nominal");
@@ -113,7 +116,7 @@ EL::StatusCode VBFInv :: histInitialize()
  m_CutFlow.addCut("Processed");
  m_CutFlow.addCut("GRL");
  m_CutFlow.addCut("Vertex");
- m_CutFlow.addCut("Trigger");
+// m_CutFlow.addCut("Trigger");
  m_CutFlow.addCut("Detector cleaning");
  m_CutFlow.addCut("Jet cleaning");
  m_CutFlow.addCut("MET skim");
@@ -166,20 +169,12 @@ if (allEventsCBK) {
 
 
 if(m_event->getEntries() && wk()->metaData()->castDouble("isData") != 1 ){
-  std::string xSecFilePath = "dev/PMGTools/PMGxsecDB_mc15.txt";
-  xSecFilePath = PathResolverFindCalibFile(xSecFilePath);
-  my_XsecDB = new SUSY::CrossSectionDB(xSecFilePath);
-  if (debug)
-    ANA_MSG_INFO("xsec DB initialized using file:" <<  xSecFilePath);
+
   const xAOD::EventInfo *eventInfo = nullptr;
   ANA_CHECK (evtStore()->retrieve (eventInfo, "EventInfo"));
-  float crossSection = my_XsecDB->xsectTimesEff(eventInfo->mcChannelNumber());
-  if (debug)
-    print("cross section", crossSection );
   m_NumberEvents->Fill(0., nEventsProcessed);
   m_NumberEvents->Fill(1., sumOfWeights);
   m_NumberEvents->Fill(2., sumOfWeightsSquared);
-  m_NumberEvents->Fill(3., crossSection);
 }
 
 
@@ -213,6 +208,7 @@ EL::StatusCode VBFInv::initialize() {
  ANA_MSG_INFO("  - GRL_file = " << GRL_file);
  ANA_MSG_INFO("  - MC campaign = " << MC_campaign);
  ANA_MSG_INFO("  - doSkim = " << doSkim);
+ ANA_MSG_INFO("  - doTrim = " << doTrim);
  ANA_MSG_INFO("  - pt1Skim = "    << pt1Skim    << " MeV ( " << pt1SkimForSyst    << " MeV for systematics)");
  ANA_MSG_INFO("  - pt2Skim = "    << pt1Skim    << " MeV ( " << pt2SkimForSyst    << " MeV for systematics)");
  ANA_MSG_INFO("  - metSkim = "    << metSkim    << " MeV ( " << metSkimForSyst    << " MeV for systematics)");
@@ -370,7 +366,7 @@ if(doPileup && m_isMC){
       ANA_MSG_INFO("Will consider the systematic variation \"" << thisSyst << "\"");
 
       const Bool_t isNominal = (thisSyst == "");
-      const Bool_t trim = !isNominal;
+      const Bool_t trim = (!isNominal || doTrim || doElectronDetail || doMuonDetail || doJetDetail || doMETDetail || doEventDetail || doRnS);
 
       ANA_MSG_INFO("Creating TTree named " <<  treeName.Data() << " for systematic named \"" << thisSyst.Data() << "\"");
 
@@ -384,19 +380,19 @@ if(doPileup && m_isMC){
       m_cand[thisSyst].evt.setTriggers(triggersToSave);
 
       // define all elements of the output tree
+      m_cand[thisSyst].met["met_tst"] = Analysis::outMET("met_tst", (trim && !doMETDetail) );
+      m_cand[thisSyst].met["met_tst_nolep"] = Analysis::outMET("met_tst_nolep", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_truth"] = Analysis::outMET("met_truth", (trim && !doMETDetail));
+      m_cand[thisSyst].mu["mu"] = Analysis::outMuon("mu", (trim && !doMuonDetail));
+      m_cand[thisSyst].el["el"] = Analysis::outElectron("el", (trim && !doElectronDetail) );
+      m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail));
+      //m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
 
-      m_cand[thisSyst].met["met_tst"] = Analysis::outMET("met_tst", trim, doMETDetail);
-      m_cand[thisSyst].met["met_tst_nomuon"] = Analysis::outMET("met_tst_nomuon", trim, doMETDetail);
-      m_cand[thisSyst].met["met_tst_noelectron"] = Analysis::outMET("met_tst_noelectron", trim, doMETDetail);
-      m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", trim, doMETDetail);
-      m_cand[thisSyst].met["met_truth"] = Analysis::outMET("met_truth", trim, doMETDetail);
-      m_cand[thisSyst].mu["mu"] = Analysis::outMuon("mu", trim, doMuonDetail);
-      m_cand[thisSyst].el["el"] = Analysis::outElectron("el", trim, doElectronDetail);
-      m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", trim, doJetDetail);
-      //m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim, doTauDetail);
-
-      // trim non-nominal trees (might be redundant)
-      m_cand[thisSyst].setDoTrim(trim);
+      // Set trimming option for remaning outHolder objects
+      m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail));
+      m_cand[thisSyst].rns.setDoTrim((trim && !doRnS));
+      //m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
     }
 
@@ -610,12 +606,14 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     m_CutFlow.hasPassed(VBFInvCuts::Vertex, event_weight);
     content.passPV = passesVertex;
 
-// Trigger
+    // Trigger
+    /*
     Bool_t passesTrigger(kTRUE);
     if (!passesTrigger && doSkim)
       return EL::StatusCode::SUCCESS;
     m_CutFlow.hasPassed(VBFInvCuts::Trigger, event_weight);
     content.passTrigger = passesTrigger;
+    */
 
     // detector cleaning
     // https://twiki.cern.ch/twiki/bin/viewauth/Atlas/DataPreparationCheckListForPhysicsAnalysis
@@ -826,6 +824,48 @@ for (auto muon : content.allMuons)
  content.met_tst_j1_dphi = met_tst_j1_dphi;
  content.met_tst_j2_dphi = met_tst_j2_dphi;
 
+// MET, with invisble leptons
+ TLorentzVector myMET_tst_nolep;
+ double myMETsig_tst_nolep;
+ getMET(content.met_tst_nolep,
+  content.met_tst_nolepAux,
+          content.jets, // use all objects (before OR and after corrections) for MET utility
+          content.electrons,
+          content.muons,
+          content.photons,
+          kTRUE, // do TST
+          kTRUE, // do JVT
+          nullptr, // invisible particles
+          myMET_tst_nolep,
+          myMETsig_tst_nolep
+          );
+    // create sum of muon and electron pts
+ {
+  Float_t px = 0;
+  Float_t py = 0;
+  for (auto muon : content.goodMuons) {
+   px += muon->pt() * TMath::Cos(muon->phi());
+   py += muon->pt() * TMath::Sin(muon->phi());
+ }
+ for (auto electron : content.goodElectrons) {
+   px += electron->pt() * TMath::Cos(electron->phi());
+   py += electron->pt() * TMath::Sin(electron->phi());
+ }
+ const Float_t mpx = (*content.met_tst_nolep)["Final"]->mpx();
+ const Float_t mpy = (*content.met_tst_nolep)["Final"]->mpy();
+ (*content.met_tst_nolep)["Final"]->setMpx(mpx + px);
+ (*content.met_tst_nolep)["Final"]->setMpy(mpy + py);
+}
+
+ double met_tst_nolep_j1_dphi=-1., met_tst_nolep_j2_dphi=-1.;
+ HelperFunctions::computeMETj(myMET_tst_nolep, content.goodJets, met_tst_nolep_j1_dphi, met_tst_nolep_j2_dphi);
+ if (debug){
+   print("met_tst_nolep_j1_dphi: ", met_tst_nolep_j1_dphi);
+   print("met_tst_nolep_j2_dphi: ", met_tst_nolep_j2_dphi);
+ }
+ content.met_tst_nolep_j1_dphi = met_tst_nolep_j1_dphi;
+ content.met_tst_nolep_j2_dphi = met_tst_nolep_j2_dphi;
+/*
 // MET, with invisble muons
  TLorentzVector myMET_tst_nomuon;
  double myMETsig_tst_nomuon;
@@ -901,7 +941,7 @@ getMET(content.met_tst_noelectron,
  }
  content.met_tst_noelectron_j1_dphi = met_tst_noelectron_j1_dphi;
  content.met_tst_noelectron_j2_dphi = met_tst_noelectron_j2_dphi;
-
+*/
 // track MET
 getTrackMET(content.met_track,
  content.met_trackAux,
@@ -950,8 +990,9 @@ if (m_isMC) {
     printObjects(content.goodElectrons, "goodElectrons");
   //-- MET --
     printMET(myMET_tst, myMETsig_tst, myTruthMET,"MET");
-    printMET(content.met_tst_noelectron, "MET no electrons");
-    printMET(content.met_tst_nomuon, "MET no muons");
+    printMET(content.met_tst_nolep, "MET no muons");
+//    printMET(content.met_tst_noelectron, "MET no electrons");
+//    printMET(content.met_tst_nomuon, "MET no muons");
     printTrackMET(content.met_track, "track MET");
   }
 
@@ -963,8 +1004,8 @@ if (m_isMC) {
   static SG::AuxElement::Accessor<char> acc_eventClean("DFCommonJets_eventClean_LooseBad");
   if(debug)
     print("eventClean_LooseBad", (bool)acc_eventClean(*content.eventInfo));
-  Bool_t passesJetClean = !(acc_eventClean(*content.eventInfo) == 0);
-  if( !passesJetClean && doSkim){
+  Bool_t passesJetCleanLoose = !(acc_eventClean(*content.eventInfo) == 0);
+  if( !passesJetCleanLoose && doSkim){
     return EL::StatusCode::SUCCESS;
   }
 
@@ -977,9 +1018,9 @@ if (m_isMC) {
       passesJetCleanTight = false;
     }
   }
-  
+
   m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
-  content.passJetClean = passesJetClean;
+  content.passJetCleanLoose = passesJetCleanLoose;
   content.passJetCleanTight = passesJetCleanTight;
 
   //-----------------------------------------------------------------------
@@ -992,28 +1033,20 @@ if (m_isMC) {
   const Double_t metSkimToUse = (content.isNominal) ? metSkim : metSkimForSyst;
   const Double_t mjjSkimToUse = (content.isNominal) ? mjjSkim : mjjSkimForSyst;
   const Double_t detajjSkimToUse = (content.isNominal) ? detajjSkim : detajjSkimForSyst;
-  TVector2 met_nomuon_to_use = TVector2((*content.met_tst_nomuon)["Final"]->mpx(), (*content.met_tst_nomuon)["Final"]->mpy());
-  TVector2 met_noelectron_to_use = TVector2((*content.met_tst_noelectron)["Final"]->mpx(), (*content.met_tst_noelectron)["Final"]->mpy());
-  double detajjMax=-1., mjjMax=-1.;
-  HelperFunctions::computeMaxjj(content.goodJets, mjjMax, detajjMax);
+  //TVector2 met_nomuon_to_use = TVector2((*content.met_tst_nomuon)["Final"]->mpx(), (*content.met_tst_nomuon)["Final"]->mpy());
+  //TVector2 met_noelectron_to_use = TVector2((*content.met_tst_noelectron)["Final"]->mpx(), (*content.met_tst_noelectron)["Final"]->mpy());
+  TVector2 met_nolep_to_use = TVector2((*content.met_tst_nolep)["Final"]->mpx(), (*content.met_tst_nolep)["Final"]->mpy());
+  double detajjMax=-1., mjjMax=-1., dphijjMax=-1.; // not really max here, ?TO DO?
+  HelperFunctions::computejj(content.goodJets, mjjMax, detajjMax, dphijjMax);
   if(debug){
     print("Max Mjj", mjjMax);
     print("Max DEta", detajjMax);
+    print("Max DPhi", dphijjMax);
   }
-
-  double jj_deta = -1., jj_mass=-1., jj_dphi=-1.;
-  HelperFunctions::computejj(content.goodJets, jj_mass, jj_deta, jj_dphi);
-  if(debug){
-    print(" Mjj", jj_mass);
-    print(" DEta", jj_deta);
-    print(" DPhi", jj_dphi);
-  }
-  content.jj_mass = jj_mass;
-  content.jj_deta = jj_deta;
-  content.jj_dphi = jj_dphi;
 
   // Skimming
-  Bool_t saveMe = ( met_nomuon_to_use.Mod() > metSkimToUse || met_noelectron_to_use.Mod() > metSkimToUse );
+  //Bool_t saveMe = ( met_nomuon_to_use.Mod() > metSkimToUse || met_noelectron_to_use.Mod() > metSkimToUse );
+  Bool_t saveMe = ( met_nolep_to_use.Mod() > metSkimToUse );
   if(saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::MET_skim, event_weight);
   if(content.goodJets.size() < 2 ) // At least two good jet
     return EL::StatusCode::SUCCESS;
@@ -1052,7 +1085,34 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 for (auto &kv : cand.evt.trigger) {
   kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
 }
-cand.evt.passTrigger = -1;
+//cand.evt.passTrigger = -1;
+cand.evt.trigger_lep =
+// el 2015
+cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] ||
+cand.evt.trigger["HLT_e60_lhmedium"] ||
+cand.evt.trigger["HLT_e120_lhloose"] ||
+// el 2016
+cand.evt.trigger["HLT_e24_lhtight_nod0_ivarloose"] ||
+cand.evt.trigger["HLT_e26_lhtight_nod0_ivarloose"] ||
+cand.evt.trigger["HLT_e60_lhmedium_nod0"] ||
+cand.evt.trigger["HLT_e60_medium"] ||
+cand.evt.trigger["HLT_e120_lhloose_nod0"] ||
+cand.evt.trigger["HLT_e140_lhloose_nod0"] ||
+cand.evt.trigger["HLT_e300_etcut"] ||
+// mu 2015
+cand.evt.trigger["HLT_mu20_iloose_L1MU15"] ||
+cand.evt.trigger["HLT_mu40"] ||
+cand.evt.trigger["HLT_mu60_0eta105_msonly"] ||
+// mu 2016
+cand.evt.trigger["HLT_mu24_iloose"] ||
+cand.evt.trigger["HLT_mu24_ivarloose"] ||
+cand.evt.trigger["HLT_mu40"] ||
+cand.evt.trigger["HLT_mu50"] ||
+cand.evt.trigger["HLT_mu24_ivarmedium"] ||
+cand.evt.trigger["HLT_mu24_imedium"] ||
+cand.evt.trigger["HLT_mu26_ivarmedium"] ||
+cand.evt.trigger["HLT_mu26_imedium"];
+
    // raw event info
    cand.evt.runNumber = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
    cand.evt.eventNumber = (ULong64_t)content.eventInfo->eventNumber();
@@ -1074,36 +1134,37 @@ cand.evt.passTrigger = -1;
    if ((cand.evt.year == 0 && cand.evt.runNumber >= 324320 && cand.evt.runNumber<=341649 ) || cand.evt.year == 2017) is2017 = kTRUE; // data2017
   if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197) || cand.evt.year == 2018) is2018 = kTRUE; // data2018*/
 
-
-   // event-level artifacts from system flags
-   cand.evt.flag_lar = (content.eventInfo->errorState(xAOD::EventInfo::LAr) == xAOD::EventInfo::Error );
-   cand.evt.flag_tile =    (content.eventInfo->errorState(xAOD::EventInfo::Tile) == xAOD::EventInfo::Error );
-   cand.evt.flag_sct = (content.eventInfo->errorState(xAOD::EventInfo::SCT) == xAOD::EventInfo::Error);
-   cand.evt.flag_core = (content.eventInfo->eventFlags(xAOD::EventInfo::Core) & 0x40000);
-   cand.evt.flag_bib = content.eventInfo->eventFlags(xAOD::EventInfo::Background) & (1 << 20);
-   cand.evt.flag_bib_raw = content.eventInfo->eventFlags(xAOD::EventInfo::Background);
-
   // pass event flags
    cand.evt.passGRL = content.passGRL;
    cand.evt.passPV = content.passPV;
-   cand.evt.passTrigger = content.passTrigger;
+//   cand.evt.passTrigger = content.passTrigger;
    cand.evt.passDetErr = content.passDetErr;
-   cand.evt.passJetClean = content.passJetClean;
+   cand.evt.passJetCleanLoose = content.passJetCleanLoose;
    cand.evt.passJetCleanTight = content.passJetCleanTight;
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
 
    // jj and met_j
-   cand.evt.jj_mass = content.jj_mass;
-   cand.evt.jj_deta = content.jj_deta;
-   cand.evt.jj_dphi = content.jj_dphi;
+  double jj_deta = -1., jj_mass=-1., jj_dphi=-1.;
+  HelperFunctions::computejj(content.goodJets, jj_mass, jj_deta, jj_dphi);
+  if(debug){
+    print(" Mjj", jj_mass);
+    print(" DEta", jj_deta);
+    print(" DPhi", jj_dphi);
+  }
+
+   cand.evt.jj_mass = jj_mass;
+   cand.evt.jj_deta = jj_deta;
+   cand.evt.jj_dphi = jj_dphi;
    cand.evt.met_tst_j1_dphi = content.met_tst_j1_dphi;
    cand.evt.met_tst_j2_dphi = content.met_tst_j2_dphi;
-   cand.evt.met_tst_nomuon_j1_dphi = content.met_tst_nomuon_j1_dphi;
-   cand.evt.met_tst_nomuon_j2_dphi = content.met_tst_nomuon_j2_dphi;
-   cand.evt.met_tst_noelectron_j1_dphi = content.met_tst_noelectron_j1_dphi;
-   cand.evt.met_tst_noelectron_j2_dphi = content.met_tst_noelectron_j2_dphi;
+   cand.evt.met_tst_nolep_j1_dphi = content.met_tst_nolep_j1_dphi;
+   cand.evt.met_tst_nolep_j2_dphi = content.met_tst_nolep_j2_dphi;
+//   cand.evt.met_tst_nomuon_j1_dphi = content.met_tst_nomuon_j1_dphi;
+//   cand.evt.met_tst_nomuon_j2_dphi = content.met_tst_nomuon_j2_dphi;
+//   cand.evt.met_tst_noelectron_j1_dphi = content.met_tst_noelectron_j1_dphi;
+//   cand.evt.met_tst_noelectron_j2_dphi = content.met_tst_noelectron_j2_dphi;
 
    // MC-only information
 
@@ -1116,7 +1177,7 @@ cand.evt.passTrigger = -1;
 
 // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
     cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
-    
+
     // Lepton Scale Facgtors
     // See definition of Trig.Singlelep20XX in SUSYObjDef_xAOD.cxx
     // You can modify it in the ST config under Trigger SFs configuration
@@ -1135,6 +1196,7 @@ cand.evt.passTrigger = -1;
     }
 
   // PDF
+  /*
     const xAOD::TruthEventContainer *truthE(nullptr);
     if (!event->retrieve(truthE, "TruthEvents").isSuccess()) {
      ANA_MSG_ERROR("Failed to retrieve Truth container");
@@ -1153,6 +1215,7 @@ cand.evt.passTrigger = -1;
             // see https://twiki.cern.ch/twiki/bin/view/AtlasProtected/MC15aKnownIssues
     }
   }
+  */
 
    // Rebalance and Smear
   if(doRnS && !m_isMC ) {
@@ -1194,18 +1257,13 @@ cand.evt.passTrigger = -1;
     }
   }
   cand.evt.n_jet_truth = nTruthJets;
-  if (truthJets->size() > 0) {
-   cand.evt.truth_jet1_pt = (*truthJets)[0]->p4().Pt();
-   cand.evt.truth_jet1_eta = (*truthJets)[0]->p4().Eta();
-   cand.evt.truth_jet1_phi = (*truthJets)[0]->p4().Phi();
-   cand.evt.truth_jet1_m = (*truthJets)[0]->p4().M();
-   if (truthJets->size() > 1) {
-    cand.evt.truth_jet2_pt = (*truthJets)[1]->p4().Pt();
-    cand.evt.truth_jet2_eta = (*truthJets)[1]->p4().Eta();
-    cand.evt.truth_jet2_phi = (*truthJets)[1]->p4().Phi();
-    cand.evt.truth_jet2_m = (*truthJets)[1]->p4().M();
-  }
-}
+  for (const auto& part : *truthJets) {
+       cand.evt.truth_jet_pt.push_back(part->pt());
+       cand.evt.truth_jet_eta.push_back(part->eta());
+       cand.evt.truth_jet_phi.push_back(part->phi());
+       cand.evt.truth_jet_m.push_back(part->m());
+     }
+
 }
 }
 
@@ -1223,6 +1281,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
        ANA_MSG_ERROR("Failed to retrieve Muons container");
        return EL::StatusCode::FAILURE;
      }
+       cand.evt.n_mu_truth = truthMuons->size();
      for (const auto& part : *truthMuons) {
        cand.evt.truth_mu_pt.push_back(part->pt());
        cand.evt.truth_mu_eta.push_back(part->eta());
@@ -1238,6 +1297,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
        ANA_MSG_ERROR("Failed to retrieve Electrons container");
        return EL::StatusCode::FAILURE;
      }
+       cand.evt.n_el_truth = truthElectrons->size();
      for (const auto& part : *truthElectrons) {
        cand.evt.truth_el_pt.push_back(part->pt());
        cand.evt.truth_el_eta.push_back(part->eta());
@@ -1246,6 +1306,19 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
        cand.evt.truth_el_status.push_back(part->status());
      }
 
+      //-- TAUS --
+      /*
+     const xAOD::TruthParticleContainer *truthTaus = nullptr;
+     ANA_CHECK(event->retrieve(truthTaus, "TruthTaus"));
+       cand.evt.n_tau_truth = truthTaus->size();
+     for (const auto& part : *truthTaus) {
+       cand.evt.truth_tau_pt.push_back(part->pt());
+       cand.evt.truth_tau_eta.push_back(part->eta());
+       cand.evt.truth_tau_phi.push_back(part->phi());
+       cand.evt.truth_tau_m.push_back(part->m());
+       cand.evt.truth_tau_status.push_back(part->status());
+     }
+*/
       //-- BOSONS --
      const xAOD::TruthParticleContainer *truthParticles(nullptr);
      ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
@@ -1256,61 +1329,13 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
      cand.evt.truth_V_dressed_phi = truth_V_dressed.Phi();
      cand.evt.truth_V_dressed_m = truth_V_dressed.M();
       // Bare
+      /*
      const TLorentzVector truth_V_bare = VBFInvAnalysis::getTruthBosonP4(truthParticles, truthElectrons, truthMuons, truthParticles, kFALSE);
      cand.evt.truth_V_bare_pt = truth_V_bare.Pt();
      cand.evt.truth_V_bare_eta = truth_V_bare.Eta();
      cand.evt.truth_V_bare_phi = truth_V_bare.Phi();
      cand.evt.truth_V_bare_m = truth_V_bare.M();
-
-    // -- Generator MET  and MHT --
-    // MET calculated from all status==1 gen particles
-    // MHT calculated from all status==1 gen particles matched (dR < 0.4) to jets above rebalancing threshold
-
-    // get truth container of interest
-     const xAOD::TruthParticleContainer* genparticles = nullptr;
-     ANA_CHECK(event->retrieve(genparticles, "TruthParticles"));
-
-     TLorentzVector vgenMET(0, 0, 0, 0);
-     TLorentzVector vtrueMHTreb(0, 0, 0, 0);
-
-     for ( const auto* it : *genparticles ) {
-            if (it->pt() > 0. && it->status() == 1 && !(it->hasDecayVtx())) { // status() == 1 for pythia samples
-              if (abs(it->pdgId()) == 12 || abs(it->pdgId()) == 14 || abs(it->pdgId()) == 16 )
-                vgenMET += it->p4();
-              if (abs(it->pdgId()) == 12 || abs(it->pdgId()) == 14 || abs(it->pdgId()) == 16 || abs(it->pdgId()) == 11 || abs(it->pdgId()) == 13 || abs(it->pdgId()) == 15 ){
-                if (debug)
-                  ANA_MSG_INFO("truth lepton (pt, eta, phi, status): " << it->pdgId() << ", " << it->pt()/1000. << ", " << it->eta() << ", " << it->phi() << ", " << it->status());
-              }
-              bool particleAdded = false;
-
-              // loop over reco jet container
-              for (auto jet : content.goodJets)
-                if (!particleAdded && jet->pt() > rebalancedJetPt) {
-
-                  if (xAOD::P4Helpers::isInDeltaR(*jet, *it, 0.4, true)) {
-                   float dR2 = xAOD::P4Helpers::deltaR2(jet, it, true);
-                   if (dR2 < 0.4 * 0.4) {
-                    vtrueMHTreb += it->p4();
-                    particleAdded = true;
-                  }
-                }
-              }
-            }
-          }
-
-          cand.evt.GenMET_pt = vgenMET.Pt();
-          cand.evt.GenMET_phi = vgenMET.Phi();
-          cand.evt.TrueMHT_pt = vtrueMHTreb.Pt();
-          cand.evt.TrueMHT_phi = vtrueMHTreb.Phi();
-
-          // Generator MET and HT
-          if(debug) {
-            print("Generator MET pt",cand.evt.GenMET_pt);
-            print("Generator MET phi",cand.evt.GenMET_phi);
-            print("True MHT pt",cand.evt.TrueMHT_pt);
-            print("Truth MHT phi",cand.evt.TrueMHT_phi);
-          }
-
+     */
 
    } // done with MC only
 
@@ -1357,8 +1382,9 @@ for (auto thisTau : content.goodTaus) {
    // MET
   //-----------------------------------------------------------------------
   cand.met["met_tst"].add(*((*content.met_tst)["Final"]));
-  cand.met["met_tst_nomuon"].add(*((*content.met_tst_nomuon)["Final"]));
-  cand.met["met_tst_noelectron"].add(*((*content.met_tst_noelectron)["Final"]));
+//  cand.met["met_tst_nomuon"].add(*((*content.met_tst_nomuon)["Final"]));
+//  cand.met["met_tst_noelectron"].add(*((*content.met_tst_noelectron)["Final"]));
+  cand.met["met_tst_nolep"].add(*((*content.met_tst_nolep)["Final"]));
   cand.met["met_track"].add(*((*content.met_track)["Track"]));
   if (m_isMC) cand.met["met_truth"].add(*((*content.met_truth)["NonInt"]));
   //-----------------------------------------------------------------------

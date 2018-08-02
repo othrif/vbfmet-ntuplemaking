@@ -30,21 +30,20 @@ namespace Analysis {
       Bool_t doMET;
 
       Bool_t passGRL;
-      Bool_t passTrigger;
+//      Bool_t passTrigger;
       Bool_t passPV;
-      Bool_t passJetClean;
+      Bool_t passJetCleanLoose;
       Bool_t passJetCleanTight;
       Bool_t passDetErr;
 
-      Double_t jj_mass;
-      Double_t jj_deta;
-      Double_t jj_dphi;
       Double_t met_tst_j1_dphi;
       Double_t met_tst_j2_dphi;
-      Double_t met_tst_nomuon_j1_dphi;
-      Double_t met_tst_nomuon_j2_dphi;
-      Double_t met_tst_noelectron_j1_dphi;
-      Double_t met_tst_noelectron_j2_dphi;
+      Double_t met_tst_nolep_j1_dphi;
+      Double_t met_tst_nolep_j2_dphi;
+//      Double_t met_tst_nomuon_j1_dphi;
+//      Double_t met_tst_nomuon_j2_dphi;
+//      Double_t met_tst_noelectron_j1_dphi;
+//      Double_t met_tst_noelectron_j2_dphi;
       //
       // objects we do NOT own
       //
@@ -55,10 +54,12 @@ namespace Analysis {
       //MET
       std::shared_ptr<xAOD::MissingETContainer> met_tst; //!
       std::shared_ptr<xAOD::MissingETAuxContainer> met_tstAux; //!
-      std::shared_ptr<xAOD::MissingETContainer> met_tst_nomuon; //!
-      std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nomuonAux; //!
-      std::shared_ptr<xAOD::MissingETContainer> met_tst_noelectron; //!
-      std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_noelectronAux; //!
+      std::shared_ptr<xAOD::MissingETContainer> met_tst_nolep; //!
+      std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nolepAux; //!
+//      std::shared_ptr<xAOD::MissingETContainer> met_tst_nomuon; //!
+//      std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nomuonAux; //!
+//      std::shared_ptr<xAOD::MissingETContainer> met_tst_noelectron; //!
+//      std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_noelectronAux; //!
       std::shared_ptr<xAOD::MissingETContainer> met_tst_nophoton; //!
       std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nophotonAux; //!
       std::shared_ptr<xAOD::MissingETContainer> met_track; //!

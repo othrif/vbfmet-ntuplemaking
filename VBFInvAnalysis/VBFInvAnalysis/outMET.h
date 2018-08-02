@@ -8,13 +8,11 @@ namespace Analysis {
    class outMET : public outObject {
    public:
       Float_t et;
-      Float_t etx;
-      Float_t ety;
       Float_t sumet;
       Float_t phi;
 
    public:
-      outMET(TString name = "", Bool_t doTrim = kFALSE, Bool_t doDetail = kFALSE);
+      outMET(TString name = "", Bool_t doTrim = kFALSE);
       ~outMET();
       void reset();
       void attachToTree(TTree *tree);

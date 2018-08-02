@@ -1,8 +1,8 @@
 #include "VBFInvAnalysis/outRnSmear.h"
 
-Analysis::outRnSmear::outRnSmear(TString name, Bool_t doTrim, Bool_t doDetail) : Analysis::outObject::outObject(name, doTrim, doDetail)
+Analysis::outRnSmear::outRnSmear(TString name, Bool_t doTrim) : Analysis::outObject::outObject(name, doTrim)
 {
- reset();
+   reset();
 }
 
 Analysis::outRnSmear::~outRnSmear()
@@ -11,10 +11,9 @@ Analysis::outRnSmear::~outRnSmear()
 
 void Analysis::outRnSmear::reset()
 {
- rnsPSweight = 1.0;
+    rnsPSweight = 1.0;
 
-
- return;
+   return;
 }
 
 
@@ -22,9 +21,11 @@ void Analysis::outRnSmear::attachToTree(TTree *tree)
 {
    const TString prefix = (name() != "") ? name() + "_" : ""; // no prefix by default
 
-   tree->Branch(prefix + "rnsPSweight", &rnsPSweight);
+   if (!doTrim()) {
+     tree->Branch(prefix + "rnsPSweight", &rnsPSweight);
+   }
 
-   return;
+ return;
 }
 
 double Analysis::outRnSmear::getPSweight(asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool> susytools_handle, xAOD::TEvent*& event, int RunNumber, bool debug )
@@ -86,13 +87,13 @@ if (hlt_jet->size() > 0) {
         }
     }
 } else {
-   Info( "getPSweight()", "No trigger object (jet) available" );
-   return PSweight;
+ Info( "getPSweight()", "No trigger object (jet) available" );
+ return PSweight;
 }
 if(debug){
-   Info( "getPSweight()", "Leading jet pT: %.1f ", HLTjetPt);
-   Info( "getPSweight()", "Leading jet eta: %.1f ", HLTjetEta);
-   Info( "getPSweight()", "Leading jet phi: %.1f ", HLTjetPhi);
+ Info( "getPSweight()", "Leading jet pT: %.1f ", HLTjetPt);
+ Info( "getPSweight()", "Leading jet eta: %.1f ", HLTjetEta);
+ Info( "getPSweight()", "Leading jet phi: %.1f ", HLTjetPhi);
 }
 
       // Determine highest threshold trigger, which fired

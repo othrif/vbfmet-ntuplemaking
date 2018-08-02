@@ -33,7 +33,7 @@ namespace Analysis {
       std::vector<Int_t> truthOrigin;
 
    public:
-      outMuon(TString name = "", Bool_t doTrim = kFALSE, Bool_t doDetail = kFALSE);
+      outMuon(TString name = "", Bool_t doTrim = kFALSE);
       ~outMuon();
       void reset();
       void attachToTree(TTree *tree);

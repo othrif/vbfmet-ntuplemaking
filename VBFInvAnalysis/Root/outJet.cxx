@@ -3,7 +3,7 @@
 #include <TTree.h>
 #include <xAODBase/IParticleHelpers.h>
 
-Analysis::outJet::outJet(TString name, Bool_t doTrim, Bool_t doDetail) : Analysis::outObject::outObject(name, doTrim, doDetail)
+Analysis::outJet::outJet(TString name, Bool_t doTrim) : Analysis::outObject::outObject(name, doTrim)
 {
    reset();
 }
@@ -60,21 +60,18 @@ void Analysis::outJet::attachToTree(TTree *tree)
    tree->Branch(prefix + "m", &m);
    tree->Branch(prefix + "timing", &timing);
    tree->Branch(prefix + "jvt", &jvt);
-   tree->Branch(prefix + "passOR", &passOR);
    tree->Branch(prefix + "passJvt", &passJvt);
-  
-   if (doDetail()) {
-     tree->Branch(prefix + "raw_pt", &raw_pt);
-     tree->Branch(prefix + "raw_eta", &raw_eta);
-     tree->Branch(prefix + "raw_phi", &raw_phi);
-     tree->Branch(prefix + "raw_m", &raw_m);
+   tree->Branch(prefix + "isbjet", &isbjet);
+   tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
+   tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
 
+   if (!doTrim()) {
+     tree->Branch(prefix + "raw_pt", &raw_pt);// remove it
+     tree->Branch(prefix + "raw_eta", &raw_eta);// remove it
+     tree->Branch(prefix + "raw_phi", &raw_phi);// remove it
+     tree->Branch(prefix + "raw_m", &raw_m);// remove it
+     tree->Branch(prefix + "passOR", &passOR); // remove it
      tree->Branch(prefix + "btag_weight", &btag_weight);
-     tree->Branch(prefix + "isbjet", &isbjet);
-
-     tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
-     tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
-
      tree->Branch(prefix + "NTracks", &NTracks);
      tree->Branch(prefix + "SumPtTracks", &SumPtTracks);
      tree->Branch(prefix + "TrackWidth", &TrackWidth);
@@ -98,7 +95,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    input.getAttribute(xAOD::JetAttribute::Timing, tmp_timing);
    timing.push_back(tmp_timing);
 
-   // momentum fraction carried by charged tracks                                                                                                                                                                
+   // momentum fraction carried by charged tracks
    std::vector<float>  tmp_sumpttrk_vec;
    input.getAttribute("SumPtTrkPt500", tmp_sumpttrk_vec);
    Float_t tmp_fch = (tmp_sumpttrk_vec.size() > 0) ? tmp_sumpttrk_vec[0] /   input.pt() : 0;
@@ -128,7 +125,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
      jvt.push_back(-9999);
    }
 
-   if (doDetail()) {
+   if (!doTrim()) {
      const xAOD::Jet *thisRawJet = dynamic_cast< const xAOD::Jet* >(xAOD::getOriginalObject(input));
      raw_pt.push_back(thisRawJet->pt());
      raw_eta.push_back(thisRawJet->eta());
@@ -138,11 +135,11 @@ void Analysis::outJet::add(const xAOD::Jet &input)
      double tmp_btag_weight(-9999.);
      input.btagging()->MVx_discriminant("MV2c10", tmp_btag_weight);
      btag_weight.push_back(tmp_btag_weight);
-     
+
      // number of charged tracks within a jet
      std::vector<int>  tmp_numtrk_vec;
      input.getAttribute("NumTrkPt500", tmp_numtrk_vec);
-     
+
      // width charged tracks
      std::vector<float> tmp_trkwidth_vec;
      input.getAttribute("TrackWidthPt1000", tmp_trkwidth_vec);
@@ -168,7 +165,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
        tmp_sumpttrk = 0;
        tmp_numtrk = 0;
        tmp_trkwidth = 0.;}
-     
+
      HighestJVFVtx.push_back(tmp_sumpttrk);
      SumPtTracks.push_back(tmp_sumpttrk);
      NTracks.push_back(tmp_numtrk);
@@ -204,6 +201,6 @@ void Analysis::outJet::add(const xAOD::Jet &input)
      ConeTruthLabelID.push_back(tmp_ConeTruthLabelID);
    }
 
-   
+
    return;
 }

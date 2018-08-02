@@ -244,6 +244,7 @@ EL::StatusCode VBFInvTruth :: initialize ()
     truthTree->Branch ("mu_pdgid", &m_mu_pdgid);
 
     // Taus
+    /*
     truthTree->Branch ("tau_m", &m_tau_m);
     truthTree->Branch ("tau_pt", &m_tau_pt);
     truthTree->Branch ("tau_eta", &m_tau_eta);
@@ -260,7 +261,7 @@ EL::StatusCode VBFInvTruth :: initialize ()
     truthTree->Branch ("tau_numNeutralPion", &m_tau_numNeutralPion);
     truthTree->Branch ("tau_barcode", &m_tau_barcode);
     truthTree->Branch ("tau_status", &m_tau_status);
-
+*/
     // Bosons
     truthTree->Branch ("nbosons", &m_nbosons);
     truthTree->Branch ("boson_m", &m_boson_m);
@@ -418,8 +419,8 @@ const xAOD::TruthParticleContainer* mus = nullptr;
 ANA_CHECK (evtStore()->retrieve( mus, "TruthMuons"));
 
     // Taus
-const xAOD::TruthParticleContainer* taus = nullptr;
-ANA_CHECK (evtStore()->retrieve( taus, "TruthTaus"));
+//const xAOD::TruthParticleContainer* taus = nullptr;
+//ANA_CHECK (evtStore()->retrieve( taus, "TruthTaus"));
 
     // Neutrinos
 const xAOD::TruthParticleContainer* neus = nullptr;
@@ -447,12 +448,12 @@ ANA_CHECK( m_event->retrieve( truthE, "TruthEvents" ) );
 
     // Jets - leptons
 for (const auto& truthJ_itr : *jets){
-    if (truthJ_itr->pt() > 25000.)
+    if (truthJ_itr->pt() > 5000.)
     {
         dec_passOR(*truthJ_itr) = true;
             // overlap with electrons
         for (const auto&  elec_itr : *els){
-            if(elec_itr->pt() > 7000){
+            if(elec_itr->pt() > 5000){
                 float dR = xAOD::P4Helpers::deltaR2( truthJ_itr, elec_itr, true);
                 ANA_MSG_DEBUG("jet pt=" << truthJ_itr->pt() << ", el pt=" << elec_itr->pt() << ", DR=" << sqrt(dR) );
                 if (dR < (0.2 * 0.2)) {
@@ -477,15 +478,15 @@ for (const auto& truthJ_itr : *jets){
     }
     else{
         dec_passOR(*truthJ_itr) = false;
-        ANA_MSG_DEBUG("jet-lep OR: Does not pass due to jet pt < 25 GeV!" );
+        ANA_MSG_DEBUG("jet-lep OR: Does not pass due to jet pt < 5 GeV!" );
     }
 }
     // Electrons - Jets
 for (const auto&  elec_itr : *els){
-    if(elec_itr->pt() > 7000){
+    if(elec_itr->pt() > 5000){
         dec_passOR(*elec_itr) = true;
         for (const auto& truthJ_itr : *jets)
-            if (truthJ_itr->pt() > 25000. && truthJ_itr->auxdata< bool >("passTruthOR")){
+            if (truthJ_itr->pt() > 5000. && truthJ_itr->auxdata< bool >("passTruthOR")){
                 float dR = xAOD::P4Helpers::deltaR2( elec_itr, truthJ_itr, true);
                 if (dR < (0.4 * 0.4)) {
                     dec_passOR(*elec_itr) = false;
@@ -505,7 +506,7 @@ for (const auto&  elec_itr : *els){
         if(mu_itr->pt() > 5000){
             dec_passOR(*mu_itr) = true;
             for (const auto& truthJ_itr : *jets)
-                if (truthJ_itr->pt() > 25000. && truthJ_itr->auxdata< bool >("passTruthOR")){
+                if (truthJ_itr->pt() > 5000. && truthJ_itr->auxdata< bool >("passTruthOR")){
                     float dR = xAOD::P4Helpers::deltaR2( mu_itr, truthJ_itr, true);
                     if (dR < (0.4 * 0.4)) {
                         dec_passOR(*mu_itr) = false;
@@ -520,31 +521,29 @@ for (const auto&  elec_itr : *els){
             }
         }
 
-
-
     //-----------------------------------------------------------------------
     //  Fill branches
     //-----------------------------------------------------------------------
 
     // Jets
-        int njet25=0;
+        int njet5=0;
         for (const auto& truthJ_itr : *jets){
-           if (truthJ_itr->pt() > 25000. && truthJ_itr->auxdata< bool >("passTruthOR")) {
+           if (truthJ_itr->pt() > 5000. && truthJ_itr->auxdata< bool >("passTruthOR")) {
             m_jet_E->push_back(truthJ_itr->e());
             m_jet_pt->push_back(truthJ_itr->pt());
             m_jet_eta->push_back(truthJ_itr->eta());
             m_jet_phi->push_back(truthJ_itr->phi());
             m_jet_m->push_back(truthJ_itr->m());
             m_jet_label->push_back(truthJ_itr->auxdata<int>("PartonTruthLabelID"));
-            njet25++;
+            njet5++;
         }
     }
-    m_njets = njet25;
+    m_njets = njet5;
 
     // Electrons
-    int nel7=0;
+    int nel5=0;
     for (const auto& elec_itr : *els)
-       if (elec_itr->pt() > 7000. && elec_itr->auxdata< bool >("passTruthOR")) {
+       if (elec_itr->pt() > 5000. && elec_itr->auxdata< bool >("passTruthOR")) {
         m_el_m->push_back(elec_itr->m());
         m_el_pt->push_back(elec_itr->pt());
         m_el_eta->push_back(elec_itr->eta());
@@ -554,9 +553,9 @@ for (const auto&  elec_itr : *els){
         m_el_ptcone30->push_back(elec_itr->auxdata<float>("ptcone30"));
         m_el_etcone20->push_back(elec_itr->auxdata<float>("etcone20"));
         m_el_pdgid->push_back(elec_itr->pdgId());
-        nel7++;
+        nel5++;
     }
-    m_nels = nel7;
+    m_nels = nel5;
 
     // Muons
     int nmu5=0;
@@ -577,9 +576,10 @@ for (const auto&  elec_itr : *els){
 m_nmus = nmu5;
 
     // taus
+    /*
 int ntau5=0;
 for (const auto& tau_itr : *taus)
-           if (tau_itr->pt() > 5000. /*&& tau_itr->auxdata< bool >("passTruthOR")*/) {
+           if (tau_itr->pt() > 5000. && tau_itr->auxdata< bool >("passTruthOR")) {
     m_tau_m->push_back(tau_itr->m());
 m_tau_pt->push_back(tau_itr->pt());
 m_tau_eta->push_back(tau_itr->eta());
@@ -588,18 +588,18 @@ m_tau_type->push_back(tau_itr->auxdata<uint>("classifierParticleType"));
 m_tau_origin->push_back(tau_itr->auxdata<uint>("classifierParticleOrigin"));
 m_tau_pdgid->push_back(tau_itr->pdgId());
 m_tau_IsHadronicTau->push_back(tau_itr->auxdata<char>("IsHadronicTau"));
-    m_tau_m_invis->push_back(-1.);//tau_itr->auxdata<double>("m_invis"));
-    m_tau_m_vis->push_back(-1.);//tau_itr->auxdata<double>("m_vis"));
-    m_tau_numCharged->push_back(tau_itr->auxdata<ULong_t>("numCharged"));
-    m_tau_numChargedPion->push_back(tau_itr->auxdata<ULong_t>("numChargedPion"));
-    m_tau_numNeutral->push_back(tau_itr->auxdata<ULong_t>("numNeutral"));
-    m_tau_numNeutralPion->push_back(tau_itr->auxdata<ULong_t>("numNeutralPion"));
-    m_tau_barcode->push_back(tau_itr->auxdata<int>("barcode"));
-    m_tau_status->push_back(tau_itr->auxdata<int>("status"));
-    ntau5++;
+m_tau_m_invis->push_back(-1.);//tau_itr->auxdata<double>("m_invis"));
+m_tau_m_vis->push_back(-1.);//tau_itr->auxdata<double>("m_vis"));
+m_tau_numCharged->push_back(tau_itr->auxdata<ULong_t>("numCharged"));
+m_tau_numChargedPion->push_back(tau_itr->auxdata<ULong_t>("numChargedPion"));
+m_tau_numNeutral->push_back(tau_itr->auxdata<ULong_t>("numNeutral"));
+m_tau_numNeutralPion->push_back(tau_itr->auxdata<ULong_t>("numNeutralPion"));
+m_tau_barcode->push_back(tau_itr->auxdata<int>("barcode"));
+m_tau_status->push_back(tau_itr->auxdata<int>("status"));
+ntau5++;
 }
 m_ntaus = ntau5;
-
+*/
     // MET
 const xAOD::MissingET* met_nonint = (*met)["NonInt"];
 

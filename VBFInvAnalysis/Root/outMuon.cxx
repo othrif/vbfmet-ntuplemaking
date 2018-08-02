@@ -3,7 +3,7 @@
 
 #include <TTree.h>
 
-Analysis::outMuon::outMuon(TString name, Bool_t doTrim, Bool_t doDetail) : Analysis::outObject::outObject(name, doTrim, doDetail)
+Analysis::outMuon::outMuon(TString name, Bool_t doTrim) : Analysis::outObject::outObject(name, doTrim)
 {
    reset();
 }
@@ -51,7 +51,7 @@ void Analysis::outMuon::attachToTree(TTree *tree)
    tree->Branch(prefix + "eta", &eta);
    tree->Branch(prefix + "phi", &phi);
    tree->Branch(prefix + "m", &m);
-   if (doDetail()) {
+   if (!doTrim()) {
      tree->Branch(prefix + "d0", &d0);
      tree->Branch(prefix + "d0sig", &d0sig);
      tree->Branch(prefix + "z0", &z0);
@@ -85,8 +85,8 @@ void Analysis::outMuon::add(const xAOD::Muon &input)
    eta.push_back(input.eta());
    phi.push_back(input.phi());
    m.push_back(input.m());
-   
-   if (doDetail()) {
+
+   if (!doTrim()) {
      Float_t tmp_ptcone20(-9999);
      Float_t tmp_ptcone30(-9999);
      Float_t tmp_ptcone40(-9999);
@@ -154,7 +154,7 @@ void Analysis::outMuon::add(const xAOD::Muon &input)
        truthType.push_back( -9999 );
        truthOrigin.push_back( -9999 );
      }
-     
+
    }
    return;
 }
