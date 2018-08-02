@@ -50,7 +50,6 @@ parser.add_argument("--doMuonDetail", dest="doMuonDetail", action="store_true", 
 parser.add_argument("--doJetDetail", dest="doJetDetail", action="store_true", default=False, help="add detailed branches for jets")
 parser.add_argument("--doMETDetail", dest="doMETDetail", action="store_true", default=False, help="add detailed branches for met")
 parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
-parser.add_argument("--doTruthDetail", dest="doTruthDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
@@ -145,6 +144,11 @@ if( args.algoName == "VBFInv" ):
   alg.mjjSkimForSyst = args.mjjSkimForSyst
   alg.detajjSkim = args.detajjSkim
   alg.detajjSkimForSyst = args.detajjSkimForSyst
+  alg.doElectronDetail = args.doElectronDetail
+  alg.doMuonDetail = args.doMuonDetail
+  alg.doJetDetail = args.doJetDetail
+  alg.doMETDetail = args.doMETDetail
+  alg.doEventDetail = args.doEventDetail
   alg.doRnS = args.doRnS
   alg.doElectronDetail = args.doElectronDetail
   alg.doMuonDetail = args.doMuonDetail
