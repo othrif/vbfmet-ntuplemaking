@@ -39,6 +39,7 @@ atlas_depends_on_subdirs(
    PhysicsAnalysis/AnalysisCommon/PileupReweighting
    DataQuality/GoodRunsLists
    PhysicsAnalysis/SUSYPhys/SUSYTools
+
 )
 
 # External(s) needed by the package:

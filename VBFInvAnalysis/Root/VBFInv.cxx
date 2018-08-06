@@ -33,6 +33,10 @@
 // Utils
 #include <boost/algorithm/string.hpp>
 
+// JES Uncertainties
+#include "JetUncertainties/MultijetJESUncertaintyProvider.h"
+#include "JetUncertainties/JESUtils.h"
+
 // Declare the class to ROOT:
 ClassImp( VBFInv )
 
