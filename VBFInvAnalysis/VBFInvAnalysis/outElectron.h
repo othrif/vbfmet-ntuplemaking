@@ -9,7 +9,7 @@ namespace Analysis {
    public:
 
 
-      std::vector<Float_t> charge;
+      std::vector<Int_t> charge;
       std::vector<Float_t> pt;
       std::vector<Float_t> eta;
       std::vector<Float_t> phi;
