@@ -25,7 +25,7 @@ mainMC = OrderedDict([
     ('Ztautau',   range(364128,364141 + 1)),
     ('Znunu',     range(364142,364155 + 1)),
     ('QCDw',      range(361020,361032 + 1)),
-    ('top',       [410470,410471,410472,410011,410012,410013,410014,410025,410026])
+    ('top',       [410470,410472,410011,410012,410013,410014,410025,410026])
     ])
 
 altMC = OrderedDict([
@@ -88,7 +88,7 @@ def main(argv=None):
   # Output director
   if version is not "vXX" and save:
     print(os.environ['TestArea'])
-    path = os.environ['TestArea']+"/../STAnalysisCode/VBFInvAnalysis/data/samples/"+version
+    path = os.environ['TestArea']+"/../STAnalysisCode/VBFInvAnalysis/data/samples/"
     if not os.path.exists(path):
       os.makedirs(path)
   else: path = "."
@@ -101,10 +101,11 @@ def main(argv=None):
       if not 'data' in proj:
         #for campaign in campaigns: outFile.append(campaign:open(campaign+"_"+daod+".txt", "w"))
         for campaign in campaigns:
-          outFile[campaign] = open(path+"/"+campaign+"_"+daod_name+".txt", "w")
+          outFile[campaign] = open(path+"/"+version+"_"+campaign+"_"+daod_name+".txt", "w")
       else:
         if '_' in proj: proj_name = proj.split('_')[0]
-        outFile[proj] = open(path+"/"+proj_name+"_"+daod_name+".txt", "w")
+        outFile[proj] = open(path+"/"+version+"_"+proj_name+"_"+daod_name+".txt", "w")
+        outFile["pilot"] = open(path+"/"+version+"_"+"pilot.txt", "w")
 
   print '---------------------------------------'
   print '-- Script Configuration --'
@@ -150,10 +151,10 @@ def main(argv=None):
                 continue
               if debug or not save:
                 print dsn
-              if save:
-                outFile[campaign].write("%s\n" %dsn)
+              if save: outFile[campaign].write("%s\n" %dsn)
+        if save: outFile["pilot"].write("%s\n" % dsn)
     else:
-      print "Getting Data list..."
+      print "Getting %s list..." % (proj)
       name = proj + ".*.physics_Main.*"+daod+"*"+pTagDict[proj]
       dids = {'name': name}
       List = list(DIDClient.list_dids(client,proj,dids,'container'))
@@ -163,8 +164,9 @@ def main(argv=None):
       for dsn in List:
         if debug or not save:
           print dsn
-        if save:
-          outFile[proj].write("%s\n" %dsn)
+        if save: outFile[proj].write("%s\n" % dsn)
+      if save: outFile["pilot"].write("%s\n" % dsn)
+
 import sys, os
 if __name__ == '__main__':
   sys.exit(main())

@@ -189,7 +189,10 @@ if (args.driver == 'local'):
     driver = ROOT.EL.DirectDriver()
     driver.submit( job, args.submitDir )
 elif (args.driver == 'prun'):
-    dset_name_mask = 'user.{user}.{tag}.%in:name[2]%.%in:name[3]%.%in:name[6]%'.format(user=args.userName, tag=args.version)
+    tag=args.version
+    if args.doSystematics:d
+      tag = tag+"Syst"
+    dset_name_mask = 'user.{user}.{tag}.%in:name[2]%.%in:name[3]%.%in:name[6]%'.format(user=args.userName, tag=tag)
     print dset_name_mask, len(dset_name_mask)
     driver = ROOT.EL.PrunDriver()
     if args.doSystematics:

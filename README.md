@@ -72,3 +72,9 @@ Then run:
 lsetup rucio
 python STAnalysisCode/VBFInvAnalysis/scripts/listSamples.py -t mc16_13TeV,data15_13TeV,data16_13TeV -c mc16a,mc16d -d DAOD_EXOT5 -v v05 -s
 ```
+
+### Tag master code git ###
+``` bash
+git tag -a vXX-AB21p2pYY -m "Tag version vXX"
+git push origin vXX-AB21p2pYY
+```

@@ -1,0 +1,38 @@
+[?1034h
+Arguments used:
+------------------------------------------------
+Command entered:  /nfs/dust/atlas/user/othrif/vbf/myVBF/build/x86_64-slc6-gcc62-opt/bin/runVBF.py @/nfs/dust/atlas/user/othrif/vbf/myVBF/build/../STAnalysisCode/VBFInvAnalysis/data//arguments/v05_args.txt --inputRucioLists=/nfs/dust/atlas/user/othrif/vbf/myVBF/build/../STAnalysisCode/VBFInvAnalysis/data//samples/v05_pilot.txt -s submitDir_v05_pilot
+Configuration:
+Namespace(algoName='VBFInv', configFile='VBFInvAnalysis/vbfinv.conf', debug=False, detajjSkim=2.5, detajjSkimForSyst=2.5, dir='', doElectronDetail=False, doEventDetail=False, doJetDetail=False, doMETDetail=False, doMuonDetail=False, doRnS=False, doSkim=True, doSystematics=True, doTrim=True, driver='prun', input='', isMultiWeight=False, metSkim=100000, metSkimForSyst=100000, mjjSkim=200000, mjjSkimForSyst=200000, nmax=None, noPileup=False, nskip=None, overwrite=True, pt1Skim=25000, pt1SkimForSyst=25000, pt2Skim=25000, pt2SkimForSyst=25000, replicationSite='DESY-HH_LOCALGROUPDISK', rucio='', ruciolist='/nfs/dust/atlas/user/othrif/vbf/myVBF/build/../STAnalysisCode/VBFInvAnalysis/data//samples/v05_pilot.txt', skipCutBookKeper=False, submitDir='submitDir_v05_pilot', txt='', userName='othrif', verbose=False, version='v05')
+------------------------------------------------
+
+
+xAOD::Init                INFO    Environment initialised for data access
+adding rucio datasets from text file  /nfs/dust/atlas/user/othrif/vbf/myVBF/build/../STAnalysisCode/VBFInvAnalysis/data//samples/v05_pilot.txt
+mc16_13TeV.426009.PowhegPythia8EvtGen_A14_NNPDF23LO_CT10ME_jetjet_JZ9.deriv.DAOD_EXOT5.e3788_s3126_r9364_p3575
+Sample mc16_13TeV.426009.PowhegPythia8EvtGen_A14_NNPDF23LO_CT10ME_jetjet_JZ9.deriv.DAOD_EXOT5.e3788_s3126_r9364_p3575 has isAFII set to False
+Sample mc16_13TeV.426009.PowhegPythia8EvtGen_A14_NNPDF23LO_CT10ME_jetjet_JZ9.deriv.DAOD_EXOT5.e3788_s3126_r9364_p3575 has isData set to False
+data15_13TeV.00284420.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576
+Sample data15_13TeV.00284420.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576 has isAFII set to False
+Sample data15_13TeV.00284420.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576 has isData set to True
+data16_13TeV.00303892.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576
+Sample data16_13TeV.00303892.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576 has isAFII set to False
+Sample data16_13TeV.00303892.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576 has isData set to True
+SampleHandler with 3 files
+Sample:name=mc16_13TeV.426009.PowhegPythia8EvtGen_A14_NNPDF23LO_CT10ME_jetjet_JZ9.deriv.DAOD_EXOT5.e3788_s3126_r9364_p3575
+ nc_grid=mc16_13TeV.426009.PowhegPythia8EvtGen_A14_NNPDF23LO_CT10ME_jetjet_JZ9.deriv.DAOD_EXOT5.e3788_s3126_r9364_p3575
+ nc_grid_filter=*.root*
+Sample:name=data15_13TeV.00284420.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576
+ nc_grid=data15_13TeV.00284420.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576
+ nc_grid_filter=*.root*
+Sample:name=data16_13TeV.00303892.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576
+ nc_grid=data16_13TeV.00303892.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576
+ nc_grid_filter=*.root*
+
+VBFInv                   INFO    in setupJob
+/nfs/dust/atlas/user/othrif/vbf/myVBF/build/x86_64-slc6-gcc62-opt/bin/runVBF.py:210: RuntimeWarning: tp_compare didn't return -1 or -2 for exception
+  driver.submitOnly(job, args.submitDir )
+user.othrif.v05Syst.%in:name[2]%.%in:name[3]%.%in:name[6]% 58
+Submitting mc16_13TeV.426009.PowhegPythia8EvtGen_A14_NNPDF23LO_CT10ME_jetjet_JZ9.deriv.DAOD_EXOT5.e3788_s3126_r9364_p3575...
+Submitting data15_13TeV.00284420.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576...
+Submitting data16_13TeV.00303892.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3576...

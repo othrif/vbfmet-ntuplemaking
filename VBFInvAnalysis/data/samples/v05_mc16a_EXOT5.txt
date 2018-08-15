@@ -143,7 +143,6 @@ mc16_13TeV.361031.Pythia8EvtGen_A14NNPDF23LO_jetjet_JZ11W.deriv.DAOD_EXOT5.e3569
 mc16_13TeV.361032.Pythia8EvtGen_A14NNPDF23LO_jetjet_JZ12W.deriv.DAOD_EXOT5.e3668_s3126_r9364_p3575
 ### top ######
 mc16_13TeV.410470.PhPy8EG_A14_ttbar_hdamp258p75_nonallhad.deriv.DAOD_EXOT5.e6337_s3126_r9364_p3575
-mc16_13TeV.410471.PhPy8EG_A14_ttbar_hdamp258p75_allhad.deriv.DAOD_EXOT5.e6337_s3126_r9364_p3575
 # mc16_13TeV.410472.*.DAOD_EXOT5.*r9364*p3575 not found
 mc16_13TeV.410011.PowhegPythiaEvtGen_P2012_singletop_tchan_lept_top.deriv.DAOD_EXOT5.e3824_s3126_r9364_p3575
 mc16_13TeV.410012.PowhegPythiaEvtGen_P2012_singletop_tchan_lept_antitop.deriv.DAOD_EXOT5.e3824_s3126_r9364_p3575
