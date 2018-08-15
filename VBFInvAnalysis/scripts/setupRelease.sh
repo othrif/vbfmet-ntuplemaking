@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Analysis base release
-RELEASE_21="21.2.35"
+RELEASE_21="21.2.39"
 
 echo 'Setting up VBF Ntuple Maker code in Release 21 ...'
 mkdir -p build run && cd build

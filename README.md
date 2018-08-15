@@ -64,17 +64,11 @@ SUSYToolsTester <myAOD.pool.root> maxEvents=100 isData=0 isAtlfast=0 Debug=0 NoS
 ```
 
 ### make lists for all DAOD_EXOT5 samples ###
-# To make for MC (change p-tag and version accordingly!)
+To configure the script starting at Line 57 to:
+- Select which DSIDs to list in the `OrderedDict` inside `listSamples.py`
+- Determine the p-tags for data and MC you want to select
+Then run:
 ``` bash
-source setup.sh
-source STAnalysisCode/VBFInvAnalysis/scripts/setupRelease.sh
-source STAnalysisCode/VBFInvAnalysis/scripts/listMCSamples.sh v02 p3575 MC
-```
-# To make for data (change p-tag and version accordingly!)
-``` bash
-source STAnalysisCode/VBFInvAnalysis/scripts/listMCSamples.sh v02 p3576 data
-```
-# To create a new dir vNEW in STAnalysisCode/VBFInvAnalysis/share/samples/
-``` bash
-source STAnalysisCode/VBFInvAnalysis/scripts/listMCSamples.sh vNEW p3576 data m
+lsetup rucio
+python STAnalysisCode/VBFInvAnalysis/scripts/listSamples.py -t mc16_13TeV,data15_13TeV,data16_13TeV -c mc16a,mc16d -d DAOD_EXOT5 -v v05 -s
 ```
