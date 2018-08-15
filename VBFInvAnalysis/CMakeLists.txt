@@ -71,4 +71,4 @@ atlas_add_library( VBFInvAnalysisLib
 
 # Install files from the package:
 atlas_install_data( share/* )
-atlas_install_scripts( scripts/* )
+#atlas_install_scripts( scripts/* )
