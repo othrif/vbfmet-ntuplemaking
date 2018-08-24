@@ -761,7 +761,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
   for (auto jet : content.allJets){
     // Good jets: pt>25GeV, jet cleaning, |eta| < 4.8
     // Give user passOR, passJvt, passFJvt to decide on the jet
-      if (acc_signal(*jet) == 1 && acc_passOR(*jet) == 1 && acc_bad(*jet) == 0){
+    if (acc_signal(*jet) == 1 && acc_passOR(*jet) == 1 && acc_bad(*jet) == 0 && acc_passJvt(*jet)==1){
 	content.goodJets.push_back(jet);
       }
   }
@@ -1011,7 +1011,7 @@ if (m_isMC) {
 
   Bool_t passesJetCleanTight = true;
   static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
-  for (auto jet : content.allJets) {
+  for (auto jet : content.goodJets) {
     if(debug)
       print("jetClean_TightBad", (bool)acc_jetCleanTight(*jet));
     if (acc_jetCleanTight(*jet) == 0) {
