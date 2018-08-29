@@ -259,6 +259,7 @@ if(doPileup && m_isMC){
   std::vector<std::string> prw_conf;
   std::vector<std::string> prw_lumicalc;
   std::string mc_campaign;
+  std::string simType = (m_isAFII ? "AFII" : "FS");
   uint32_t runNum = eventInfo->runNumber();
   switch(runNum) {
     case 284500 :
@@ -275,7 +276,7 @@ if(doPileup && m_isMC){
         prw_conf.push_back(PathResolverFindCalibFile("GoodRunsLists/data17_13TeV/20180309/physics_25ns_Triggerno17e33prim.actualMu.OflLumi-13TeV-010.root")); // 2017 ActualMu
         break;
       }
-      std::string prwConfigFile = "dev/SUSYTools/PRW_AUTOCONFIG/files/pileup_" + mc_campaign + "_dsid" + std::to_string(eventInfo->mcChannelNumber()) + ".root";
+      std::string prwConfigFile = "dev/SUSYTools/PRW_AUTOCONFIG_SIM/files/pileup_" + mc_campaign + "_dsid" + std::to_string(eventInfo->mcChannelNumber()) + "_" + simType + ".root";
       prwConfigFile = PathResolverFindCalibFile(prwConfigFile);
       if(prwConfigFile.empty()) {
         std::vector<std::string> prw_conf_tmp = getTokens(prw_file, ",");
@@ -283,10 +284,12 @@ if(doPileup && m_isMC){
         ANA_MSG_INFO( "File " << prwConfigFile << " not found in ST database. Set manual prw configuration with the following files:" );
         for (uint i = 0; i< prw_conf_tmp.size(); i++) {
           ANA_MSG_INFO( prw_conf_tmp.at(i) );
-          prw_conf.push_back(prw_conf_tmp.at(i));}
+          if (prw_conf_tmp.at(i).find(mc_campaign) != std::string::npos) prw_conf.push_back(prw_conf_tmp.at(i));}
+          std::transform(prw_conf.begin(), prw_conf.end(), prw_conf.begin(), [](std::string x) -> std::string { return PathResolverFindCalibFile(x); });
         }
         else {
           prw_conf.push_back(prwConfigFile);
+          std::transform(prw_conf.begin(), prw_conf.end(), prw_conf.begin(), [](std::string x) -> std::string { return PathResolverFindCalibFile(x); });
         }
 
         ANA_CHECK(m_susytools_handle.setProperty("PRWConfigFiles", prw_conf) );
@@ -1196,7 +1199,7 @@ cand.evt.trigger["HLT_mu26_imedium"];
     cand.evt.mcEventWeights    = content.eventInfo->mcEventWeights();
     cand.evt.puWeight          = m_susytools_handle->GetPileupWeight();
     cand.evt.btagSFWeight      = m_susytools_handle->BtagSF(&content.goodJets);
-
+    std::cout << "puWeight=" << m_susytools_handle->GetPileupWeight() << std::endl;
 // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
     cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
 
