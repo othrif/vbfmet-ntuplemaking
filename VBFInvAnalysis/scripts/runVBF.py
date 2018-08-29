@@ -190,7 +190,7 @@ if (args.driver == 'local'):
     driver.submit( job, args.submitDir )
 elif (args.driver == 'prun'):
     tag=args.version
-    if args.doSystematics:d
+    if args.doSystematics:
       tag = tag+"Syst"
     dset_name_mask = 'user.{user}.{tag}.%in:name[2]%.%in:name[3]%.%in:name[6]%'.format(user=args.userName, tag=tag)
     print dset_name_mask, len(dset_name_mask)

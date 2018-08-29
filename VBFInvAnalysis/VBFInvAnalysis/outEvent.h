@@ -99,6 +99,7 @@ namespace Analysis {
       Double_t met_tst_j2_dphi;
       Double_t met_tst_nolep_j1_dphi;
       Double_t met_tst_nolep_j2_dphi;
+      Double_t met_cst_jet;
 //      Double_t met_tst_nomuon_j1_dphi;
 //      Double_t met_tst_nomuon_j2_dphi;
 //      Double_t met_tst_noelectron_j1_dphi;

@@ -109,6 +109,7 @@ met_tst_j1_dphi = -9999;
 met_tst_j2_dphi= -9999;
 met_tst_nolep_j1_dphi= -9999;
 met_tst_nolep_j2_dphi= -9999;
+met_cst_jet = -9999;
 
 return;
 }
@@ -244,7 +245,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
     tree->Branch(prefix + "met_tst_j2_dphi", &met_tst_j2_dphi);
     tree->Branch(prefix + "met_tst_nolep_j1_dphi", &met_tst_nolep_j1_dphi);
     tree->Branch(prefix + "met_tst_nolep_j2_dphi", &met_tst_nolep_j2_dphi);
-
+    tree->Branch(prefix + "met_cst_jet", &met_cst_jet);
     return;
   }
 

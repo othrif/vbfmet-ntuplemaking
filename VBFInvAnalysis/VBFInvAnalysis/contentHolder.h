@@ -40,6 +40,7 @@ namespace Analysis {
       Double_t met_tst_j2_dphi;
       Double_t met_tst_nolep_j1_dphi;
       Double_t met_tst_nolep_j2_dphi;
+      Double_t met_cst_jet;
 //      Double_t met_tst_nomuon_j1_dphi;
 //      Double_t met_tst_nomuon_j2_dphi;
 //      Double_t met_tst_noelectron_j1_dphi;
@@ -56,6 +57,8 @@ namespace Analysis {
       std::shared_ptr<xAOD::MissingETAuxContainer> met_tstAux; //!
       std::shared_ptr<xAOD::MissingETContainer> met_tst_nolep; //!
       std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nolepAux; //!
+      std::shared_ptr<xAOD::MissingETContainer> met_cst; //!
+      std::shared_ptr<xAOD::MissingETAuxContainer> met_cstAux; //!              
 //      std::shared_ptr<xAOD::MissingETContainer> met_tst_nomuon; //!
 //      std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nomuonAux; //!
 //      std::shared_ptr<xAOD::MissingETContainer> met_tst_noelectron; //!
