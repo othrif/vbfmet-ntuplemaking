@@ -382,6 +382,7 @@ if(doPileup && m_isMC){
       // define all elements of the output tree
       m_cand[thisSyst].met["met_tst"] = Analysis::outMET("met_tst", (trim && !doMETDetail) );
       m_cand[thisSyst].met["met_tst_nolep"] = Analysis::outMET("met_tst_nolep", (trim && !doMETDetail));
+      //      m_cand[thisSyst].met["met_cst"] = Analysis::outMET("met_cst", (trim && !doMETDetail) );
       m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", (trim && !doMETDetail));
       m_cand[thisSyst].met["met_truth"] = Analysis::outMET("met_truth", (trim && !doMETDetail));
       m_cand[thisSyst].mu["mu"] = Analysis::outMuon("mu", (trim && !doMuonDetail));
@@ -865,6 +866,26 @@ for (auto muon : content.allMuons)
  }
  content.met_tst_nolep_j1_dphi = met_tst_nolep_j1_dphi;
  content.met_tst_nolep_j2_dphi = met_tst_nolep_j2_dphi;
+
+ // MET CST, for HT
+ TLorentzVector myMET_cst;
+ double myMETsig_cst;
+ getMET(content.met_cst,
+	content.met_cstAux,
+	content.jets, // use all objects (before OR and after corrections) for MET utility                                                                                                                       
+	content.electrons,
+	content.muons,
+	content.photons,
+	kFALSE, // do TST                                                                                                                                                                                         
+	kFALSE, // do JVT                                                                                                                                                                                         
+	nullptr, // invisible particles                                                                                                                                                                     
+	myMET_cst,
+   	myMETsig_cst
+ 	);
+
+ double met_cst_jet = -1.;
+ met_cst_jet = (*content.met_cst)["RefJet"]->met();
+ content.met_cst_jet = met_cst_jet;
 /*
 // MET, with invisble muons
  TLorentzVector myMET_tst_nomuon;
@@ -1161,6 +1182,7 @@ cand.evt.trigger["HLT_mu26_imedium"];
    cand.evt.met_tst_j2_dphi = content.met_tst_j2_dphi;
    cand.evt.met_tst_nolep_j1_dphi = content.met_tst_nolep_j1_dphi;
    cand.evt.met_tst_nolep_j2_dphi = content.met_tst_nolep_j2_dphi;
+   cand.evt.met_cst_jet = content.met_cst_jet;
 //   cand.evt.met_tst_nomuon_j1_dphi = content.met_tst_nomuon_j1_dphi;
 //   cand.evt.met_tst_nomuon_j2_dphi = content.met_tst_nomuon_j2_dphi;
 //   cand.evt.met_tst_noelectron_j1_dphi = content.met_tst_noelectron_j1_dphi;
