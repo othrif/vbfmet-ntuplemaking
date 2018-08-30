@@ -13,9 +13,6 @@ Othmane Rifki (othmane.rifki@cern.ch) - DESY
 - Output is a flat ntuple called `MiniNtuple`
 - CutBookkeeper output for histogram normalization is in `NumberEvents` histogram
 
-### Cutflow ###
-- Cutflow comparisons here: https://docs.google.com/spreadsheets/d/1f3oW_cepPiYlOh_BJNviGTWO6lgxOzUfLOOB-cvS1B8/edit#gid=1239952533
-
 ## Setting up the code ##
 ``` bash
 kinit $USER@CERN.CH
