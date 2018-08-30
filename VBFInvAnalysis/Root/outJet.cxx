@@ -60,17 +60,17 @@ void Analysis::outJet::attachToTree(TTree *tree)
    tree->Branch(prefix + "m", &m);
    tree->Branch(prefix + "timing", &timing);
    tree->Branch(prefix + "jvt", &jvt);
-   tree->Branch(prefix + "passJvt", &passJvt);
    tree->Branch(prefix + "isbjet", &isbjet);
    tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
    tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
 
    if (!doTrim()) {
-     tree->Branch(prefix + "raw_pt", &raw_pt);// remove it
-     tree->Branch(prefix + "raw_eta", &raw_eta);// remove it
-     tree->Branch(prefix + "raw_phi", &raw_phi);// remove it
-     tree->Branch(prefix + "raw_m", &raw_m);// remove it
-     tree->Branch(prefix + "passOR", &passOR); // remove it
+     tree->Branch(prefix + "raw_pt", &raw_pt);
+     tree->Branch(prefix + "raw_eta", &raw_eta);
+     tree->Branch(prefix + "raw_phi", &raw_phi);
+     tree->Branch(prefix + "raw_m", &raw_m);
+     tree->Branch(prefix + "passJvt", &passJvt); // not needed with signal jets
+     tree->Branch(prefix + "passOR", &passOR); // not needed with signal jets
      tree->Branch(prefix + "btag_weight", &btag_weight);
      tree->Branch(prefix + "NTracks", &NTracks);
      tree->Branch(prefix + "SumPtTracks", &SumPtTracks);

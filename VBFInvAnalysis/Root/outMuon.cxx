@@ -70,8 +70,6 @@ void Analysis::outMuon::attachToTree(TTree *tree)
      tree->Branch(prefix + "topoetcone40", &topoetcone40);
      tree->Branch(prefix + "truthType", &truthType);
      tree->Branch(prefix + "truthOrigin", &truthOrigin);
-     tree->Branch(prefix + "truthType", &truthType);
-     tree->Branch(prefix + "truthOrigin", &truthOrigin);
    }
 
    return;

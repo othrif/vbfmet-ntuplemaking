@@ -413,8 +413,8 @@ if(doPileup && m_isMC){
 // CP::CorrectionCode::enableFailure();
 
    if(debug){
-    ANA_MSG_INFO ("====================================================================");
-    ANA_MSG_INFO ("in execute, on entry " << wk()->treeEntry());
+  //  ANA_MSG_INFO ("====================================================================");
+  //  ANA_MSG_INFO ("in execute, on entry " << wk()->treeEntry());
   }
 
   bool passExp = false;
@@ -564,6 +564,12 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
       return EL::StatusCode::FAILURE;
     }
 
+
+int evtNbr = content.eventInfo->eventNumber();
+//bool keep = (evtNbr == 1270036 || evtNbr == 1207901 || evtNbr == 38051022 || evtNbr == 41790254 || evtNbr == 42179313 || evtNbr == 1085060 || evtNbr == 39918946 || evtNbr ==  38732944|| evtNbr ==  39944101|| evtNbr == 39692577);
+//if(!keep)
+//    return EL::StatusCode::SUCCESS;
+
     if(debug)
       ANA_MSG_INFO ("in execute, runNumber = " << content.eventInfo->runNumber() << ", eventNumber = " << content.eventInfo->eventNumber());
 
@@ -639,6 +645,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
   // Accessors needed for the object selection
       static SG::AuxElement::Accessor<char> acc_baseline("baseline");
       static SG::AuxElement::Accessor<char> acc_signal("signal");
+      static SG::AuxElement::Accessor<char> acc_signal_less_JVT("signal_less_JVT");
       static SG::AuxElement::Accessor<char> acc_passOR("passOR");
       static SG::AuxElement::Accessor<char> acc_passJvt("passJvt");
       static SG::AuxElement::Accessor<char> acc_passFJvt("passFJvt");
@@ -759,16 +766,23 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
   //-- JETS --
   if(debug){
     for (auto jet : *content.jets) {
-      ANA_MSG_INFO ("jet pt=" << jet->pt()*0.001 << ", eta=" << jet->eta() << ", bad=" << (acc_bad(*jet)==1) << ", passOR=" << (acc_passOR(*jet)==1) << ", passJVT=" << (acc_passJvt(*jet)==1)<< ", passFJVT=" << (acc_passFJvt(*jet)==1) << " => BASELINE=" << (acc_baseline(*jet)==1) << ", SIGNAL=" << (acc_signal(*jet)==1) );
+      ANA_MSG_INFO ("jet pt=" << jet->pt()*0.001 << ", eta=" << jet->eta() << ", phi=" << jet->phi() << ", bad=" << (acc_bad(*jet)==1) << ", passOR=" << (acc_passOR(*jet)==1) << ", passJVT=" << (acc_passJvt(*jet)==1)<< ", passFJVT=" << (acc_passFJvt(*jet)==1) << " => BASELINE=" << (acc_baseline(*jet)==1) << ", SIGNAL=" << (acc_signal(*jet)==1) << ", No JVT SIGNAL=" << (acc_signal_less_JVT(*jet)==1));
     }
   }
+
+
+  Float_t mhtx = 0;
+  Float_t mhty = 0;
   for (auto jet : content.allJets){
-    // Good jets: pt>25GeV, jet cleaning, |eta| < 4.8
-    // Give user passOR, passJvt, passFJvt to decide on the jet
-    if (acc_signal(*jet) == 1 && acc_passOR(*jet) == 1 && acc_bad(*jet) == 0 && acc_passJvt(*jet)==1){
-	content.goodJets.push_back(jet);
-      }
+    if (acc_passOR(*jet) == 1 && acc_bad(*jet) == 0){
+        mhtx += jet->pt() * TMath::Cos(jet->phi());
+        mhty += jet->pt() * TMath::Sin(jet->phi());
+        if (acc_signal(*jet) == 1)
+            content.goodJets.push_back(jet);
+    }
   }
+  // Calculated MHT by hand
+  double mht = sqrt(mhtx*mhtx+mhty*mhty);
 
   //-- MUONS --
 for (auto muon : content.allMuons)
@@ -889,6 +903,12 @@ for (auto muon : content.allMuons)
  double met_cst_jet = -1.;
  met_cst_jet = (*content.met_cst)["RefJet"]->met();
  content.met_cst_jet = met_cst_jet;
+
+  if(debug) {
+    print("MET CST", met_cst_jet*1e-3);
+    print("MHT without jVT", mht*1e-3);
+    }
+
 /*
 // MET, with invisble muons
  TLorentzVector myMET_tst_nomuon;
@@ -1014,7 +1034,7 @@ if (m_isMC) {
     printObjects(content.goodElectrons, "goodElectrons");
   //-- MET --
     printMET(myMET_tst, myMETsig_tst, myTruthMET,"MET");
-    printMET(content.met_tst_nolep, "MET no muons");
+    printMET(content.met_tst_nolep, "MET no leptons");
 //    printMET(content.met_tst_noelectron, "MET no electrons");
 //    printMET(content.met_tst_nomuon, "MET no muons");
     printTrackMET(content.met_track, "track MET");
@@ -1199,7 +1219,7 @@ cand.evt.trigger["HLT_mu26_imedium"];
     cand.evt.mcEventWeights    = content.eventInfo->mcEventWeights();
     cand.evt.puWeight          = m_susytools_handle->GetPileupWeight();
     cand.evt.btagSFWeight      = m_susytools_handle->BtagSF(&content.goodJets);
-    std::cout << "puWeight=" << m_susytools_handle->GetPileupWeight() << std::endl;
+
 // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
     cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
 
