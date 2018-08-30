@@ -413,8 +413,8 @@ if(doPileup && m_isMC){
 // CP::CorrectionCode::enableFailure();
 
    if(debug){
-  //  ANA_MSG_INFO ("====================================================================");
-  //  ANA_MSG_INFO ("in execute, on entry " << wk()->treeEntry());
+    ANA_MSG_INFO ("====================================================================");
+    ANA_MSG_INFO ("in execute, on entry " << wk()->treeEntry());
   }
 
   bool passExp = false;
@@ -563,15 +563,10 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
       ANA_MSG_FATAL("Mismatch between isMC (" << m_isMC << ") and xAOD::EventInfo::IS_SIMULATION (" << xAOD::EventInfo::IS_SIMULATION << ")");
       return EL::StatusCode::FAILURE;
     }
-
-
-int evtNbr = content.eventInfo->eventNumber();
-//bool keep = (evtNbr == 1270036 || evtNbr == 1207901 || evtNbr == 38051022 || evtNbr == 41790254 || evtNbr == 42179313 || evtNbr == 1085060 || evtNbr == 39918946 || evtNbr ==  38732944|| evtNbr ==  39944101|| evtNbr == 39692577);
-//if(!keep)
-//    return EL::StatusCode::SUCCESS;
-
+    int runNbr = content.eventInfo->runNumber();
+    int evtNbr = content.eventInfo->eventNumber();
     if(debug)
-      ANA_MSG_INFO ("in execute, runNumber = " << content.eventInfo->runNumber() << ", eventNumber = " << content.eventInfo->eventNumber());
+      ANA_MSG_INFO ("in execute, runNumber = " << runNbr << ", eventNumber = " << evtNbr);
 
     float event_weight = 1.;
     if(m_isMC){
