@@ -27,7 +27,7 @@ desc=$2
 path="$TestArea/../STAnalysisCode/VBFInvAnalysis/data"
 args_file="$path/arguments/${version}_args.txt"
 list_file="$path/samples/${version}_${desc}.txt"
-log_file="$path/logs/${version}_${desc}.txt"
+log_file="./${version}_${desc}.txt"
 
 echo "Make sure files needed for the submission exist..."
 if [ -f "$args_file" ]
