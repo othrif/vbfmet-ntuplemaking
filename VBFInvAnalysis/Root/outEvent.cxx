@@ -147,6 +147,8 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       || trigName == "HLT_xe100_mht_L1XE50"
       || trigName == "HLT_xe110_mht_L1XE50"
       || trigName == "HLT_noalg_L1J400"
+//      || trigName == "HLT_j70_j50_0eta490_invm1100j70_dphi20_deta40_L1MJJ-500-NFF"
+//      || trigName == "HLT_j70_j50_0eta490_invm1000j50_dphi24_xe90_pufit_xe50_L1MJJ-500-NFF"
 /*
       // el 2015
       || trigName == "HLT_e24_lhmedium_L1EM20VH"
