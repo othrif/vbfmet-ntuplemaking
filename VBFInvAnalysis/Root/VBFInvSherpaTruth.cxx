@@ -22,9 +22,14 @@
 
 #include "PathResolver/PathResolver.h"
 
+// Need (external) fastjet to do parton clustering.
+#include "fastjet/ClusterSequence.hh"
+#include "fastjet/PseudoJet.hh"
+
 // Local include(s):
 #include <VBFInvAnalysis/VBFInvSherpaTruth.h>
 #include <VBFInvAnalysis/HelperFunctions.h>
+#include <VBFInvAnalysis/SherpaPartonCluster.h>
 
 #ifdef ROOTCORE
 #   include "xAODRootAccess/Init.h"
@@ -313,6 +318,20 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     // TruthEvents
     const xAOD::TruthEventContainer* truthE = nullptr;
     ANA_CHECK(m_event->retrieve( truthE, "TruthEvents" ));
+
+    const xAOD::TruthParticleContainer* truthParticles = nullptr;
+    ANA_CHECK(evtStore()->retrieve(truthParticles, "TruthParticles"));
+
+    // Create a jet definition, instantiate the Sherpa Parton clusterer object.
+    fastjet::JetDefinition jetDef(fastjet::antikt_algorithm, this->antiktDR);
+    SherpaPartonCluster clusterer(&jetDef, truthParticles);
+
+    // Retrieve (as vectors) the status 20 and 3 particles and parton jets.
+    std::vector<TLorentzVector> partonJets20 = clusterer.getRootPartonJets(20, this->partonJetPtCut, this->shouldNotCluster);
+    std::vector<TLorentzVector> partonJets3 = clusterer.getRootPartonJets(3, this->partonJetPtCut, this->shouldNotCluster);
+
+    std::vector<const xAOD::TruthParticle_v1*> particles20 = clusterer.getParticles(20);
+    std::vector<const xAOD::TruthParticle_v1*> particless3 = clusterer.getParticles(3);
 
     //-----------------------------------------------------------------------
     //  Fill branches

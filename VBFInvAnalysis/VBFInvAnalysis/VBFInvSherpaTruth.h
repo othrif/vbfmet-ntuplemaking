@@ -36,6 +36,15 @@ public:
     bool skipCBK;
     bool MultiWeight;
 
+    // The value of DR to use in anti-KT.
+    float antiktDR = 0.4;
+
+    // The parton jet pT to cut on, in GeV.
+    float partonJetPtCut = 20;
+
+    // Should we cluster the partons? Defaults to 'yes'.
+    bool shouldNotCluster = true;
+
     // variables that don't get filled at submission time should be
     // protected from being send from the submission node to the worker
     // node (done by the //!)

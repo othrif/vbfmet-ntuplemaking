@@ -45,6 +45,9 @@ atlas_depends_on_subdirs(
 # External(s) needed by the package:
 find_package( ROOT COMPONENTS Core Hist Physics REQUIRED )
 
+# Need fastjet for Sherpa parton clustering.
+find_package(FastJet)
+
 # Build a dictionary source file for the main library of the package:
 atlas_add_root_dictionary( VBFInvAnalysisLib VBFInvAnalysisDictSource
    ROOT_HEADERS VBFInvAnalysis/*.h Root/LinkDef.h
@@ -53,6 +56,7 @@ atlas_add_root_dictionary( VBFInvAnalysisLib VBFInvAnalysisDictSource
 # Build the main library of the package:
 atlas_add_library( VBFInvAnalysisLib
    VBFInvAnalysis/*.h Root/*.h Root/*.cxx ${VBFInvAnalysisDictSource}
+   INCLUDE_DIRS ${FASTJET_INCLUDE_DIR}
    PUBLIC_HEADERS VBFInvAnalysis
    LINK_LIBRARIES EventLoop xAODEventInfo PATInterfaces xAODJet xAODTruth xAODCore AsgAnalysisInterfaces JetInterface JetResolutionLib xAODMuon
     MuonSelectorToolsLib MuonMomentumCorrectionsLib TrigDecisionToolLib TrigConfInterfaces EventLoopAlgs PathResolver
@@ -64,7 +68,7 @@ atlas_add_library( VBFInvAnalysisLib
    MuonMomentumCorrectionsLib FourMomUtils IsolationSelectionLib IsolationCorrectionsLib
    ElectronPhotonSelectorToolsLib TauAnalysisToolsLib ElectronEfficiencyCorrectionLib
    SUSYToolsLib
-
+   ${FASTJET_LIBRARIES}
 
    PRIVATE_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS}
    PRIVATE_LINK_LIBRARIES ${ROOT_LIBRARIES} AsgTools xAODBase )
