@@ -213,6 +213,10 @@ EL::StatusCode VBFInvSherpaTruth::initialize ()
     truthTree->Branch ("parton_pdfid2", &m_parton_pdfid2);
     truthTree->Branch ("parton_pp", &m_parton_pp);
 
+    // Store number of these parton jets.
+    truthTree->Branch("numStatus20Jets", &m_numStatus20Jets);
+    truthTree->Branch("numStatus3Jets", &m_numStatus3Jets);
+
     // Add branches for Sherpa truth particles and parton jets.
     truthTree->Branch("parton20JetPt", &m_parton20JetPt);
     truthTree->Branch("parton20JetEta", &m_parton20JetEta);
@@ -237,6 +241,10 @@ EL::StatusCode VBFInvSherpaTruth::initialize ()
     truthTree->Branch("particle3E", &m_particle3E);
     truthTree->Branch("particle3Mass", &m_particle20Mass);
     truthTree->Branch("particle3PID", &m_particle20PID);
+
+    // Store number of these particles.
+    truthTree->Branch("numStatus20", &m_numStatus20);
+    truthTree->Branch("numStatus3", &m_numStatus3);
 
     return EL::StatusCode::SUCCESS;
 }
@@ -331,7 +339,7 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     std::vector<TLorentzVector> partonJets3 = clusterer.getRootPartonJets(3, this->partonJetPtCut, this->shouldNotCluster);
 
     std::vector<const xAOD::TruthParticle_v1*> particles20 = clusterer.getParticles(20);
-    std::vector<const xAOD::TruthParticle_v1*> particless3 = clusterer.getParticles(3);
+    std::vector<const xAOD::TruthParticle_v1*> particles3 = clusterer.getParticles(3);
 
     //-----------------------------------------------------------------------
     //  Fill branches
@@ -394,6 +402,12 @@ EL::StatusCode VBFInvSherpaTruth::execute()
 
     }
 
+    // Fill the status 3 and 20 particle/parton jet collections.
+    storeJets(partonJets20, m_parton20JetPt, m_parton20JetEta, m_parton20JetPhi, m_parton20JetE, &m_numStatus20Jets);
+    storeJets(partonJets3, m_parton3JetPt, m_parton3JetEta, m_parton3JetPhi, m_parton3JetE, &m_numStatus3Jets);
+    storeParticles(particles20, m_particle20Pt, m_particle20Eta, m_particle20Phi, m_particle20E, m_particle20Mass, m_particle20PID, &m_numStatus20);
+    storeParticles(particles3, m_particle3Pt, m_particle3Eta, m_particle3Phi, m_particle3E, m_particle3Mass, m_particle3PID, &m_numStatus3);
+
     //-----------------------------------------------------------------------
     //  Fill Tree
     //-----------------------------------------------------------------------
@@ -433,4 +447,74 @@ EL::StatusCode VBFInvSherpaTruth::finalize()
 EL::StatusCode VBFInvSherpaTruth::histFinalize()
 {
     return EL::StatusCode::SUCCESS;
+}
+
+// Helper functions to write things into (pointers to) tree branches.
+
+void VBFInvSherpaTruth::storeJets(  std::vector<TLorentzVector> jets,
+                                    std::vector<float>* ptvec,
+                                    std::vector<float>* etavec,
+                                    std::vector<float>* phivec,
+                                    std::vector<float>* evec,
+                                    unsigned int* size
+                                ) {
+
+    // Reset these vectors.
+    ptvec->clear();
+    etavec->clear();
+    phivec->clear();
+    evec->clear();
+
+    // Loop over the jets, push their kinematics.
+    for (unsigned int i = 0; i < jets.size(); i++) {
+        TLorentzVector jet = jets.at(i);
+        ptvec->push_back(jet.Perp());
+        etavec->push_back(jet.Eta());
+        phivec->push_back(jet.Phi());
+        evec->push_back(jet.E());
+    }
+
+    // Dereference the pointer to size, assign the number of jets.
+    (*size) = jets.size();
+
+}
+
+void VBFInvSherpaTruth::storeParticles( std::vector<const xAOD::TruthParticle_v1*> particles,
+                                        std::vector<float>* ptvec,
+                                        std::vector<float>* etavec,
+                                        std::vector<float>* phivec,
+                                        std::vector<float>* evec,
+                                        std::vector<float>* massvec,
+                                        std::vector<int>* pidvec,
+                                        unsigned int* size
+                                     ) {
+
+    // Reset these vectors.
+    ptvec->clear();
+    etavec->clear();
+    phivec->clear();
+    evec->clear();
+    massvec->clear();
+    pidvec->clear();
+
+    // Loop over the jets, push their kinematics.
+    for (unsigned int i = 0; i < particles.size(); i++) {
+        const xAOD::TruthParticle_v1* particle = particles.at(i);
+
+        TLorentzVector rootParticle;
+        rootParticle.SetPtEtaPhiE(particle->pt(), particle->eta(), particle->phi(), particle->e());
+        //rootParticle.SetPxPyPzE(particle->px(), particle->py(), particle->pz(), particle->e());
+
+        ptvec->push_back(rootParticle.Perp());
+        etavec->push_back(rootParticle.Eta());
+        phivec->push_back(rootParticle.Phi());
+        evec->push_back(rootParticle.E());
+        massvec->push_back(particle->m());
+
+        pidvec->push_back(particle->pdgId());
+    }
+
+    // Dereference the pointer to size, assign the number of jets.
+    (*size) = particles.size();
+
 }

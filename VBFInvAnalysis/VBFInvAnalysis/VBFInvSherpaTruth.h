@@ -97,6 +97,13 @@ public:
     std::vector<float>* m_particle3Mass; //!
     std::vector<int>* m_particle3PID; //!
 
+    // Store number of jets separately for easier access.
+    unsigned int m_numTruthJets = 0; //!
+    unsigned int m_numStatus20Jets = 0; //!
+    unsigned int m_numStatus3Jets = 0; //!
+    unsigned int m_numStatus20 = 0; //!
+    unsigned int m_numStatus3 = 0; //!
+
     float m_met_et; //!
     float m_met_phi; //!
 
@@ -106,6 +113,7 @@ public:
     float m_WeightEvents; //!
     UInt_t m_ChannelNumber; //!
 
+
     TH1D *NumberEvents; //!
     TH1D *NumberEventsinNtuple; //!
 
@@ -113,6 +121,25 @@ public:
 
     // this is a standard constructor
     VBFInvSherpaTruth();
+
+    // These are helper functions to write out things.
+    // Since the members are public, maybe they belong elsewhere.
+    void storeJets( std::vector<TLorentzVector> jets,
+                    std::vector<float>* ptvec,
+                    std::vector<float>* etavec,
+                    std::vector<float>* phivec,
+                    std::vector<float>* evec,
+                    unsigned int* size);
+
+    // This function 'books' a vector of partons by writing kinematics + PdgIDs.
+    void storeParticles(std::vector<const xAOD::TruthParticle_v1*> particles,
+                        std::vector<float>* ptvec,
+                        std::vector<float>* etavec,
+                        std::vector<float>* phivec,
+                        std::vector<float>* evec,
+                        std::vector<float>* massvec,
+                        std::vector<int>* pidvec,
+                        unsigned int* size);
 
     // these are the functions inherited from Algorithm
     virtual EL::StatusCode setupJob(EL::Job& job);
