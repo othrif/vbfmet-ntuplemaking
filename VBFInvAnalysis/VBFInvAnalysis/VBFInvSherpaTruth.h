@@ -60,6 +60,34 @@ public:
     std::vector<int> *m_parton_pdfid2; //!
     std::vector<int> *m_parton_pp; //!
 
+    // Status 20 parton jets.
+    std::vector<float>* m_parton20JetPt; //!
+    std::vector<float>* m_parton20JetEta; //!
+    std::vector<float>* m_parton20JetPhi; //!
+    std::vector<float>* m_parton20JetE; //!
+
+    // Status 3 parton jets.
+    std::vector<float>* m_parton3JetPt; //!
+    std::vector<float>* m_parton3JetEta; //!
+    std::vector<float>* m_parton3JetPhi; //!
+    std::vector<float>* m_parton3JetE; //!
+
+    // Status 20 particles.
+    std::vector<float>* m_particle20Pt; //!
+    std::vector<float>* m_particle20Eta; //!
+    std::vector<float>* m_particle20Phi; //!
+    std::vector<float>* m_particle20E; //!
+    std::vector<float>* m_particle20Mass; //!
+    std::vector<int>* m_particle20PID; //!
+
+    // Status 3 particles.
+    std::vector<float>* m_particle3Pt; //!
+    std::vector<float>* m_particle3Eta; //!
+    std::vector<float>* m_particle3Phi; //!
+    std::vector<float>* m_particle3E; //!
+    std::vector<float>* m_particle3Mass; //!
+    std::vector<int>* m_particle3PID; //!
+
     float m_met_et; //!
     float m_met_phi; //!
 

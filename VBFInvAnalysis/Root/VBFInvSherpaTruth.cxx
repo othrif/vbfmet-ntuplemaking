@@ -140,6 +140,32 @@ EL::StatusCode VBFInvSherpaTruth::initialize ()
     m_parton_pdfid2 = new std::vector<int>();
     m_parton_pp = new std::vector<int>();
 
+    // Declare status 3, 20 particles and parton jet collections.
+
+    m_parton20JetPt = new std::vector<float>();
+    m_parton20JetEta = new std::vector<float>();
+    m_parton20JetPhi = new std::vector<float>();
+    m_parton20JetE = new std::vector<float>();
+
+    m_parton3JetPt = new std::vector<float>();
+    m_parton3JetEta = new std::vector<float>();
+    m_parton3JetPhi = new std::vector<float>();
+    m_parton3JetE = new std::vector<float>();
+
+    m_particle20Pt = new std::vector<float>();
+    m_particle20Eta = new std::vector<float>();
+    m_particle20Phi = new std::vector<float>();
+    m_particle20E = new std::vector<float>();
+    m_particle20Mass = new std::vector<float>();
+    m_particle20PID = new std::vector<int>();
+
+    m_particle3Pt = new std::vector<float>();
+    m_particle3Eta = new std::vector<float>();
+    m_particle3Phi = new std::vector<float>();
+    m_particle3E = new std::vector<float>();
+    m_particle3Mass = new std::vector<float>();
+    m_particle3PID = new std::vector<int>();
+
     ANA_MSG_INFO("Histogram output name is " << outputNameHist);
     TFile *outputFileHist = wk()->getOutputFile (outputNameHist);
     ANA_MSG_INFO("Tree output name is " << outputName);
@@ -181,6 +207,31 @@ EL::StatusCode VBFInvSherpaTruth::initialize ()
     truthTree->Branch ("parton_pdfid1", &m_parton_pdfid1);
     truthTree->Branch ("parton_pdfid2", &m_parton_pdfid2);
     truthTree->Branch ("parton_pp", &m_parton_pp);
+
+    // Add branches for Sherpa truth particles and parton jets.
+    truthTree->Branch("parton20JetPt", &m_parton20JetPt);
+    truthTree->Branch("parton20JetEta", &m_parton20JetEta);
+    truthTree->Branch("parton20JetPhi", &m_parton20JetPhi);
+    truthTree->Branch("parton20JetE", &m_parton20JetE);
+
+    truthTree->Branch("parton3JetPt", &m_parton3JetPt);
+    truthTree->Branch("parton3JetEta", &m_parton3JetEta);
+    truthTree->Branch("parton3JetPhi", &m_parton3JetPhi);
+    truthTree->Branch("parton3JetE", &m_parton3JetE);
+
+    truthTree->Branch("particle20Pt", &m_particle20Pt);
+    truthTree->Branch("particle20Eta", &m_particle20Eta);
+    truthTree->Branch("particle20Phi", &m_particle20Phi);
+    truthTree->Branch("particle20E", &m_particle20E);
+    truthTree->Branch("particle20Mass", &m_particle20Mass);
+    truthTree->Branch("particle20PID", &m_particle20PID);
+
+    truthTree->Branch("particle3Pt", &m_particle3Pt);
+    truthTree->Branch("particle3Eta", &m_particle3Eta);
+    truthTree->Branch("particle3Phi", &m_particle3Phi);
+    truthTree->Branch("particle3E", &m_particle3E);
+    truthTree->Branch("particle3Mass", &m_particle20Mass);
+    truthTree->Branch("particle3PID", &m_particle20PID);
 
     return EL::StatusCode::SUCCESS;
 }
