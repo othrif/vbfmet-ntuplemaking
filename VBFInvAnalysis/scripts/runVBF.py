@@ -24,7 +24,7 @@ parser.add_argument( "-k", "--nskip", type = int, dest = "nskip", help="Number o
 parser.add_argument( "-r", "--replicationSite", type = str, dest = "replicationSite", default = "DESY-HH_LOCALGROUPDISK", help="Name of disk where to replicate output of grid jobs" )
 parser.add_argument( "-w", "--overwrite", dest = "overwrite", action = "store_false", default = True, help = "don't overwrite previous submitDir")
 parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "prun"], help = "driver to be used (local, prun)", metavar="driver")
-parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
+parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth, VBFInvSherpaTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
 parser.add_argument( "-u", "--user", type=str, dest="userName", default=os.environ["USER"], help="username for grid jobs", metavar="userName")
 
 # Algorithm configuration
