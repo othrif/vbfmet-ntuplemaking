@@ -716,9 +716,9 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
       ANA_CHECK(m_susytools_handle->GetPhotons(content.photons, content.photonsAux, kTRUE));
       for (auto ph : *content.photons) {
        //static SG::AuxElement::Accessor<char> acc_baseline("baseline");
-       if (acc_baseline(*ph) == 1) {
+       //if (acc_baseline(*ph) == 1) {
         content.allPhotons.push_back(ph);
-      }
+	//}
     }
     content.allPhotons.sort(&HelperFunctions::comparePt);
   }
@@ -884,13 +884,13 @@ for (auto muon : content.allMuons)
  double myMETsig_cst;
  getMET(content.met_cst,
 	content.met_cstAux,
-	content.jets, // use all objects (before OR and after corrections) for MET utility                                                                                                                       
+	content.jets, // use all objects (before OR and after corrections) for MET utility
 	content.electrons,
 	content.muons,
 	content.photons,
-	kFALSE, // do TST                                                                                                                                                                                         
-	kFALSE, // do JVT                                                                                                                                                                                         
-	nullptr, // invisible particles                                                                                                                                                                     
+	kFALSE, // do TST
+	kFALSE, // do JVT
+	nullptr, // invisible particles
 	myMET_cst,
    	myMETsig_cst
  	);
@@ -1033,6 +1033,10 @@ if (m_isMC) {
 //    printMET(content.met_tst_noelectron, "MET no electrons");
 //    printMET(content.met_tst_nomuon, "MET no muons");
     printTrackMET(content.met_track, "track MET");
+    //-- PHOTONS --
+    std::cout << "photons" << std::endl;
+    printObjects(content.allPhotons, "photons");
+    std::cout << "end photons" << std::endl;
   }
 
   //-----------------------------------------------------------------------
@@ -1164,14 +1168,39 @@ cand.evt.trigger["HLT_mu26_imedium"];
   cand.evt.year = (m_isMC) ? m_susytools_handle->treatAsYear() : 0; // RandomRunNumber from the PRWTool
 
   Bool_t is2015(kFALSE);
-/*  Bool_t is2016(kFALSE);
-  Bool_t is2017(kFALSE);
+  Bool_t is2016(kFALSE);
+/*  Bool_t is2017(kFALSE);
   Bool_t is2018(kFALSE);*/
 
    if ((cand.evt.year == 0 && cand.evt.runNumber >= 276262 && cand.evt.runNumber <= 284484) || cand.evt.year == 2015) is2015 = kTRUE; // data2015
-/*   if ((cand.evt.year == 0 && cand.evt.runNumber >= 296939 && cand.evt.runNumber<=311481 ) || cand.evt.year == 2016) is2016 = kTRUE; // data2016
-   if ((cand.evt.year == 0 && cand.evt.runNumber >= 324320 && cand.evt.runNumber<=341649 ) || cand.evt.year == 2017) is2017 = kTRUE; // data2017
+   if ((cand.evt.year == 0 && cand.evt.runNumber >= 296939 && cand.evt.runNumber<=311481 ) || cand.evt.year == 2016) is2016 = kTRUE; // data2016
+/*   if ((cand.evt.year == 0 && cand.evt.runNumber >= 324320 && cand.evt.runNumber<=341649 ) || cand.evt.year == 2017) is2017 = kTRUE; // data2017
   if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197) || cand.evt.year == 2018) is2018 = kTRUE; // data2018*/
+
+// Testing trigger configuration:
+/*cand.evt.trigger_met = (is2015 && cand.evt.trigger["HLT_xe70_mht"]) ||
+               (is2016 && ( cand.evt.trigger["HLT_xe90_mht_L1XE50"] || cand.evt.trigger["HLT_xe110_mht_L1XE50"] )) ||
+               cand.evt.trigger["HLT_noalg_L1J400"] ;*/
+cand.evt.randomRunNumber = m_susytools_handle->GetRandomRunNumber();
+
+Bool_t customMETtrig(kFALSE);
+if(is2015 && cand.evt.trigger["HLT_xe70_mht"])
+  customMETtrig = kTRUE;
+else if(is2016 && cand.evt.randomRunNumber <= 304008 && cand.evt.trigger["HLT_xe90_mht_L1XE50"])
+  customMETtrig = kTRUE;
+else if(is2016 && cand.evt.randomRunNumber > 304008 && cand.evt.trigger["HLT_xe110_mht_L1XE50"])
+  customMETtrig = kTRUE;
+else if (cand.evt.trigger["HLT_noalg_L1J400"])
+  customMETtrig = kTRUE;
+
+cand.evt.trigger_met = customMETtrig;
+/*
+if(cand.evt.trigger_met != customMETtrig){
+std::cout << "\nTrigger trigger_met is not the same as custom trigger!!" << std::endl;
+std::cout << "Random run number: " << cand.evt.randomRunNumber << std::endl;
+std::cout << "> Trigger trigger_met value: " << cand.evt.trigger_met << std::endl;
+std::cout << "> Trigger custom value: " << customMETtrig << std::endl;
+}*/
 
   // pass event flags
    cand.evt.passGRL = content.passGRL;
@@ -1446,7 +1475,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
                                jet, // use all objects (before OR and after corrections) for MET utility
                                el,
                                mu,
-                               ph,
+			                         0,//ph, // ph term
                                0, // tau term
                                doTST,
                                doJVT,

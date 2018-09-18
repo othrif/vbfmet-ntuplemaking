@@ -20,6 +20,7 @@ void Analysis::outEvent::reset()
 // General
  year = 0;
  runNumber = -9999;
+ randomRunNumber = -9999;
  eventNumber = 0;
  lumiBlock = -9999;
  bcid = -9999;
@@ -86,6 +87,8 @@ void Analysis::outEvent::reset()
   kv.second = -9999;
 }
 trigger_lep = -9999;
+trigger_met = -9999;
+custom_trigger_met = -9999;
 
 passGRL = -9999;
 //passTrigger = -9999;
@@ -121,6 +124,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
 
    tree->Branch(prefix + "year", &year);
    tree->Branch(prefix + "runNumber", &runNumber);
+   tree->Branch(prefix + "randomRunNumber", &randomRunNumber);
    tree->Branch(prefix + "eventNumber", &eventNumber);
    tree->Branch(prefix + "lumiBlock", &lumiBlock);
    tree->Branch(prefix + "bcid", &bcid);
@@ -180,6 +184,8 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "trigger_" + trigName, &itrig.second);
     }
     tree->Branch(prefix + "trigger_lep", &trigger_lep);
+    tree->Branch(prefix + "trigger_met", &trigger_met);
+    tree->Branch(prefix + "custom_trigger_met", &custom_trigger_met);
 
 /*
     tree->Branch(prefix + "pdf_id1", &pdf_id1);

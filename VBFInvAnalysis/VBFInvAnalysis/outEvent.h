@@ -15,6 +15,7 @@ namespace Analysis {
       // event variables
       Int_t year;
       Int_t runNumber;
+      Int_t randomRunNumber;
       ULong64_t eventNumber;
       Int_t lumiBlock;
       Int_t bcid;
@@ -82,6 +83,8 @@ namespace Analysis {
 
       std::map<TString, Int_t> trigger;
       Int_t trigger_lep;
+      Int_t trigger_met;
+      Int_t custom_trigger_met;
 
       Int_t passGRL;
 //      Int_t passTrigger;
