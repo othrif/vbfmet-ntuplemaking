@@ -1034,9 +1034,7 @@ if (m_isMC) {
 //    printMET(content.met_tst_nomuon, "MET no muons");
     printTrackMET(content.met_track, "track MET");
     //-- PHOTONS --
-    std::cout << "photons" << std::endl;
     printObjects(content.allPhotons, "photons");
-    std::cout << "end photons" << std::endl;
   }
 
   //-----------------------------------------------------------------------
@@ -1194,13 +1192,6 @@ else if (cand.evt.trigger["HLT_noalg_L1J400"])
   customMETtrig = kTRUE;
 
 cand.evt.trigger_met = customMETtrig;
-/*
-if(cand.evt.trigger_met != customMETtrig){
-std::cout << "\nTrigger trigger_met is not the same as custom trigger!!" << std::endl;
-std::cout << "Random run number: " << cand.evt.randomRunNumber << std::endl;
-std::cout << "> Trigger trigger_met value: " << cand.evt.trigger_met << std::endl;
-std::cout << "> Trigger custom value: " << customMETtrig << std::endl;
-}*/
 
   // pass event flags
    cand.evt.passGRL = content.passGRL;
