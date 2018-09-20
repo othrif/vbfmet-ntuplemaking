@@ -13,6 +13,8 @@
 #include "TTree.h"
 #include "TLorentzVector.h"
 
+#include <VBFInvAnalysis/DijetInfo.h>
+
 namespace Analysis {
     class DijetFinder;
 }
@@ -50,6 +52,9 @@ private:
 
     // Number of jets.
     unsigned int m_numJets = 0;
+
+    // The dijet info objects that we are going to use.
+    Analysis::LeadingDijetInfo* m_leadingDijets;
 
 };
 

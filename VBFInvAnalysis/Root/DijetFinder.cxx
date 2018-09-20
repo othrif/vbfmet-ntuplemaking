@@ -22,6 +22,9 @@ namespace Analysis {
 DijetFinder::DijetFinder(std::string prefix, float minPt)
     : m_prefix(prefix), m_minPt(minPt) {
 
+    // Create dijet info objects.
+    m_leadingDijets = new Analysis::LeadingDijetInfo(prefix);
+
 }
 
 void DijetFinder::attachToTree(TTree* tree) {
@@ -35,7 +38,8 @@ void DijetFinder::attachToTree(TTree* tree) {
     // Store the number of jets, as well, because that's good to know.
     tree->Branch((m_prefix + "_numJets").c_str(), &m_numJets);
 
-    // TODO: call DijetInfo classes, pass the tree to them too!
+    // Call DijetInfo classes, pass the tree to them too!
+    m_leadingDijets->attachToTree(tree);
 }
 
 void DijetFinder::reset() {
@@ -51,7 +55,8 @@ void DijetFinder::reset() {
     // Reset pruned jet objects.
     m_prunedJets.clear();
 
-    // TODO: reset dijet info classes.
+    // Reset dijet info classes.
+    m_leadingDijets->reset();
 }
 
 void DijetFinder::computeMjj(std::vector<TLorentzVector> jets) {
@@ -82,6 +87,7 @@ void DijetFinder::computeMjj(std::vector<TLorentzVector> jets) {
         }
     }
 
-    // TODO: call the relevant DijetInfo classes too, pass m_prunedJets.
+    // Call the relevant DijetInfo classes too, pass m_prunedJets.
+    m_leadingDijets->compute(m_prunedJets);
 
 }
