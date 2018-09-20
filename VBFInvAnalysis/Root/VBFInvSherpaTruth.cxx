@@ -29,7 +29,6 @@
 // Local include(s):
 #include <VBFInvAnalysis/VBFInvSherpaTruth.h>
 #include <VBFInvAnalysis/HelperFunctions.h>
-#include <VBFInvAnalysis/SherpaPartonCluster.h>
 
 #ifdef ROOTCORE
 #   include "xAODRootAccess/Init.h"
@@ -117,7 +116,7 @@ EL::StatusCode VBFInvSherpaTruth::fileExecute()
     return EL::StatusCode::SUCCESS;
 }
 
-EL::StatusCode VBFInvSherpaTruth::initialize ()
+EL::StatusCode VBFInvSherpaTruth::initialize()
 {
 
     m_event = wk()->xaodEvent();
@@ -127,50 +126,7 @@ EL::StatusCode VBFInvSherpaTruth::initialize ()
     my_XsecDB = new SUSY::CrossSectionDB(xSecFilePath);
     if (debug) ANA_MSG_INFO("xsec DB initialized using file:" <<  xSecFilePath);
 
-    m_jet_E = new std::vector<float>();
-    m_jet_pt = new std::vector<float>();
-    m_jet_eta = new std::vector<float>();
-    m_jet_phi = new std::vector<float>();
-    m_jet_m = new std::vector<float>();
-    m_jet_label = new std::vector<int>();
-
-    m_parton_x1 = new std::vector<float>();
-    m_parton_x2 = new std::vector<float>();
-    m_parton_xf1 = new std::vector<float>();
-    m_parton_xf2 = new std::vector<float>();
-    m_parton_Q = new std::vector<float>();
-    m_parton_pdgid1 = new std::vector<int>();
-    m_parton_pdgid2 = new std::vector<int>();
-    m_parton_pdfid1 = new std::vector<int>();
-    m_parton_pdfid2 = new std::vector<int>();
-    m_parton_pp = new std::vector<int>();
-
-    // Declare status 3, 20 particles and parton jet collections.
-
-    m_parton20JetPt = new std::vector<float>();
-    m_parton20JetEta = new std::vector<float>();
-    m_parton20JetPhi = new std::vector<float>();
-    m_parton20JetE = new std::vector<float>();
-
-    m_parton3JetPt = new std::vector<float>();
-    m_parton3JetEta = new std::vector<float>();
-    m_parton3JetPhi = new std::vector<float>();
-    m_parton3JetE = new std::vector<float>();
-
-    m_particle20Pt = new std::vector<float>();
-    m_particle20Eta = new std::vector<float>();
-    m_particle20Phi = new std::vector<float>();
-    m_particle20E = new std::vector<float>();
-    m_particle20Mass = new std::vector<float>();
-    m_particle20PID = new std::vector<int>();
-
-    m_particle3Pt = new std::vector<float>();
-    m_particle3Eta = new std::vector<float>();
-    m_particle3Phi = new std::vector<float>();
-    m_particle3E = new std::vector<float>();
-    m_particle3Mass = new std::vector<float>();
-    m_particle3PID = new std::vector<int>();
-
+    // I don't know if we still need most of this?
     ANA_MSG_INFO("Histogram output name is " << outputNameHist);
     TFile *outputFileHist = wk()->getOutputFile (outputNameHist);
     ANA_MSG_INFO("Tree output name is " << outputName);
@@ -178,6 +134,8 @@ EL::StatusCode VBFInvSherpaTruth::initialize ()
     NumberEventsinNtuple = NumberEvents;
     NumberEvents->SetDirectory(outputFileHist);
     NumberEventsinNtuple->SetDirectory(outputFile);
+
+    // Create the tree.
     truthTree = new TTree("MiniNtuple", "a truth Tree");
     truthTree->SetDirectory(outputFile);
 
@@ -188,89 +146,37 @@ EL::StatusCode VBFInvSherpaTruth::initialize ()
     truthTree->Branch("EventWeight", &m_WeightEvents);
     truthTree->Branch("ChannelNumber", &m_ChannelNumber);
 
-    // Jets
-    truthTree->Branch ("njets", &m_njets);
-    truthTree->Branch ("jet_E", &m_jet_E);
-    truthTree->Branch ("jet_pt", &m_jet_pt);
-    truthTree->Branch ("jet_eta", &m_jet_eta);
-    truthTree->Branch ("jet_phi", &m_jet_phi);
-    truthTree->Branch ("jet_m", &m_jet_m);
-    truthTree->Branch ("jet_label", &m_jet_label);
+    // Status code used to do clustering.
+    truthTree->Branch("clusterPartonCode", &m_clusterPartonCode);
 
     // MET
-    truthTree->Branch ("met_et", &m_met_et);
-    truthTree->Branch ("met_phi", &m_met_phi);
+    truthTree->Branch("met_et", &m_met_et);
+    truthTree->Branch("met_phi", &m_met_phi);
 
-    // Parton
-    truthTree->Branch ("parton_x1", &m_parton_x1);
-    truthTree->Branch ("parton_x2", &m_parton_x2);
-    truthTree->Branch ("parton_xf1", &m_parton_xf1);
-    truthTree->Branch ("parton_xf2", &m_parton_xf2);
-    truthTree->Branch ("parton_Q", &m_parton_Q);
-    truthTree->Branch ("parton_pdgid1", &m_parton_pdgid1);
-    truthTree->Branch ("parton_pdgid2", &m_parton_pdgid2);
-    truthTree->Branch ("parton_pdfid1", &m_parton_pdfid1);
-    truthTree->Branch ("parton_pdfid2", &m_parton_pdfid2);
-    truthTree->Branch ("parton_pp", &m_parton_pp);
+    // Define fastjet definition.
+    fastjet::JetDefinition m_jetDef(fastjet::antikt_algorithm, this->antiktDR);
 
-    // Store number of these parton jets.
-    truthTree->Branch("numStatus20Jets", &m_numStatus20Jets);
-    truthTree->Branch("numStatus3Jets", &m_numStatus3Jets);
+    // Create (and attach) a Truth Jet dijet finder.
+    // TODO: 20.0 here is the min pT cut for jets, make property.
+    m_truthDijetFinder = new Analysis::DijetFinder("truth", 20.0);
+    m_truthDijetFinder->attachToTree(truthTree);
 
-    // Add branches for Sherpa truth particles and parton jets.
-    truthTree->Branch("parton20JetPt", &m_parton20JetPt);
-    truthTree->Branch("parton20JetEta", &m_parton20JetEta);
-    truthTree->Branch("parton20JetPhi", &m_parton20JetPhi);
-    truthTree->Branch("parton20JetE", &m_parton20JetE);
-
-    truthTree->Branch("parton3JetPt", &m_parton3JetPt);
-    truthTree->Branch("parton3JetEta", &m_parton3JetEta);
-    truthTree->Branch("parton3JetPhi", &m_parton3JetPhi);
-    truthTree->Branch("parton3JetE", &m_parton3JetE);
-
-    truthTree->Branch("particle20Pt", &m_particle20Pt);
-    truthTree->Branch("particle20Eta", &m_particle20Eta);
-    truthTree->Branch("particle20Phi", &m_particle20Phi);
-    truthTree->Branch("particle20E", &m_particle20E);
-    truthTree->Branch("particle20Mass", &m_particle20Mass);
-    truthTree->Branch("particle20PID", &m_particle20PID);
-
-    truthTree->Branch("particle3Pt", &m_particle3Pt);
-    truthTree->Branch("particle3Eta", &m_particle3Eta);
-    truthTree->Branch("particle3Phi", &m_particle3Phi);
-    truthTree->Branch("particle3E", &m_particle3E);
-    truthTree->Branch("particle3Mass", &m_particle20Mass);
-    truthTree->Branch("particle3PID", &m_particle20PID);
-
-    // Store number of these particles.
-    truthTree->Branch("numStatus20", &m_numStatus20);
-    truthTree->Branch("numStatus3", &m_numStatus3);
+    // Create three (!) parton clusterer objects.
+    // TODO: make all these variable algorithm properties.
+    m_status20Partons = new Analysis::PartonClusterer("status20", 20.0, &m_jetDef, false);
+    m_status3Partons = new Analysis::PartonClusterer("status3", 20.0, &m_jetDef, false);
+    m_partonClusterer = new Analysis::PartonClusterer("parton", 20.0, &m_jetDef, false);
 
     return EL::StatusCode::SUCCESS;
 }
 
-
-
 EL::StatusCode VBFInvSherpaTruth::execute()
 {
-
-    m_jet_E->clear();
-    m_jet_pt->clear();
-    m_jet_eta->clear();
-    m_jet_phi->clear();
-    m_jet_m->clear();
-    m_jet_label->clear();
-
-    m_parton_x1->clear();
-    m_parton_x2->clear();
-    m_parton_xf1->clear();
-    m_parton_xf2->clear();
-    m_parton_Q->clear();
-    m_parton_pdgid1->clear();
-    m_parton_pdgid2->clear();
-    m_parton_pdfid1->clear();
-    m_parton_pdfid2->clear();
-    m_parton_pp->clear();
+    // Call the various reset() hooks.
+    m_truthDijetFinder->reset();
+    m_status20Partons->reset();
+    m_status3Partons->reset();
+    m_partonClusterer->reset();
 
     if (debug) ANA_MSG_INFO("***New event***" );
 
@@ -305,113 +211,80 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     //-----------------------------------------------------------------------
 
     xAOD::TEvent *event = wk()->xaodEvent();
+
     // Jets
     const xAOD::JetContainer* jets = nullptr;
 
     static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
     if (!failedLookingFor) {
-     if (!event->retrieve(jets, "AntiKt4TruthJets").isSuccess()) {
-        if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
-        ANA_CHECK (evtStore()->retrieve( jets, "AntiKt4TruthDressedWZJets"));
-        failedLookingFor = kTRUE;
-    }
-    else {
-        if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthJets!");
-    }
+        if (!event->retrieve(jets, "AntiKt4TruthJets").isSuccess()) {
+            if (debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
+            ANA_CHECK (evtStore()->retrieve( jets, "AntiKt4TruthDressedWZJets"));
+            failedLookingFor = kTRUE;
+        } else {
+            if (debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthJets!");
+        }
     } else {
-        if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
-        ANA_CHECK (evtStore()->retrieve( jets, "AntiKt4TruthDressedWZJets"));
+        if (debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
+        ANA_CHECK(evtStore()->retrieve(jets, "AntiKt4TruthDressedWZJets"));
     }
 
-    // TruthEvents
-    const xAOD::TruthEventContainer* truthE = nullptr;
-    ANA_CHECK(m_event->retrieve( truthE, "TruthEvents" ));
+    // Post-process the truth jets into an array of TLorentzVectors.
+    // TODO: make this a method.
+    std::vector<TLorentzVector> truthJets;
+    TLorentzVector truthJet;
+    for (const auto* jet: *jets) {
+        TLorentzVector truthJet;
+        truthJet.SetPtEtaPhiE(jet->pt(), jet->eta(), jet->phi(), jet->e());
+        truthJets.push_back(truthJet);
+    }
 
+    // Pass the truth jets to the truth dijet finder.
+    m_truthDijetFinder->computeMjj(truthJets);
+
+    // Retrieve truth particles from the xAOD.
     const xAOD::TruthParticleContainer* truthParticles = nullptr;
     ANA_CHECK(evtStore()->retrieve(truthParticles, "TruthParticles"));
 
-    // Create a jet definition, instantiate the Sherpa Parton clusterer object.
-    fastjet::JetDefinition jetDef(fastjet::antikt_algorithm, this->antiktDR);
-    SherpaPartonCluster clusterer(&jetDef, truthParticles);
+    // Sort truth particles by status code.
+    this->fillMapFromTruthParticles(truthParticles);
 
-    // Retrieve (as vectors) the status 20 and 3 particles and parton jets.
-    std::vector<TLorentzVector> partonJets20 = clusterer.getRootPartonJets(20, this->partonJetPtCut, this->shouldNotCluster);
-    std::vector<TLorentzVector> partonJets3 = clusterer.getRootPartonJets(3, this->partonJetPtCut, this->shouldNotCluster);
+    // Determine if this is a S or H event by seeing if there are status 20 particles.
+    std::vector<const xAOD::TruthParticle*> status20 = m_truthByStatus[20];
+    std::vector<const xAOD::TruthParticle*> status3 = m_truthByStatus[3];
 
-    std::vector<const xAOD::TruthParticle_v1*> particles20 = clusterer.getParticles(20);
-    std::vector<const xAOD::TruthParticle_v1*> particles3 = clusterer.getParticles(3);
+    // This is a pointer to either the status 3 or status 20 particles.
+    std::vector<const xAOD::TruthParticle*>* particles;
 
-    //-----------------------------------------------------------------------
-    //  Fill branches
-    //-----------------------------------------------------------------------
-
-    // Jets
-        int njet5=0;
-        for (const auto& truthJ_itr : *jets){
-           if (truthJ_itr->pt() > 5000. && truthJ_itr->auxdata< bool >("passTruthOR")) {
-            m_jet_E->push_back(truthJ_itr->e());
-            m_jet_pt->push_back(truthJ_itr->pt());
-            m_jet_eta->push_back(truthJ_itr->eta());
-            m_jet_phi->push_back(truthJ_itr->phi());
-            m_jet_m->push_back(truthJ_itr->m());
-            m_jet_label->push_back(truthJ_itr->auxdata<int>("PartonTruthLabelID"));
-            njet5++;
-        }
-    }
-    m_njets = njet5;
-
-    // Partons
-    for (const auto& truthE_itr : *truthE){
-    if(truthE_itr->isAvailable< float >( "X1" ) ){
-        m_parton_x1->push_back(truthE_itr->auxdata<float>("X1"));
-        m_parton_x2->push_back(truthE_itr->auxdata<float>("X2"));
-        m_parton_xf1->push_back(truthE_itr->auxdata<float>("XF1"));
-        m_parton_xf2->push_back(truthE_itr->auxdata<float>("XF2"));
-        m_parton_Q->push_back(truthE_itr->auxdata<float>("Q"));
-        m_parton_pdgid1->push_back(truthE_itr->auxdata<int>("PDGID1"));
-        m_parton_pdgid2->push_back(truthE_itr->auxdata<int>("PDGID2"));
-        m_parton_pdfid1->push_back(truthE_itr->auxdata<int>("PDFID1"));
-        m_parton_pdfid2->push_back(truthE_itr->auxdata<int>("PDFID2"));
-
-            // qq: 0
-            // qg: 1
-            // gg: 2
-            // other: 3
-        if(truthE_itr->auxdata<int>("PDGID1")<=6 && truthE_itr->auxdata<int>("PDGID2")<=6)
-            m_parton_pp->push_back(0);
-        else if ( (truthE_itr->auxdata<int>("PDGID1")==21 && truthE_itr->auxdata<int>("PDGID2")<=6) || (truthE_itr->auxdata<int>("PDGID2")==21 && truthE_itr->auxdata<int>("PDGID1")<=6) )
-            m_parton_pp->push_back(1);
-        else if (truthE_itr->auxdata<int>("PDGID1")==21 && truthE_itr->auxdata<int>("PDGID2")==21)
-            m_parton_pp->push_back(2);
-        else {
-            m_parton_pp->push_back(3);
-            ANA_MSG_INFO("What the hell is this one " << truthE_itr->auxdata<int>("PDGID1") << " AND " << truthE_itr->auxdata<int>("PDGID2"));
-        }
-
-        }else{ // Somehow it does not exist
-            m_parton_x1->push_back(-1);
-            m_parton_x2->push_back(-1);
-            m_parton_xf1->push_back(-1);
-            m_parton_xf2->push_back(-1);
-            m_parton_Q->push_back(-1);
-            m_parton_pdgid1->push_back(-1);
-            m_parton_pdgid2->push_back(-1);
-            m_parton_pdfid1->push_back(-1);
-            m_parton_pdfid2->push_back(-1);
-        }
-
+    // If "clusterPartonCode" is 20, then we are a MC@NLO S Event.
+    // Otherwise, we're presumably a MC@NLO H event, though this only holds for Sherpa 2.2.2+ MC@NLO.
+    if (status20.size() != 0) {
+        m_clusterPartonCode = 20;
+    } else {
+        m_clusterPartonCode = 3;
     }
 
-    // Fill the status 3 and 20 particle/parton jet collections.
-    storeJets(partonJets20, m_parton20JetPt, m_parton20JetEta, m_parton20JetPhi, m_parton20JetE, &m_numStatus20Jets);
-    storeJets(partonJets3, m_parton3JetPt, m_parton3JetEta, m_parton3JetPhi, m_parton3JetE, &m_numStatus3Jets);
-    storeParticles(particles20, m_particle20Pt, m_particle20Eta, m_particle20Phi, m_particle20E, m_particle20Mass, m_particle20PID, &m_numStatus20);
-    storeParticles(particles3, m_particle3Pt, m_particle3Eta, m_particle3Phi, m_particle3E, m_particle3Mass, m_particle3PID, &m_numStatus3);
+    // Now, call all of the truth particle workers.
+    // This approach is somewhat inefficient. It would be better to somehow have m_partonClusterer
+    // check either m_status20Partons or m_status3Partons to get all the computed/stored values
+    // instead of doing them a second time. It's good enough for now though.
+    m_status20Partons->clusterPartons(status20);
+    m_status3Partons->clusterPartons(status3);
+    m_partonClusterer->clusterPartons(*particles);
+
+    // Using the clustered parton jets, compute (and store) mjj.
+    m_status20Partons->computeMjj();
+    m_status3Partons->computeMjj();
+    m_partonClusterer->computeMjj();
 
     //-----------------------------------------------------------------------
     //  Fill Tree
     //-----------------------------------------------------------------------
     truthTree->Fill();
+
+    // Clear the map of status codes/truth particles.
+    m_truthByStatus.clear();
+
 
     //-----------------------------------------------------------------------
     //  Tests
@@ -449,72 +322,25 @@ EL::StatusCode VBFInvSherpaTruth::histFinalize()
     return EL::StatusCode::SUCCESS;
 }
 
-// Helper functions to write things into (pointers to) tree branches.
+// This helper method could be moved into its own class, but I don't know that it matters.
 
-void VBFInvSherpaTruth::storeJets(  std::vector<TLorentzVector> jets,
-                                    std::vector<float>* ptvec,
-                                    std::vector<float>* etavec,
-                                    std::vector<float>* phivec,
-                                    std::vector<float>* evec,
-                                    unsigned int* size
-                                ) {
+void VBFInvSherpaTruth::fillMapFromTruthParticles(const xAOD::TruthParticleContainer* truthParticles) {
 
-    // Reset these vectors.
-    ptvec->clear();
-    etavec->clear();
-    phivec->clear();
-    evec->clear();
+    int status;
 
-    // Loop over the jets, push their kinematics.
-    for (unsigned int i = 0; i < jets.size(); i++) {
-        TLorentzVector jet = jets.at(i);
-        ptvec->push_back(jet.Perp());
-        etavec->push_back(jet.Eta());
-        phivec->push_back(jet.Phi());
-        evec->push_back(jet.E());
+    // Create vectors for status 20 and status 3, always.
+    this->m_truthByStatus[3] = std::vector<const xAOD::TruthParticle*>();
+    this->m_truthByStatus[20] = std::vector<const xAOD::TruthParticle*>();
+
+    for (const auto* particle: *truthParticles) {
+        status = particle->status();
+
+        // Check if we already created the vector. If not, create it!
+        if (this->m_truthByStatus.count(status) == 0) {
+            this->m_truthByStatus[status] = std::vector<const xAOD::TruthParticle*>();
+        }
+
+        // Add the particle to a status-code-indexed vector.
+        m_truthByStatus[status].push_back(particle);
     }
-
-    // Dereference the pointer to size, assign the number of jets.
-    (*size) = jets.size();
-
-}
-
-void VBFInvSherpaTruth::storeParticles( std::vector<const xAOD::TruthParticle_v1*> particles,
-                                        std::vector<float>* ptvec,
-                                        std::vector<float>* etavec,
-                                        std::vector<float>* phivec,
-                                        std::vector<float>* evec,
-                                        std::vector<float>* massvec,
-                                        std::vector<int>* pidvec,
-                                        unsigned int* size
-                                     ) {
-
-    // Reset these vectors.
-    ptvec->clear();
-    etavec->clear();
-    phivec->clear();
-    evec->clear();
-    massvec->clear();
-    pidvec->clear();
-
-    // Loop over the jets, push their kinematics.
-    for (unsigned int i = 0; i < particles.size(); i++) {
-        const xAOD::TruthParticle_v1* particle = particles.at(i);
-
-        TLorentzVector rootParticle;
-        rootParticle.SetPtEtaPhiE(particle->pt(), particle->eta(), particle->phi(), particle->e());
-        //rootParticle.SetPxPyPzE(particle->px(), particle->py(), particle->pz(), particle->e());
-
-        ptvec->push_back(rootParticle.Perp());
-        etavec->push_back(rootParticle.Eta());
-        phivec->push_back(rootParticle.Phi());
-        evec->push_back(rootParticle.E());
-        massvec->push_back(particle->m());
-
-        pidvec->push_back(particle->pdgId());
-    }
-
-    // Dereference the pointer to size, assign the number of jets.
-    (*size) = particles.size();
-
 }
