@@ -42,19 +42,19 @@ private:
     float m_minPt;
 
     // Jet kinematics, to write to the attached ttree.
-    std::vector<float> m_jetPt;
-    std::vector<float> m_jetEta;
-    std::vector<float> m_jetPhi;
-    std::vector<float> m_jetE;
+    std::vector<float> m_jetPt; //!
+    std::vector<float> m_jetEta; //!
+    std::vector<float> m_jetPhi; //!
+    std::vector<float> m_jetE; //!
 
     // The pruned set of jets that actually get passed to the DijetInfos.
-    std::vector<TLorentzVector> m_prunedJets;
+    std::vector<TLorentzVector> m_prunedJets; //!
 
     // Number of jets.
     unsigned int m_numJets = 0;
 
     // The dijet info objects that we are going to use.
-    Analysis::LeadingDijetInfo* m_leadingDijets;
+    Analysis::LeadingDijetInfo* m_leadingDijets; //!
 
 };
 

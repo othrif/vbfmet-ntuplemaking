@@ -36,18 +36,18 @@ private:
     TTree* truthTree; //!
 
     // Fastjet jet definition.
-    fastjet::JetDefinition m_jetDef;
+    fastjet::JetDefinition m_jetDef; //!
 
     // Truth jet dijet finder object.
-    Analysis::DijetFinder* m_truthDijetFinder;
+    Analysis::DijetFinder* m_truthDijetFinder; //!
 
     // Parton clusterer objects.
-    Analysis::PartonClusterer* m_status20Partons;
-    Analysis::PartonClusterer* m_status3Partons;
-    Analysis::PartonClusterer* m_partonClusterer;
+    Analysis::PartonClusterer* m_status20Partons; //!
+    Analysis::PartonClusterer* m_status3Partons; //!
+    Analysis::PartonClusterer* m_partonClusterer; //!
 
     // Truth particles, sorted by status code.
-    std::map<int, std::vector<const xAOD::TruthParticle*>> m_truthByStatus;
+    std::map<int, std::vector<const xAOD::TruthParticle*>> m_truthByStatus; //!
 
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.

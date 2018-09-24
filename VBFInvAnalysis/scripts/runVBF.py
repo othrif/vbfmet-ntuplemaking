@@ -24,7 +24,7 @@ parser.add_argument( "-k", "--nskip", type = int, dest = "nskip", help="Number o
 parser.add_argument( "-r", "--replicationSite", type = str, dest = "replicationSite", default = "DESY-HH_LOCALGROUPDISK", help="Name of disk where to replicate output of grid jobs" )
 parser.add_argument( "-w", "--overwrite", dest = "overwrite", action = "store_false", default = True, help = "don't overwrite previous submitDir")
 parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "prun"], help = "driver to be used (local, prun)", metavar="driver")
-parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth, VBFInvSherpaTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
+parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth", "VBFInvSherpaTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
 parser.add_argument( "-u", "--user", type=str, dest="userName", default=os.environ["USER"], help="username for grid jobs", metavar="userName")
 
 # Algorithm configuration
@@ -158,13 +158,19 @@ if( args.algoName == "VBFInv" ):
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
+elif ( args.algoName == "VBFInvSherpaTruth"):
+  alg.skipCBK = args.skipCutBookKeper
+  alg.MultiWeight = args.isMultiWeight
 else:
   print("ERROR: You need to enter a valid algorithm name: \"VBFInv\" or \"VBFInvTruth\"")
   sys.exit()
 job.algsAdd( alg )
 
 # make sure we can read trigger decision
-job.options().setString(ROOT.EL.Job.optXaodAccessMode, ROOT.EL.Job.optXaodAccessMode_class)
+if args.algoName == "VBFInvSherpaTruth":
+  job.options().setString(ROOT.EL.Job.optXaodAccessMode, ROOT.EL.Job.optXaodAccessMode_athena)
+else:
+  job.options().setString(ROOT.EL.Job.optXaodAccessMode, ROOT.EL.Job.optXaodAccessMode_class)
 # print to screen information about xAOD variables used
 # job.options().setDouble (ROOT.EL.Job.optXAODPerfStats, 1);
 # job.options().setDouble (ROOT.EL.Job.optPrintPerFileStats, 1);

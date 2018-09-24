@@ -60,28 +60,28 @@ private:
     float m_minPt;
 
     // The jet definition, for running fastjet.
-    fastjet::JetDefinition* m_jetdef = nullptr;
+    fastjet::JetDefinition* m_jetdef = nullptr; //!
 
     // A boolean flag indicating whether we should or should not actually cluster.
     // Defaults to false.
     bool m_noCluster = false;
 
     // The associated DijetFinder object.
-    Analysis::DijetFinder* m_dijetFinder;
+    Analysis::DijetFinder* m_dijetFinder; //!
 
     // Vectors for the particle kinematics, plus mass, plus pdg ID.
-    std::vector<float> m_particlePt;
-    std::vector<float> m_particleEta;
-    std::vector<float> m_particlePhi;
-    std::vector<float> m_particleE;
-    std::vector<float> m_particleMass;
-    std::vector<int> m_particlePID;
+    std::vector<float> m_particlePt; //!
+    std::vector<float> m_particleEta; //!
+    std::vector<float> m_particlePhi; //!
+    std::vector<float> m_particleE; //!
+    std::vector<float> m_particleMass; //!
+    std::vector<int> m_particlePID; //!
 
     // The number of particles per event.
     unsigned int m_numParticles = 0;
 
     // A cached/stored copy of the parton jets.
-    std::vector<TLorentzVector> m_partonJets;
+    std::vector<TLorentzVector> m_partonJets; //!
 
 };
 

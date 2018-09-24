@@ -167,6 +167,10 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     m_status3Partons = new Analysis::PartonClusterer("status3", 20.0, &m_jetDef, false);
     m_partonClusterer = new Analysis::PartonClusterer("parton", 20.0, &m_jetDef, false);
 
+    m_status20Partons->attachToTree(truthTree);
+    m_status3Partons->attachToTree(truthTree);
+    m_partonClusterer->attachToTree(truthTree);
+
     return EL::StatusCode::SUCCESS;
 }
 
@@ -245,9 +249,11 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     // Retrieve truth particles from the xAOD.
     const xAOD::TruthParticleContainer* truthParticles = nullptr;
     ANA_CHECK(evtStore()->retrieve(truthParticles, "TruthParticles"));
+    if (debug) ANA_MSG_INFO("Retrieved truth particles container.");
 
     // Sort truth particles by status code.
     this->fillMapFromTruthParticles(truthParticles);
+    if (debug) ANA_MSG_INFO("Mapped truth particles by status code.");
 
     // Determine if this is a S or H event by seeing if there are status 20 particles.
     std::vector<const xAOD::TruthParticle*> status20 = m_truthByStatus[20];
@@ -260,9 +266,12 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     // Otherwise, we're presumably a MC@NLO H event, though this only holds for Sherpa 2.2.2+ MC@NLO.
     if (status20.size() != 0) {
         m_clusterPartonCode = 20;
+        particles = &status20;
     } else {
         m_clusterPartonCode = 3;
+        particles = &status3;
     }
+    if (debug) ANA_MSG_INFO("Selected status 20 vs status 3 particles.");
 
     // Now, call all of the truth particle workers.
     // This approach is somewhat inefficient. It would be better to somehow have m_partonClusterer
@@ -271,11 +280,13 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     m_status20Partons->clusterPartons(status20);
     m_status3Partons->clusterPartons(status3);
     m_partonClusterer->clusterPartons(*particles);
+    if (debug) ANA_MSG_INFO("Finished clustering particles into parton jets.");
 
     // Using the clustered parton jets, compute (and store) mjj.
     m_status20Partons->computeMjj();
     m_status3Partons->computeMjj();
     m_partonClusterer->computeMjj();
+    if (debug) ANA_MSG_INFO("Completed handling parton clustering.");
 
     //-----------------------------------------------------------------------
     //  Fill Tree

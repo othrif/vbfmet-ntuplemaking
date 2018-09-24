@@ -105,12 +105,14 @@ void PartonClusterer::clusterPartons(std::vector<const xAOD::TruthParticle*> par
     if (m_noCluster) {
         partonPseudoJets = clusterInputs;
     } else {
-        fastjet::ClusterSequence sequence(clusterInputs, *(m_jetdef));
+        // Make this better.
+        fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, 0.4);
+        fastjet::ClusterSequence sequence(clusterInputs, jetdef);
         partonPseudoJets = fastjet::sorted_by_pt(sequence.inclusive_jets());
     }
 
     // Now, reprocess the parton jets into ROOT TLorentzVectors.
-    for (unsigned int i = 0; i <= partonPseudoJets.size(); i++) {
+    for (unsigned int i = 0; i < partonPseudoJets.size(); i++) {
         pseudoJet = partonPseudoJets.at(i);
 
         // I don't think there should be any of these objects with pt <= 0, but ju tin case.
