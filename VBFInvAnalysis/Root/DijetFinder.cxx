@@ -24,6 +24,7 @@ DijetFinder::DijetFinder(std::string prefix, float minPt)
 
     // Create dijet info objects.
     m_leadingDijets = new Analysis::LeadingDijetInfo(prefix);
+    m_maxDijets = new Analysis::MaxDijetInfo(prefix);
 
 }
 
@@ -40,6 +41,7 @@ void DijetFinder::attachToTree(TTree* tree) {
 
     // Call DijetInfo classes, pass the tree to them too!
     m_leadingDijets->attachToTree(tree);
+    m_maxDijets->attachToTree(tree);
 }
 
 void DijetFinder::reset() {
@@ -57,6 +59,7 @@ void DijetFinder::reset() {
 
     // Reset dijet info classes.
     m_leadingDijets->reset();
+    m_maxDijets->reset();
 }
 
 void DijetFinder::computeMjj(std::vector<TLorentzVector> jets) {
@@ -89,5 +92,6 @@ void DijetFinder::computeMjj(std::vector<TLorentzVector> jets) {
 
     // Call the relevant DijetInfo classes too, pass m_prunedJets.
     m_leadingDijets->compute(m_prunedJets);
+    m_maxDijets->compute(m_prunedJets);
 
 }

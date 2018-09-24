@@ -9,6 +9,7 @@
 // Use the DijetInfo class and its subclasses.
 using Analysis::DijetInfo;
 using Analysis::LeadingDijetInfo;
+using Analysis::MaxDijetInfo;
 
 DijetInfo::DijetInfo(std::string prefix, std::string algorithm)
     : m_prefix(prefix), m_algorithm(algorithm) {
@@ -51,4 +52,46 @@ void LeadingDijetInfo::compute(std::vector<TLorentzVector> jets) {
         m_deta = TMath::Abs(jets.at(0).Eta() - jets.at(1).Eta());
         m_dphi = TMath::Abs(jets.at(0).Phi() - jets.at(1).Phi());
     }
+}
+
+MaxDijetInfo::MaxDijetInfo(std::string prefix)
+    : DijetInfo(prefix, "max") {
+
+}
+
+void MaxDijetInfo::reset() {
+    DijetInfo::reset();
+    m_firstJet = -1;
+    m_secondJet = -1;
+}
+
+void MaxDijetInfo::attachToTree(TTree* tree) {
+    // Call the base attach to tree.
+    DijetInfo::attachToTree(tree);
+
+    // Create branches for the jet indices.
+    tree->Branch((m_prefix + "_firstJet_" + m_algorithm).c_str(), &m_firstJet);
+    tree->Branch((m_prefix + "_secondJet_" + m_algorithm).c_str(), &m_secondJet);
+}
+
+void MaxDijetInfo::compute(std::vector<TLorentzVector> jets) {
+    if (jets.size() >= 2) {
+        // Loop through all jets.
+        for (unsigned int i = 0; i < jets.size(); i++) {
+            // Loop over (i, j) pairs such that i != j and we never get (j, i).
+            for (unsigned int j = i + 1; j < jets.size(); j++) {
+                float mjj = (jets.at(i) + jets.at(j)).M();
+
+                // If this mjj is better than the current maximum, use it.
+                if (mjj > m_mass) {
+                    m_mass = mjj;
+                    m_deta = TMath::Abs(jets.at(i).Eta() - jets.at(j).Eta());
+                    m_dphi = TMath::Abs(jets.at(i).Phi() - jets.at(j).Phi());
+                    m_firstJet = i;
+                    m_secondJet = j;
+                }
+            }
+        }
+    }
+
 }

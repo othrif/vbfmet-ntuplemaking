@@ -55,6 +55,7 @@ private:
 
     // The dijet info objects that we are going to use.
     Analysis::LeadingDijetInfo* m_leadingDijets; //!
+    Analysis::MaxDijetInfo* m_maxDijets; //!
 
 };
 

@@ -23,8 +23,10 @@ namespace Analysis {
     class LeadingDijetInfo;
 
     // Dijet Info - select the jets which give biggest p_T.
-    // Can be more than two jets?!
-    //class MaxDijetInfo;
+    class MaxDijetInfo;
+
+    // Version of MaxDijetInfo algorithm that can be more than
+    class MaxAlljetInfo;
 
     // DijetInfo - select the jets which give value closest to some other value.
     //class BestDijetInfo;
@@ -71,6 +73,21 @@ public:
     LeadingDijetInfo(std::string prefix);
 
     virtual void compute(std::vector<TLorentzVector> jets);
+
+};
+
+class Analysis::MaxDijetInfo : public Analysis::DijetInfo {
+
+public:
+    MaxDijetInfo(std::string prefix);
+
+    virtual void reset();
+    virtual void compute(std::vector<TLorentzVector> jets);
+    virtual void attachToTree(TTree *tree);
+
+private:
+    int m_firstJet = -1;
+    int m_secondJet = -1;
 
 };
 
