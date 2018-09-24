@@ -35,9 +35,6 @@ private:
     SUSY::CrossSectionDB *my_XsecDB;  //!
     TTree* truthTree; //!
 
-    // Fastjet jet definition.
-    fastjet::JetDefinition m_jetDef; //!
-
     // Truth jet dijet finder object.
     Analysis::DijetFinder* m_truthDijetFinder; //!
 

@@ -153,9 +153,6 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     truthTree->Branch("met_et", &m_met_et);
     truthTree->Branch("met_phi", &m_met_phi);
 
-    // Define fastjet definition.
-    fastjet::JetDefinition m_jetDef(fastjet::antikt_algorithm, this->antiktDR);
-
     // Create (and attach) a Truth Jet dijet finder.
     // TODO: 20.0 here is the min pT cut for jets, make property.
     m_truthDijetFinder = new Analysis::DijetFinder("truth", 20.0);
@@ -163,9 +160,9 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
 
     // Create three (!) parton clusterer objects.
     // TODO: make all these variable algorithm properties.
-    m_status20Partons = new Analysis::PartonClusterer("status20", 20.0, &m_jetDef, false);
-    m_status3Partons = new Analysis::PartonClusterer("status3", 20.0, &m_jetDef, false);
-    m_partonClusterer = new Analysis::PartonClusterer("parton", 20.0, &m_jetDef, false);
+    m_status20Partons = new Analysis::PartonClusterer("status20", 20.0, this->antiktDR, false);
+    m_status3Partons = new Analysis::PartonClusterer("status3", 20.0, this->antiktDR, false);
+    m_partonClusterer = new Analysis::PartonClusterer("parton", 20.0, this->antiktDR, false);
 
     m_status20Partons->attachToTree(truthTree);
     m_status3Partons->attachToTree(truthTree);

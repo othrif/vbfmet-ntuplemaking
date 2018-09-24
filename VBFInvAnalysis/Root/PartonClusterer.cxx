@@ -8,8 +8,8 @@
 // methods as "Analysis::PartonClusterer".
 using Analysis::PartonClusterer;
 
-PartonClusterer::PartonClusterer(std::string prefix, float minPt, fastjet::JetDefinition* jetdef, bool noCluster)
-    : m_prefix(prefix), m_minPt(minPt), m_jetdef(jetdef), m_noCluster(noCluster) {
+PartonClusterer::PartonClusterer(std::string prefix, float minPt, float antiktDR, bool noCluster)
+    : m_prefix(prefix), m_minPt(minPt), m_antiktDR(antiktDR), m_noCluster(noCluster) {
 
     // Instantiate a dijet finder object given the same prefix and minPt.
     m_dijetFinder = new Analysis::DijetFinder(prefix, minPt);
@@ -105,8 +105,7 @@ void PartonClusterer::clusterPartons(std::vector<const xAOD::TruthParticle*> par
     if (m_noCluster) {
         partonPseudoJets = clusterInputs;
     } else {
-        // Make this better.
-        fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, 0.4);
+        fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, m_antiktDR);
         fastjet::ClusterSequence sequence(clusterInputs, jetdef);
         partonPseudoJets = fastjet::sorted_by_pt(sequence.inclusive_jets());
     }

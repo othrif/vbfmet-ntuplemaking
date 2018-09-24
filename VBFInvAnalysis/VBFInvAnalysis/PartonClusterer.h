@@ -30,7 +30,7 @@ namespace Analysis {
 class Analysis::PartonClusterer {
 
 public:
-    PartonClusterer(std::string prefix, float minPt, fastjet::JetDefinition *jetdef, bool noCluster);
+    PartonClusterer(std::string prefix, float minPt, float antiktDR, bool noCluster);
 
     // Similar to the outObject classes, define an attachToTree.
     // This will set up branches.
@@ -59,8 +59,8 @@ private:
     // Minimum pT used as a cut when computing dijet infos.
     float m_minPt;
 
-    // The jet definition, for running fastjet.
-    fastjet::JetDefinition* m_jetdef = nullptr; //!
+    // The anti-k_T delta R definition for running fastjet.
+    float m_antiktDR;
 
     // A boolean flag indicating whether we should or should not actually cluster.
     // Defaults to false.
