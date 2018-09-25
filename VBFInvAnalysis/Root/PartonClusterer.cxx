@@ -66,17 +66,20 @@ void PartonClusterer::calcMaxHTPTV(std::vector<const xAOD::TruthParticle*>* part
         }
     }
 
-    // Now compute the pTV by summing the lepton pTV.
-    // NOTE: the filter only sums up the first two leptons...
-    // should we make that configurable?
-    int nleptons = 0;
+    // Now compute the pTV by extracting the leptons.
+    std::vector<TLorentzVector> leptons;
     for (const auto* particle: *particles) {
         if (particle->isLepton()) {
-            if (nleptons < 2) {
-                m_ptv += (particle->pt()/1000.);
-                nleptons += 1;
-            }
+            TLorentzVector rootParticle;
+            rootParticle.SetPxPyPzE(particle->px(), particle->py(), particle->pz(), particle->e());
+            leptons.push_back(rootParticle);
         }
+    }
+
+    // Take the first two leptons-- without sorting by pT-- as is done in the plugin.
+    // (this is safe here because there should only _be_ two, but...).
+    if (leptons.size() >= 2) {
+        m_ptv = (leptons.at(0) + leptons.at(1)).Pt() / 1000.;
     }
 
     // Take the maximum and assign to maxhtptv.
