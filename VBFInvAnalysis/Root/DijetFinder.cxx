@@ -25,7 +25,17 @@ DijetFinder::DijetFinder(std::string prefix, float minPt)
     // Create dijet info objects.
     m_leadingDijets = new Analysis::LeadingDijetInfo(prefix);
     m_maxDijets = new Analysis::MaxDijetInfo(prefix);
+    m_bestDijets = new Analysis::BestDijetInfo(prefix, "bestLead");
 
+    // Insert pointers into this map, for easier reference.
+    m_dijetAlgos[m_leadingDijets->getName()] = m_leadingDijets;
+    m_dijetAlgos[m_maxDijets->getName()] = m_maxDijets;
+    m_dijetAlgos[m_bestDijets->getName()] = m_bestDijets;
+
+}
+
+Analysis::DijetInfo* DijetFinder::getDijetInfo(std::string name) {
+    return m_dijetAlgos[name];
 }
 
 void DijetFinder::attachToTree(TTree* tree) {
@@ -42,6 +52,7 @@ void DijetFinder::attachToTree(TTree* tree) {
     // Call DijetInfo classes, pass the tree to them too!
     m_leadingDijets->attachToTree(tree);
     m_maxDijets->attachToTree(tree);
+    m_bestDijets->attachToTree(tree);
 }
 
 void DijetFinder::reset() {
@@ -60,6 +71,7 @@ void DijetFinder::reset() {
     // Reset dijet info classes.
     m_leadingDijets->reset();
     m_maxDijets->reset();
+    m_bestDijets->reset();
 }
 
 void DijetFinder::computeMjj(std::vector<TLorentzVector> jets) {
@@ -94,4 +106,11 @@ void DijetFinder::computeMjj(std::vector<TLorentzVector> jets) {
     m_leadingDijets->compute(m_prunedJets);
     m_maxDijets->compute(m_prunedJets);
 
+    // We *don't* call the best version explicitly here, unfortunately.
+    // We need to get the right value from elsewhere and pass it in.
+
+}
+
+std::vector<TLorentzVector>* DijetFinder::getPrunedJets() {
+    return &m_prunedJets;
 }

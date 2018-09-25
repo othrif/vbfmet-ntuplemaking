@@ -29,6 +29,7 @@
 // Local include(s):
 #include <VBFInvAnalysis/VBFInvSherpaTruth.h>
 #include <VBFInvAnalysis/HelperFunctions.h>
+#include <VBFInvAnalysis/DijetInfo.h>
 
 #ifdef ROOTCORE
 #   include "xAODRootAccess/Init.h"
@@ -153,20 +154,27 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     truthTree->Branch("met_et", &m_met_et);
     truthTree->Branch("met_phi", &m_met_phi);
 
-    // Create (and attach) a Truth Jet dijet finder.
-    // TODO: 20.0 here is the min pT cut for jets, make property.
-    m_truthDijetFinder = new Analysis::DijetFinder("truth", 20.0);
-    m_truthDijetFinder->attachToTree(truthTree);
+    // Create (and attach) dijet finders for everything.
+    m_truthDijets = new Analysis::DijetFinder("truth", this->truthJetPtCut);
+    m_status20Dijets = new Analysis::DijetFinder("status20", this->partonJetPtCut);
+    m_status3Dijets = new Analysis::DijetFinder("status20", this->partonJetPtCut);
+    m_partonDijets = new Analysis::DijetFinder("parton", this->partonJetPtCut);
+
+    // Attach them to the tree.
+    m_truthDijets->attachToTree(truthTree);
+    m_status20Dijets->attachToTree(truthTree);
+    m_status3Dijets->attachToTree(truthTree);
+    m_partonDijets->attachToTree(truthTree);
 
     // Create three (!) parton clusterer objects.
-    // TODO: make all these variable algorithm properties.
-    m_status20Partons = new Analysis::PartonClusterer("status20", 20.0, this->antiktDR, false);
-    m_status3Partons = new Analysis::PartonClusterer("status3", 20.0, this->antiktDR, false);
-    m_partonClusterer = new Analysis::PartonClusterer("parton", 20.0, this->antiktDR, false);
+    m_status20Partons = new Analysis::PartonClusterer("status20", this->antiktDR, this->shouldNotCluster);
+    m_status3Partons = new Analysis::PartonClusterer("status3", this->antiktDR, this->shouldNotCluster);
+    m_partons = new Analysis::PartonClusterer("parton", this->antiktDR, this->shouldNotCluster);
 
+    // Attach them to the tree.
     m_status20Partons->attachToTree(truthTree);
     m_status3Partons->attachToTree(truthTree);
-    m_partonClusterer->attachToTree(truthTree);
+    m_partons->attachToTree(truthTree);
 
     return EL::StatusCode::SUCCESS;
 }
@@ -174,10 +182,14 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
 EL::StatusCode VBFInvSherpaTruth::execute()
 {
     // Call the various reset() hooks.
-    m_truthDijetFinder->reset();
+    m_truthDijets->reset();
+    m_status20Dijets->reset();
+    m_status3Dijets->reset();
+    m_partonDijets->reset();
+
     m_status20Partons->reset();
     m_status3Partons->reset();
-    m_partonClusterer->reset();
+    m_partons->reset();
 
     if (debug) ANA_MSG_INFO("***New event***" );
 
@@ -241,7 +253,7 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     }
 
     // Pass the truth jets to the truth dijet finder.
-    m_truthDijetFinder->computeMjj(truthJets);
+    m_truthDijets->computeMjj(truthJets);
 
     // Retrieve truth particles from the xAOD.
     const xAOD::TruthParticleContainer* truthParticles = nullptr;
@@ -259,44 +271,65 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     // This is a pointer to either the status 3 or status 20 particles.
     std::vector<const xAOD::TruthParticle*>* particles;
 
+    // Now, cluster the status 3 and status 20 particles.
+    std::vector<TLorentzVector>* status20Jets = m_status20Partons->clusterPartons(status20);
+    std::vector<TLorentzVector>* status3Jets = m_status3Partons->clusterPartons(status3);
+    if (debug) ANA_MSG_INFO("Finished clustering particles into parton jets.");
+
     // If "clusterPartonCode" is 20, then we are a MC@NLO S Event.
     // Otherwise, we're presumably a MC@NLO H event, though this only holds for Sherpa 2.2.2+ MC@NLO.
+    // Here, we assign the parton jet pointer appropriately.
+    std::vector<TLorentzVector>* partonJets;
     if (status20.size() != 0) {
         m_clusterPartonCode = 20;
         particles = &status20;
+        partonJets = status20Jets;
     } else {
         m_clusterPartonCode = 3;
         particles = &status3;
+        partonJets = status3Jets;
     }
     if (debug) ANA_MSG_INFO("Selected status 20 vs status 3 particles.");
 
-    // Now, call all of the truth particle workers.
-    // This approach is somewhat inefficient. It would be better to somehow have m_partonClusterer
-    // check either m_status20Partons or m_status3Partons to get all the computed/stored values
-    // instead of doing them a second time. It's good enough for now though.
-    m_status20Partons->clusterPartons(status20);
-    m_status3Partons->clusterPartons(status3);
-    m_partonClusterer->clusterPartons(*particles);
-    if (debug) ANA_MSG_INFO("Finished clustering particles into parton jets.");
+    // Now, write the status-code-neutral version of the truth particles.
+    m_partons->storeParticles(*particles);
 
-    // Using the clustered parton jets, compute (and store) mjj.
-    m_status20Partons->computeMjj();
-    m_status3Partons->computeMjj();
-    m_partonClusterer->computeMjj();
-    if (debug) ANA_MSG_INFO("Completed handling parton clustering.");
+    // Now, using the parton jet collections, compute and store mjj in dijet finders.
+    // This is a bit inefficient-- we do it once for status 3, once for status 20, and then again
+    // for the status-code-neutral version. We could probably just do the computation once
+    // and then store the right values, as is done above... but oh well.
+    m_status20Dijets->computeMjj(*status20Jets);
+    m_status3Dijets->computeMjj(*status3Jets);
+    m_partonDijets->computeMjj(*partonJets);
 
-    //-----------------------------------------------------------------------
-    //  Fill Tree
-    //-----------------------------------------------------------------------
+    // Now, we'd like to compute "best" mjjs. i.e. pick the pair of partons that's closest to
+    // truth, or vice versa, only using this measure of "best".
+    float truthMjj = m_truthDijets->getDijetInfo("lead")->getMass();
+    float partonMjj = m_partonDijets->getDijetInfo("lead")->getMass();
+
+    // This next bit is a tad ugly, and may mean I architected things incorrectly...
+    // Reach in and set the "truth" values correctly for all the bestLead dijet infos.
+    // Since getDijetInfo returns the base dijet info pointer, we need to explicitly cast to BestDijetInfo.
+    ((Analysis::BestDijetInfo*)(m_truthDijets->getDijetInfo("bestLead")))->setTruthMjj(partonMjj);
+    ((Analysis::BestDijetInfo*)(m_partonDijets->getDijetInfo("bestLead")))->setTruthMjj(truthMjj);
+    ((Analysis::BestDijetInfo*)(m_status3Dijets->getDijetInfo("bestLead")))->setTruthMjj(truthMjj);
+    ((Analysis::BestDijetInfo*)(m_status20Dijets->getDijetInfo("bestLead")))->setTruthMjj(truthMjj);
+
+    // Now actually compute the "best" mjj in the truth dijet finder.
+    m_truthDijets->getDijetInfo("bestLead")->compute(*(m_truthDijets->getPrunedJets()));
+
+    // Do the same for all 3 parton dijet finders.
+    m_partonDijets->getDijetInfo("bestLead")->compute(*(m_partonDijets->getPrunedJets()));
+    m_status3Dijets->getDijetInfo("bestLead")->compute(*(m_status3Dijets->getPrunedJets()));
+    m_status20Dijets->getDijetInfo("bestLead")->compute(*(m_status20Dijets->getPrunedJets()));
+
+    if (debug) ANA_MSG_INFO("Completed handling mjj computation.");
+
+    // Fill the tree!
     truthTree->Fill();
 
     // Clear the map of status codes/truth particles.
     m_truthByStatus.clear();
-
-
-    //-----------------------------------------------------------------------
-    //  Tests
-    //-----------------------------------------------------------------------
 
     return EL::StatusCode::SUCCESS;
 }

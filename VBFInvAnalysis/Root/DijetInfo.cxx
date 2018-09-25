@@ -10,6 +10,7 @@
 using Analysis::DijetInfo;
 using Analysis::LeadingDijetInfo;
 using Analysis::MaxDijetInfo;
+using Analysis::BestDijetInfo;
 
 DijetInfo::DijetInfo(std::string prefix, std::string algorithm)
     : m_prefix(prefix), m_algorithm(algorithm) {
@@ -41,6 +42,10 @@ float DijetInfo::getDPhi() {
     return this->m_dphi;
 }
 
+std::string DijetInfo::getName() {
+    return this->m_algorithm;
+}
+
 LeadingDijetInfo::LeadingDijetInfo(std::string prefix)
     : DijetInfo(prefix, "lead") {
 }
@@ -60,6 +65,7 @@ MaxDijetInfo::MaxDijetInfo(std::string prefix)
 }
 
 void MaxDijetInfo::reset() {
+    // In addition to resetting everything else, reset the jet indices.
     DijetInfo::reset();
     m_firstJet = -1;
     m_secondJet = -1;
@@ -94,4 +100,59 @@ void MaxDijetInfo::compute(std::vector<TLorentzVector> jets) {
         }
     }
 
+}
+
+BestDijetInfo::BestDijetInfo(std::string prefix, std::string algorithm)
+    : DijetInfo(prefix, algorithm) {
+
+}
+
+void BestDijetInfo::reset() {
+    // In addition to resetting everything else, reset the jet indices.
+    DijetInfo::reset();
+    m_firstJet = -1;
+    m_secondJet = -1;
+    m_truthMjj = 0;
+}
+
+void BestDijetInfo::attachToTree(TTree* tree) {
+    // Call the base attach to tree.
+    DijetInfo::attachToTree(tree);
+
+    // Create branches for the jet indices.
+    tree->Branch((m_prefix + "_firstJet_" + m_algorithm).c_str(), &m_firstJet);
+    tree->Branch((m_prefix + "_secondJet_" + m_algorithm).c_str(), &m_secondJet);
+}
+
+void BestDijetInfo::compute(std::vector<TLorentzVector> jets) {
+    // If the "truth" mjj is 0 or less, just use that.
+    // This likely means there were not two jets.
+    if (m_truthMjj <= 0) {
+        m_mass = m_truthMjj;
+    }
+
+    if (jets.size() >= 2) {
+        // Loop through all jets.
+        for (unsigned int i = 0; i < jets.size(); i++) {
+            // Loop over (i, j) pairs such that i != j and we never get (j, i).
+            for (unsigned int j = i + 1; j < jets.size(); j++) {
+                float mjj = (jets.at(i) + jets.at(j)).M();
+
+                // Figure out how close we are to the 'true' mjj.
+                float deltaNew = TMath::Abs(mjj - m_truthMjj);
+                float deltaOld = TMath::Abs(m_mass - m_truthMjj);
+                if (deltaNew < deltaOld || m_mass <= 0) {
+                    m_mass = mjj;
+                    m_deta = TMath::Abs(jets.at(i).Eta() - jets.at(j).Eta());
+                    m_dphi = TMath::Abs(jets.at(i).Phi() - jets.at(j).Phi());
+                    m_firstJet = i;
+                    m_secondJet = j;
+                }
+            }
+        }
+    }
+}
+
+void BestDijetInfo::setTruthMjj(float truthMjj) {
+    m_truthMjj = truthMjj;
 }

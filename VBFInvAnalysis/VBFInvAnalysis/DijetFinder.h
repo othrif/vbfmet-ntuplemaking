@@ -31,6 +31,12 @@ public:
     // Computes mjj given a collection of jets.
     void computeMjj(std::vector<TLorentzVector> jets);
 
+    // Returns (pointer to) dijet info object given the algorithm name
+    // used to calculate this dijet info.
+    Analysis::DijetInfo* getDijetInfo(std::string name);
+
+    std::vector<TLorentzVector>* getPrunedJets();
+
     // Resets the arrays in the tree.
     void reset();
 
@@ -56,6 +62,10 @@ private:
     // The dijet info objects that we are going to use.
     Analysis::LeadingDijetInfo* m_leadingDijets; //!
     Analysis::MaxDijetInfo* m_maxDijets; //!
+    Analysis::BestDijetInfo* m_bestDijets; //!
+
+    // A map of algorithm names to analysis objects,
+    std::map<std::string, Analysis::DijetInfo*> m_dijetAlgos; //!
 
 };
 

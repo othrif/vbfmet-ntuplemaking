@@ -29,7 +29,7 @@ namespace Analysis {
     class MaxAlljetInfo;
 
     // DijetInfo - select the jets which give value closest to some other value.
-    //class BestDijetInfo;
+    class BestDijetInfo;
 }
 
 class Analysis::DijetInfo {
@@ -51,6 +51,9 @@ public:
     float getMass();
     float getDEta();
     float getDPhi();
+
+    // Get the algorithm name.
+    std::string getName();
 
 // These things want to be accessed by subclasses, so... use protected instead of private.
 protected:
@@ -88,6 +91,25 @@ public:
 private:
     int m_firstJet = -1;
     int m_secondJet = -1;
+
+};
+
+class Analysis::BestDijetInfo : public Analysis::DijetInfo {
+
+public:
+    BestDijetInfo(std::string prefix, std::string algorithm);
+
+    virtual void reset();
+    virtual void compute(std::vector<TLorentzVector> jets);
+    virtual void attachToTree(TTree* tree);
+
+    void setTruthMjj(float truthMjj);
+
+private:
+    int m_firstJet = -1;
+    int m_secondJet = -1;
+
+    float m_truthMjj = 0;
 
 };
 

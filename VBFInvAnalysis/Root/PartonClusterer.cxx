@@ -8,11 +8,8 @@
 // methods as "Analysis::PartonClusterer".
 using Analysis::PartonClusterer;
 
-PartonClusterer::PartonClusterer(std::string prefix, float minPt, float antiktDR, bool noCluster)
-    : m_prefix(prefix), m_minPt(minPt), m_antiktDR(antiktDR), m_noCluster(noCluster) {
-
-    // Instantiate a dijet finder object given the same prefix and minPt.
-    m_dijetFinder = new Analysis::DijetFinder(prefix, minPt);
+PartonClusterer::PartonClusterer(std::string prefix, float antiktDR, bool noCluster)
+    : m_prefix(prefix), m_antiktDR(antiktDR), m_noCluster(noCluster) {
 
 }
 
@@ -29,9 +26,6 @@ void PartonClusterer::attachToTree(TTree* tree) {
 
     // Store the number of jets, as well, because that's good to know.
     tree->Branch((m_prefix + "_numParticles").c_str(), &m_numParticles);
-
-    // Tell the dijet finder to create branches too (with the same prefix).
-    m_dijetFinder->attachToTree(tree);
 }
 
 void PartonClusterer::reset() {
@@ -45,9 +39,6 @@ void PartonClusterer::reset() {
 
     // Clear the number of truth particles.
     m_numParticles = 0;
-
-    // Clear the attached dijet finder.
-    m_dijetFinder->reset();
 
     // Clear the stored/cached parton jets.
     m_partonJets.clear();
@@ -78,7 +69,7 @@ void PartonClusterer::storeParticles(std::vector<const xAOD::TruthParticle*> par
     m_numParticles = particles.size();
 }
 
-void PartonClusterer::clusterPartons(std::vector<const xAOD::TruthParticle*> particles) {
+std::vector<TLorentzVector>* PartonClusterer::clusterPartons(std::vector<const xAOD::TruthParticle*> particles) {
 
     std::vector<fastjet::PseudoJet> clusterInputs;
     std::vector<fastjet::PseudoJet> partonPseudoJets;
@@ -120,20 +111,10 @@ void PartonClusterer::clusterPartons(std::vector<const xAOD::TruthParticle*> par
             m_partonJets.push_back(rootJet);
         }
     }
+
+    return &m_partonJets;
 }
 
-std::vector<TLorentzVector> PartonClusterer::getPartonJets() {
-    return m_partonJets;
-}
-
-void PartonClusterer::computeMjj(std::vector<TLorentzVector> partonJets) {
-
-    // Tell the dijet finder to compute mjj from the parton jets.
-    // I don't think we need to do anything else here?
-    m_dijetFinder->computeMjj(partonJets);
-
-}
-
-void PartonClusterer::computeMjj() {
-    this->computeMjj(m_partonJets);
+std::vector<TLorentzVector>* PartonClusterer::getPartonJets() {
+    return &m_partonJets;
 }

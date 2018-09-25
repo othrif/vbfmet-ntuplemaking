@@ -35,13 +35,16 @@ private:
     SUSY::CrossSectionDB *my_XsecDB;  //!
     TTree* truthTree; //!
 
-    // Truth jet dijet finder object.
-    Analysis::DijetFinder* m_truthDijetFinder; //!
+    // Dijet finder objects.
+    Analysis::DijetFinder* m_truthDijets; //!
+    Analysis::DijetFinder* m_status3Dijets; //!
+    Analysis::DijetFinder* m_status20Dijets; //!
+    Analysis::DijetFinder* m_partonDijets; //!
 
     // Parton clusterer objects.
     Analysis::PartonClusterer* m_status20Partons; //!
     Analysis::PartonClusterer* m_status3Partons; //!
-    Analysis::PartonClusterer* m_partonClusterer; //!
+    Analysis::PartonClusterer* m_partons; //!
 
     // Truth particles, sorted by status code.
     std::map<int, std::vector<const xAOD::TruthParticle*>> m_truthByStatus; //!
@@ -61,6 +64,9 @@ public:
 
     // The parton jet pT to cut on, in GeV.
     float partonJetPtCut = 20;
+
+    // Same for truth jets. We might want separation?
+    float truthJetPtCut = 20;
 
     // Should we cluster the partons? Defaults to 'yes'.
     bool shouldNotCluster = true;
