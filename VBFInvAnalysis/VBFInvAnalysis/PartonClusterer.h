@@ -30,14 +30,18 @@ namespace Analysis {
 class Analysis::PartonClusterer {
 
 public:
-    PartonClusterer(std::string prefix, float antiktDR, bool noCluster);
+    PartonClusterer(std::string prefix, float minPTt, float antiktDR, bool noCluster);
 
     // Similar to the outObject classes, define an attachToTree.
     // This will set up branches.
     void attachToTree(TTree *tree);
 
     // Helper function to store truth particles.
-    void storeParticles(std::vector<const xAOD::TruthParticle*> particles);
+    void storeParticles(std::vector<const xAOD::TruthParticle*>* particles);
+
+    // Calculate maxHTpTV. This method needs to apply the pT cut to the parton jets.
+    // Since the pruning happens in the Dijet Finder, we can just pass it in as an argument.
+    void calcMaxHTPTV(std::vector<const xAOD::TruthParticle*>* particles);
 
     // Cluster the partons.
     std::vector<TLorentzVector>* clusterPartons(std::vector<const xAOD::TruthParticle*> particles);
@@ -51,6 +55,9 @@ public:
 private:
     // The name to prefix all branches with!
     std::string m_prefix;
+
+    // The minimum pT to use when looking at parton jets.
+    float m_minPt;
 
     // The anti-k_T delta R definition for running fastjet.
     float m_antiktDR;
@@ -66,6 +73,11 @@ private:
     std::vector<float> m_particleE; //!
     std::vector<float> m_particleMass; //!
     std::vector<int> m_particlePID; //!
+
+    // The HT, pTV, and max(HT, pTV).
+    float m_ht = 0;
+    float m_ptv = 0;
+    float m_maxhtptv = 0;
 
     // The number of particles per event.
     unsigned int m_numParticles = 0;

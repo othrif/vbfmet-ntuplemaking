@@ -4,12 +4,14 @@
 
 #include "VBFInvAnalysis/PartonClusterer.h"
 
+#include "TMath.h"
+
 // Use the PartonClusterer class to avoid having to declare
 // methods as "Analysis::PartonClusterer".
 using Analysis::PartonClusterer;
 
-PartonClusterer::PartonClusterer(std::string prefix, float antiktDR, bool noCluster)
-    : m_prefix(prefix), m_antiktDR(antiktDR), m_noCluster(noCluster) {
+PartonClusterer::PartonClusterer(std::string prefix, float minPt, float antiktDR, bool noCluster)
+    : m_prefix(prefix), m_minPt(minPt), m_antiktDR(antiktDR), m_noCluster(noCluster) {
 
 }
 
@@ -26,6 +28,11 @@ void PartonClusterer::attachToTree(TTree* tree) {
 
     // Store the number of jets, as well, because that's good to know.
     tree->Branch((m_prefix + "_numParticles").c_str(), &m_numParticles);
+
+    // Store the computed HT, pTV, and max(HT, pTV) here.
+    tree->Branch((m_prefix + "_HT").c_str(), &m_ht);
+    tree->Branch((m_prefix + "_PTV").c_str(), &m_ptv);
+    tree->Branch((m_prefix + "_maxHTPTV").c_str(), &m_maxhtptv);
 }
 
 void PartonClusterer::reset() {
@@ -42,14 +49,46 @@ void PartonClusterer::reset() {
 
     // Clear the stored/cached parton jets.
     m_partonJets.clear();
+
+    // Reset the max(HT, pTV) variables.
+    m_ht = 0;
+    m_ptv = 0;
+    m_maxhtptv = 0;
 }
 
-void PartonClusterer::storeParticles(std::vector<const xAOD::TruthParticle*> particles) {
+void PartonClusterer::calcMaxHTPTV(std::vector<const xAOD::TruthParticle*>* particles) {
+
+    // Only look at parton jets that pass the min pT cut.
+    for (unsigned int i = 0; i < m_partonJets.size(); i++) {
+        TLorentzVector jet = m_partonJets.at(i);
+        if (((jet.Pt())/1000.) >= m_minPt) {
+            m_ht += (jet.Pt()/1000);
+        }
+    }
+
+    // Now compute the pTV by summing the lepton pTV.
+    // NOTE: the filter only sums up the first two leptons...
+    // should we make that configurable?
+    int nleptons = 0;
+    for (const auto* particle: *particles) {
+        if (particle->isLepton()) {
+            if (nleptons < 2) {
+                m_ptv += (particle->pt()/1000.);
+                nleptons += 1;
+            }
+        }
+    }
+
+    // Take the maximum and assign to maxhtptv.
+    m_maxhtptv = TMath::Max(m_ht, m_ptv);
+}
+
+void PartonClusterer::storeParticles(std::vector<const xAOD::TruthParticle*>* particles) {
 
     TLorentzVector rootParticle;
 
     // Loop through the truth particles, store them in the arrays.
-    for (const auto* particle: particles) {
+    for (const auto* particle: *particles) {
 
         // Create a TLorentzVector particle.
         rootParticle.SetPxPyPzE(particle->px(), particle->py(), particle->pz(), particle->e());
@@ -66,7 +105,10 @@ void PartonClusterer::storeParticles(std::vector<const xAOD::TruthParticle*> par
     }
 
     // Store the size, too.
-    m_numParticles = particles.size();
+    m_numParticles = particles->size();
+
+    // Calculate (and store) max(HT, pTV).
+    this->calcMaxHTPTV(particles);
 }
 
 std::vector<TLorentzVector>* PartonClusterer::clusterPartons(std::vector<const xAOD::TruthParticle*> particles) {
@@ -76,9 +118,6 @@ std::vector<TLorentzVector>* PartonClusterer::clusterPartons(std::vector<const x
 
     TLorentzVector rootJet;
     fastjet::PseudoJet pseudoJet;
-
-    // First, store the truth particles.
-    this->storeParticles(particles);
 
     // Loop over the particles, extract particles which are actually partons.
     for (const auto* particle: particles) {
@@ -111,6 +150,9 @@ std::vector<TLorentzVector>* PartonClusterer::clusterPartons(std::vector<const x
             m_partonJets.push_back(rootJet);
         }
     }
+
+    // Also, store the truth particles.
+    this->storeParticles(&particles);
 
     return &m_partonJets;
 }

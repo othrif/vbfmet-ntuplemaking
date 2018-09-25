@@ -167,9 +167,9 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     m_partonDijets->attachToTree(truthTree);
 
     // Create three (!) parton clusterer objects.
-    m_status20Partons = new Analysis::PartonClusterer("status20", this->antiktDR, this->shouldNotCluster);
-    m_status3Partons = new Analysis::PartonClusterer("status3", this->antiktDR, this->shouldNotCluster);
-    m_partons = new Analysis::PartonClusterer("parton", this->antiktDR, this->shouldNotCluster);
+    m_status20Partons = new Analysis::PartonClusterer("status20", this->partonJetPtCut, this->antiktDR, this->shouldNotCluster);
+    m_status3Partons = new Analysis::PartonClusterer("status3", this->partonJetPtCut, this->antiktDR, this->shouldNotCluster);
+    m_partons = new Analysis::PartonClusterer("parton", this->partonJetPtCut, this->antiktDR, this->shouldNotCluster);
 
     // Attach them to the tree.
     m_status20Partons->attachToTree(truthTree);
@@ -292,12 +292,12 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     if (debug) ANA_MSG_INFO("Selected status 20 vs status 3 particles.");
 
     // Now, write the status-code-neutral version of the truth particles.
-    m_partons->storeParticles(*particles);
+    m_partons->clusterPartons(*particles);
 
     // Now, using the parton jet collections, compute and store mjj in dijet finders.
     // This is a bit inefficient-- we do it once for status 3, once for status 20, and then again
     // for the status-code-neutral version. We could probably just do the computation once
-    // and then store the right values, as is done above... but oh well.
+    // and then store the right values... oh well.
     m_status20Dijets->computeMjj(*status20Jets);
     m_status3Dijets->computeMjj(*status3Jets);
     m_partonDijets->computeMjj(*partonJets);
