@@ -53,6 +53,15 @@ parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true"
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
+
+# Configure arguments for Sherpa algorithm in a group.
+group = parser.add_argument_group('sherpa', description="Options for the Sherpa Truth algorithm.")
+group.add_argument('--parton-pt', dest='partonPt', default=20, type=float, help="Parton jet pT cut when selecting jets for mjj, in GeV.")
+group.add_argument('--truth-pt', dest='truthPt', default=20, type=float, help="Truth jet pT cut when selecting jets for mjj, in GeV.")
+group.add_argument('--no-cluster-partons', dest='noClusterPartons', action="store_true", help="Skip clustering the partons when selecting parton jets.")
+group.add_argument('--antikt-dr', dest='antiktDR', default=0.4, type=float, help="Value of delta R to use when clustering partons with anti-KT.")
+
+
 args, unknown = parser.parse_known_args()
 
 print "\nArguments used:"
@@ -161,6 +170,10 @@ elif ( args.algoName == "VBFInvTruth"):
 elif ( args.algoName == "VBFInvSherpaTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
+  alg.antiktDR = args.antiktDR
+  alg.shouldNotCluster = args.noClusterPartons
+  alg.partonJetPtCut = args.partonPt
+  alg.truthJetPtCut = args.truthPt
 else:
   print("ERROR: You need to enter a valid algorithm name: \"VBFInv\" or \"VBFInvTruth\"")
   sys.exit()
