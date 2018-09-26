@@ -6,11 +6,16 @@
 
 #include "TMath.h"
 
+// std::bitset seems to be what I want as a binary array representation
+// (used in AlljetInfo in order to easily sum over an arbitrary number of jets).
+#include <bitset>
+
 // Use the DijetInfo class and its subclasses.
 using Analysis::DijetInfo;
 using Analysis::LeadingDijetInfo;
 using Analysis::MaxDijetInfo;
 using Analysis::BestDijetInfo;
+using Analysis::MaxAlljetInfo;
 
 DijetInfo::DijetInfo(std::string prefix, std::string algorithm)
     : m_prefix(prefix), m_algorithm(algorithm) {
@@ -155,4 +160,78 @@ void BestDijetInfo::compute(std::vector<TLorentzVector> jets) {
 
 void BestDijetInfo::setTruthMjj(float truthMjj) {
     m_truthMjj = truthMjj;
+}
+
+MaxAlljetInfo::MaxAlljetInfo(std::string prefix)
+    : DijetInfo(prefix, "maxall") {
+
+}
+
+void MaxAlljetInfo::reset() {
+    // In addition to resetting everything else, reset the jet indices.
+    DijetInfo::reset();
+    m_jetIDs.clear();
+}
+
+void MaxAlljetInfo::attachToTree(TTree* tree) {
+    // Create branches for the jet indices and m_allj. Don't call base version.
+    // We can't meaningfully compute an eta or phi here.
+    tree->Branch((m_prefix + "_Mjj_" + m_algorithm).c_str(), &m_mass);
+    tree->Branch((m_prefix + "_jets_" + m_algorithm).c_str(), &m_jetIDs);
+}
+
+void MaxAlljetInfo::compute(std::vector<TLorentzVector> jets) {
+    if (jets.size() == 2) {
+        // There's no ambiguity, just pick the two jets.
+        m_mass = (jets.at(0) + jets.at(1)).M();
+        m_jetIDs.push_back(0);
+        m_jetIDs.push_back(1);
+    } else if (jets.size() > 2) {
+
+        // This is a tad hacky.
+        // We want to pick all possible sets of jet indices of size >= 2.
+        // One very naive way to do this is to use a binary counter.
+        // We sum from 0 to 2**numjets and convert to binary. Then if there
+        // are at least two 1s in the binary representation, we sum over the
+        // binary representation and pick those jets.
+        // I feel like there is a better algorithm but I honestly can't think of one...
+
+        std::vector<int> jetIDs;
+        unsigned int jetsize = jets.size();
+
+        for (unsigned int count = 0; count < pow(2, jetsize); count++) {
+
+            // The size here must be a constant expression, unfortunately.
+            // But I doubt there will ever be more than 2**16 jets.
+            // TODO: make not magic number or revisit approach entirely.
+            std::bitset<16> counter = std::bitset<16>(count);
+
+            // If there aren't at least two bits "on" in our counter, continue.
+            if (counter.count() < 2) {
+                continue;
+            }
+            else {
+
+                // Loop through each bit in the counter. If it's on, select the corresponding jet.
+                // Also record that we selected the particular jet in a vector.
+                TLorentzVector combination;
+                for (unsigned int i = 0; i < jets.size(); i++) {
+                    if (counter[i]) {
+                        combination = combination + jets.at(i);
+                        jetIDs.push_back(i);
+                    }
+                }
+
+                // If this mjj is better than the current maximum, use it.
+                // Otherwise, clear the jet IDs vector.
+                float mjj = combination.M();
+                if (mjj > m_mass) {
+                    m_mass = mjj;
+                    m_jetIDs = jetIDs;
+                } else {
+                    jetIDs.clear();
+                }
+            }
+        }
+    }
 }

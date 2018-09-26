@@ -113,4 +113,18 @@ private:
 
 };
 
+class Analysis::MaxAlljetInfo : public Analysis::DijetInfo {
+
+public:
+    MaxAlljetInfo(std::string prefix);
+
+    virtual void reset();
+    virtual void compute(std::vector<TLorentzVector> jets);
+    virtual void attachToTree(TTree *tree);
+
+private:
+    std::vector<int> m_jetIDs;
+
+};
+
 #endif

@@ -63,6 +63,7 @@ private:
     Analysis::LeadingDijetInfo* m_leadingDijets; //!
     Analysis::MaxDijetInfo* m_maxDijets; //!
     Analysis::BestDijetInfo* m_bestDijets; //!
+    Analysis::MaxAlljetInfo* m_maxAlljets; //!
 
     // A map of algorithm names to analysis objects,
     std::map<std::string, Analysis::DijetInfo*> m_dijetAlgos; //!

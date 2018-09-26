@@ -157,7 +157,7 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     // Create (and attach) dijet finders for everything.
     m_truthDijets = new Analysis::DijetFinder("truth", this->truthJetPtCut);
     m_status20Dijets = new Analysis::DijetFinder("status20", this->partonJetPtCut);
-    m_status3Dijets = new Analysis::DijetFinder("status20", this->partonJetPtCut);
+    m_status3Dijets = new Analysis::DijetFinder("status3", this->partonJetPtCut);
     m_partonDijets = new Analysis::DijetFinder("parton", this->partonJetPtCut);
 
     // Attach them to the tree.
