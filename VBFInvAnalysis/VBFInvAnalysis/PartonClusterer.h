@@ -79,6 +79,9 @@ private:
     float m_ptv = 0;
     float m_maxhtptv = 0;
 
+    // Mandelstam variable S; the thing that NoJetTrigger was using.
+    float m_s = 0;
+
     // The number of particles per event.
     unsigned int m_numParticles = 0;
 

@@ -58,7 +58,7 @@ LeadingDijetInfo::LeadingDijetInfo(std::string prefix)
 void LeadingDijetInfo::compute(std::vector<TLorentzVector> jets) {
     // If there are at least two jets, pick the leading two jets!
     if (jets.size() >= 2) {
-        m_mass = (jets.at(0) + jets.at(1)).M();
+        m_mass = (jets.at(0) + jets.at(1)).M() / 1000.;
         m_deta = TMath::Abs(jets.at(0).Eta() - jets.at(1).Eta());
         m_dphi = TMath::Abs(jets.at(0).Phi() - jets.at(1).Phi());
     }
@@ -91,7 +91,7 @@ void MaxDijetInfo::compute(std::vector<TLorentzVector> jets) {
         for (unsigned int i = 0; i < jets.size(); i++) {
             // Loop over (i, j) pairs such that i != j and we never get (j, i).
             for (unsigned int j = i + 1; j < jets.size(); j++) {
-                float mjj = (jets.at(i) + jets.at(j)).M();
+                float mjj = (jets.at(i) + jets.at(j)).M() / 1000.;
 
                 // If this mjj is better than the current maximum, use it.
                 if (mjj > m_mass) {
@@ -141,7 +141,7 @@ void BestDijetInfo::compute(std::vector<TLorentzVector> jets) {
         for (unsigned int i = 0; i < jets.size(); i++) {
             // Loop over (i, j) pairs such that i != j and we never get (j, i).
             for (unsigned int j = i + 1; j < jets.size(); j++) {
-                float mjj = (jets.at(i) + jets.at(j)).M();
+                float mjj = (jets.at(i) + jets.at(j)).M() / 1000.;
 
                 // Figure out how close we are to the 'true' mjj.
                 float deltaNew = TMath::Abs(mjj - m_truthMjj);
@@ -183,7 +183,7 @@ void MaxAlljetInfo::attachToTree(TTree* tree) {
 void MaxAlljetInfo::compute(std::vector<TLorentzVector> jets) {
     if (jets.size() == 2) {
         // There's no ambiguity, just pick the two jets.
-        m_mass = (jets.at(0) + jets.at(1)).M();
+        m_mass = (jets.at(0) + jets.at(1)).M() / 1000.;
         m_jetIDs.push_back(0);
         m_jetIDs.push_back(1);
     } else if (jets.size() > 2) {
@@ -224,7 +224,7 @@ void MaxAlljetInfo::compute(std::vector<TLorentzVector> jets) {
 
                 // If this mjj is better than the current maximum, use it.
                 // Otherwise, clear the jet IDs vector.
-                float mjj = combination.M();
+                float mjj = combination.M() / 1000.;
                 if (mjj > m_mass) {
                     m_mass = mjj;
                     m_jetIDs = jetIDs;

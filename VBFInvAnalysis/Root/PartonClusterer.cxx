@@ -33,6 +33,10 @@ void PartonClusterer::attachToTree(TTree* tree) {
     tree->Branch((m_prefix + "_HT").c_str(), &m_ht);
     tree->Branch((m_prefix + "_PTV").c_str(), &m_ptv);
     tree->Branch((m_prefix + "_maxHTPTV").c_str(), &m_maxhtptv);
+
+    // For fun! Store s (e.g. |p[0] + p[1]|^2) from the incoming particles.
+    tree->Branch((m_prefix + "_S").c_str(), &m_s);
+
 }
 
 void PartonClusterer::reset() {
@@ -54,6 +58,9 @@ void PartonClusterer::reset() {
     m_ht = 0;
     m_ptv = 0;
     m_maxhtptv = 0;
+
+    // Reset Mandelstam 's' variable.
+    m_s = 0;
 }
 
 void PartonClusterer::calcMaxHTPTV(std::vector<const xAOD::TruthParticle*>* particles) {
@@ -90,11 +97,20 @@ void PartonClusterer::storeParticles(std::vector<const xAOD::TruthParticle*>* pa
 
     TLorentzVector rootParticle;
 
+    unsigned int count = 0;
+    TLorentzVector incoming;
+
     // Loop through the truth particles, store them in the arrays.
     for (const auto* particle: *particles) {
 
         // Create a TLorentzVector particle.
         rootParticle.SetPxPyPzE(particle->px(), particle->py(), particle->pz(), particle->e());
+
+        // Compute Mandelstam variable s.
+        if (count < 2) {
+            count += 1;
+            incoming += rootParticle;
+        }
 
         // Push the kinematics (and mass) back.
         m_particlePt.push_back(rootParticle.Pt());
@@ -106,6 +122,9 @@ void PartonClusterer::storeParticles(std::vector<const xAOD::TruthParticle*>* pa
         // Push the particle PID back too.
         m_particlePID.push_back(particle->pdgId());
     }
+
+    // s = |p[0] + p[1]|**2. Convert it to GeV^2.
+    m_s = (incoming.Mag2())/(1e6);
 
     // Store the size, too.
     m_numParticles = particles->size();
