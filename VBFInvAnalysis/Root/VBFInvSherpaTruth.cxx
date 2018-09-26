@@ -253,7 +253,7 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     }
 
     // Pass the truth jets to the truth dijet finder.
-    m_truthDijets->computeMjj(truthJets);
+    m_truthDijets->computeMjj(&truthJets);
 
     // Retrieve truth particles from the xAOD.
     const xAOD::TruthParticleContainer* truthParticles = nullptr;
@@ -272,8 +272,8 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     std::vector<const xAOD::TruthParticle*>* particles;
 
     // Now, cluster the status 3 and status 20 particles.
-    std::vector<TLorentzVector>* status20Jets = m_status20Partons->clusterPartons(status20);
-    std::vector<TLorentzVector>* status3Jets = m_status3Partons->clusterPartons(status3);
+    std::vector<TLorentzVector>* status20Jets = m_status20Partons->clusterPartons(&status20);
+    std::vector<TLorentzVector>* status3Jets = m_status3Partons->clusterPartons(&status3);
     if (debug) ANA_MSG_INFO("Finished clustering particles into parton jets.");
 
     // If "clusterPartonCode" is 20, then we are a MC@NLO S Event.
@@ -292,15 +292,15 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     if (debug) ANA_MSG_INFO("Selected status 20 vs status 3 particles.");
 
     // Now, write the status-code-neutral version of the truth particles.
-    m_partons->clusterPartons(*particles);
+    m_partons->clusterPartons(particles);
 
     // Now, using the parton jet collections, compute and store mjj in dijet finders.
     // This is a bit inefficient-- we do it once for status 3, once for status 20, and then again
     // for the status-code-neutral version. We could probably just do the computation once
     // and then store the right values... oh well.
-    m_status20Dijets->computeMjj(*status20Jets);
-    m_status3Dijets->computeMjj(*status3Jets);
-    m_partonDijets->computeMjj(*partonJets);
+    m_status20Dijets->computeMjj(status20Jets);
+    m_status3Dijets->computeMjj(status3Jets);
+    m_partonDijets->computeMjj(partonJets);
 
     // Now, we'd like to compute "best" mjjs. i.e. pick the pair of partons that's closest to
     // truth, or vice versa, only using this measure of "best".
@@ -322,6 +322,14 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     m_partonDijets->getDijetInfo("bestLead")->compute(*(m_partonDijets->getPrunedJets()));
     m_status3Dijets->getDijetInfo("bestLead")->compute(*(m_status3Dijets->getPrunedJets()));
     m_status20Dijets->getDijetInfo("bestLead")->compute(*(m_status20Dijets->getPrunedJets()));
+
+    // We now want to match the parton jets against the truth jets. We do that in the "dijet finder".
+    // which isn't necessarily the best place, but it's where the jets get written out to the tree
+    // so it's close enough.
+    m_truthDijets->matchJets(partonJets, this->antiktDR);
+    m_partonDijets->matchJets(&truthJets, this->antiktDR);
+    m_status20Dijets->matchJets(&truthJets, this->antiktDR);
+    m_status3Dijets->matchJets(&truthJets, this->antiktDR);
 
     if (debug) ANA_MSG_INFO("Completed handling mjj computation.");
 

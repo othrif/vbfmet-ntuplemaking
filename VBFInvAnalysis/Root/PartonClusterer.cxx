@@ -114,7 +114,7 @@ void PartonClusterer::storeParticles(std::vector<const xAOD::TruthParticle*>* pa
     this->calcMaxHTPTV(particles);
 }
 
-std::vector<TLorentzVector>* PartonClusterer::clusterPartons(std::vector<const xAOD::TruthParticle*> particles) {
+std::vector<TLorentzVector>* PartonClusterer::clusterPartons(std::vector<const xAOD::TruthParticle*>* particles) {
 
     std::vector<fastjet::PseudoJet> clusterInputs;
     std::vector<fastjet::PseudoJet> partonPseudoJets;
@@ -123,7 +123,7 @@ std::vector<TLorentzVector>* PartonClusterer::clusterPartons(std::vector<const x
     fastjet::PseudoJet pseudoJet;
 
     // Loop over the particles, extract particles which are actually partons.
-    for (const auto* particle: particles) {
+    for (const auto* particle: *particles) {
         if (!particle->isParton()) {
             continue;
         }
@@ -155,7 +155,7 @@ std::vector<TLorentzVector>* PartonClusterer::clusterPartons(std::vector<const x
     }
 
     // Also, store the truth particles.
-    this->storeParticles(&particles);
+    this->storeParticles(particles);
 
     return &m_partonJets;
 }

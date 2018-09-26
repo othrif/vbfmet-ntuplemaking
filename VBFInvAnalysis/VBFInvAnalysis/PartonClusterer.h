@@ -44,7 +44,7 @@ public:
     void calcMaxHTPTV(std::vector<const xAOD::TruthParticle*>* particles);
 
     // Cluster the partons.
-    std::vector<TLorentzVector>* clusterPartons(std::vector<const xAOD::TruthParticle*> particles);
+    std::vector<TLorentzVector>* clusterPartons(std::vector<const xAOD::TruthParticle*>* particles);
 
     // Returns a pointer to the computed parton jets.
     std::vector<TLorentzVector>* getPartonJets();
