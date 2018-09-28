@@ -1087,9 +1087,11 @@ if( ! toolPtr ) {
 //  std::cout << evtNbr << " cleaning: DFCommonJets_eventClean_LooseBad=" << passesJetCleanLoose << ", DFCommonJets_jetClean_TightBad=" << passesJetCleanTight << " > passesJetCleanTightCustom=" << passesJetCleanTightCustom << std::endl;
 
   m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
-  //content.passJetCleanLoose = passesJetCleanLoose;
+  content.passJetCleanLoose = passesJetCleanLoose;
   content.passJetCleanTight = passesJetCleanTight;
 
+// Investigating jet cleaning
+/*
 int val = 0;
 if(passesJetCleanLoose)
   val += 1;
@@ -1097,8 +1099,8 @@ if(passesJetCleanTight)
   val += 2;
 if(passesJetCleanTightCustom)
   val += 3;
-
-content.passJetCleanLoose = val;
+content.passJetCleanLoose = passesJetCleanLoose;
+*/
 
   //-----------------------------------------------------------------------
   // Fill tree
