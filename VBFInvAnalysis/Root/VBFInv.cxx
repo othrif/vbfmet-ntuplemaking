@@ -236,38 +236,38 @@ EL::StatusCode VBFInv::initialize() {
  ANA_CHECK(m_susytools_handle.setProperty("DataSource", datasource));
  ANA_CHECK(m_susytools_handle.setProperty("ConfigFile", ST_config_file.Data()));
  if(verbose){
- ANA_CHECK( m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
- ANA_CHECK( m_susytools_handle.setProperty("DebugMode", true));
-}
+   ANA_CHECK( m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
+   ANA_CHECK( m_susytools_handle.setProperty("DebugMode", true));
+ }
   // Pile up configuration
-  xAOD::TEvent *event = wk()->xaodEvent();
-if(doPileup && m_isMC){
+ xAOD::TEvent *event = wk()->xaodEvent();
+ if(doPileup && m_isMC){
       // get metadata
   const xAOD::FileMetaData* fmd = nullptr;
   std::string amiTag = "unknown";
   if( event->retrieveMetaInput( fmd, "FileMetaData" ).isSuccess() ) {
-       if( !fmd->value( xAOD::FileMetaData::amiTag, amiTag ) ) {
-   ATH_MSG_ERROR( "The object is available, the variable is not." );
-       }
-     } else {
-       ATH_MSG_ERROR( "The object is not available." );
-     }
-  ANA_MSG_INFO("\n AMI Tag: " << amiTag);
+   if( !fmd->value( xAOD::FileMetaData::amiTag, amiTag ) ) {
+     ATH_MSG_ERROR( "The object is available, the variable is not." );
+   }
+ } else {
+   ATH_MSG_ERROR( "The object is not available." );
+ }
+ ANA_MSG_INFO("\n AMI Tag: " << amiTag);
 
-  const xAOD::EventInfo *eventInfo = nullptr;
-  ANA_CHECK (evtStore()->retrieve (eventInfo, "EventInfo"));
-  std::vector<std::string> prw_conf;
-  std::vector<std::string> prw_lumicalc;
-  std::string mc_campaign;
-  std::string simType = (m_isAFII ? "AFII" : "FS");
-  uint32_t runNum = eventInfo->runNumber();
-  switch(runNum) {
-    case 284500 :
-    mc_campaign="mc16a";
+ const xAOD::EventInfo *eventInfo = nullptr;
+ ANA_CHECK (evtStore()->retrieve (eventInfo, "EventInfo"));
+ std::vector<std::string> prw_conf;
+ std::vector<std::string> prw_lumicalc;
+ std::string mc_campaign;
+ std::string simType = (m_isAFII ? "AFII" : "FS");
+ uint32_t runNum = eventInfo->runNumber();
+ switch(runNum) {
+  case 284500 :
+  mc_campaign="mc16a";
         prw_lumicalc.push_back(PathResolverFindCalibFile("GoodRunsLists/data15_13TeV/20170619/PHYS_StandardGRL_All_Good_25ns_276262-284484_OflLumi-13TeV-008.root")); // 2015 LumiCalc
         prw_lumicalc.push_back(PathResolverFindCalibFile("GoodRunsLists/data16_13TeV/20180129/PHYS_StandardGRL_All_Good_25ns_297730-311481_OflLumi-13TeV-009.root")); // 2016 LumiCalc
         break;
-    case 300000 :
+        case 300000 :
         if( amiTag.find("r10201")!=std::string::npos)
           mc_campaign = "mc16d";
         else
@@ -702,10 +702,10 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
           dec_new_d0sig(*el) = HelperFunctions::getD0sig(el, content.eventInfo);
           dec_new_z0(*el) = HelperFunctions::getZ0(el, primary_vertex_z);
           dec_new_z0sig(*el) = HelperFunctions::getZ0sig(el);
-        content.allElectrons.push_back(el);
+          content.allElectrons.push_back(el);
+        }
       }
-    }
-    content.allElectrons.sort(&HelperFunctions::comparePt);
+      content.allElectrons.sort(&HelperFunctions::comparePt);
     } // done with electrons
 
    //-- PHOTONS --
@@ -719,9 +719,9 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
        //if (acc_baseline(*ph) == 1) {
         content.allPhotons.push_back(ph);
 	//}
+      }
+      content.allPhotons.sort(&HelperFunctions::comparePt);
     }
-    content.allPhotons.sort(&HelperFunctions::comparePt);
-  }
 
    //-- TAUS --
 /*
@@ -745,46 +745,46 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
   //-----------------------------------------------------------------------
 
    //Good objects containers clear
-  content.goodMuons.clear(SG::VIEW_ELEMENTS);
-  content.baselineMuons.clear(SG::VIEW_ELEMENTS);
-  content.goodElectrons.clear(SG::VIEW_ELEMENTS);
-  content.baselineElectrons.clear(SG::VIEW_ELEMENTS);
-  content.goodJets.clear(SG::VIEW_ELEMENTS);
-  content.goodPhotons.clear(SG::VIEW_ELEMENTS);
-  content.baselinePhotons.clear(SG::VIEW_ELEMENTS);
-  content.goodTaus.clear(SG::VIEW_ELEMENTS);
-  content.baselineTaus.clear(SG::VIEW_ELEMENTS);
+    content.goodMuons.clear(SG::VIEW_ELEMENTS);
+    content.baselineMuons.clear(SG::VIEW_ELEMENTS);
+    content.goodElectrons.clear(SG::VIEW_ELEMENTS);
+    content.baselineElectrons.clear(SG::VIEW_ELEMENTS);
+    content.goodJets.clear(SG::VIEW_ELEMENTS);
+    content.goodPhotons.clear(SG::VIEW_ELEMENTS);
+    content.baselinePhotons.clear(SG::VIEW_ELEMENTS);
+    content.goodTaus.clear(SG::VIEW_ELEMENTS);
+    content.baselineTaus.clear(SG::VIEW_ELEMENTS);
 
    //-- Overlap removal --
-  m_susytools_handle->OverlapRemoval(content.electrons, content.muons, content.jets, content.photons);
+    m_susytools_handle->OverlapRemoval(content.electrons, content.muons, content.jets, content.photons);
 
   //-- JETS --
-  if(debug){
-    for (auto jet : *content.jets) {
-      ANA_MSG_INFO ("jet pt=" << jet->pt()*0.001 << ", eta=" << jet->eta() << ", phi=" << jet->phi() << ", bad=" << (acc_bad(*jet)==1) << ", passOR=" << (acc_passOR(*jet)==1) << ", passJVT=" << (acc_passJvt(*jet)==1)<< ", passFJVT=" << (acc_passFJvt(*jet)==1) << " => BASELINE=" << (acc_baseline(*jet)==1) << ", SIGNAL=" << (acc_signal(*jet)==1) << ", No JVT SIGNAL=" << (acc_signal_less_JVT(*jet)==1));
+    if(debug){
+      for (auto jet : *content.jets) {
+        ANA_MSG_INFO ("jet pt=" << jet->pt()*0.001 << ", eta=" << jet->eta() << ", phi=" << jet->phi() << ", bad=" << (acc_bad(*jet)==1) << ", passOR=" << (acc_passOR(*jet)==1) << ", passJVT=" << (acc_passJvt(*jet)==1)<< ", passFJVT=" << (acc_passFJvt(*jet)==1) << " => BASELINE=" << (acc_baseline(*jet)==1) << ", SIGNAL=" << (acc_signal(*jet)==1) << ", No JVT SIGNAL=" << (acc_signal_less_JVT(*jet)==1));
+      }
     }
-  }
 
-
-  Float_t mhtx = 0;
-  Float_t mhty = 0;
-  for (auto jet : content.allJets){
-    if (acc_passOR(*jet) == 1 && acc_bad(*jet) == 0){
+    Float_t mhtx = 0;
+    Float_t mhty = 0;
+    for (auto jet : content.allJets){
+      if (acc_passOR(*jet) == 1 && acc_bad(*jet) == 0){
         mhtx += jet->pt() * TMath::Cos(jet->phi());
         mhty += jet->pt() * TMath::Sin(jet->phi());
         if (acc_signal(*jet) == 1)
-            content.goodJets.push_back(jet);
+          content.goodJets.push_back(jet);
+      }
     }
-  }
   // Calculated MHT by hand
-  double mht = sqrt(mhtx*mhtx+mhty*mhty);
+    double mht = sqrt(mhtx*mhtx+mhty*mhty);
 
   //-- MUONS --
-for (auto muon : content.allMuons)
- if (acc_passOR(*muon) == 1 && acc_cosmic(*muon) == 0 && acc_bad(*muon) == 0) {
-  content.baselineMuons.push_back(muon);
-  if (acc_signal(*muon) == 1)
+    for (auto muon : content.allMuons)
+     if (acc_passOR(*muon) == 1 && acc_cosmic(*muon) == 0 && acc_bad(*muon) == 0) {
+      content.baselineMuons.push_back(muon);
+      if (acc_signal(*muon) == 1){
       content.goodMuons.push_back(muon); // CR muons
+      }
   }
 
   //-- ELECTRONS --
@@ -870,19 +870,19 @@ for (auto muon : content.allMuons)
  (*content.met_tst_nolep)["Final"]->setMpy(mpy + py);
 }
 
- double met_tst_nolep_j1_dphi=-1., met_tst_nolep_j2_dphi=-1.;
- HelperFunctions::computeMETj(myMET_tst_nolep, content.goodJets, met_tst_nolep_j1_dphi, met_tst_nolep_j2_dphi);
- if (debug){
-   print("met_tst_nolep_j1_dphi: ", met_tst_nolep_j1_dphi);
-   print("met_tst_nolep_j2_dphi: ", met_tst_nolep_j2_dphi);
- }
- content.met_tst_nolep_j1_dphi = met_tst_nolep_j1_dphi;
- content.met_tst_nolep_j2_dphi = met_tst_nolep_j2_dphi;
+double met_tst_nolep_j1_dphi=-1., met_tst_nolep_j2_dphi=-1.;
+HelperFunctions::computeMETj(myMET_tst_nolep, content.goodJets, met_tst_nolep_j1_dphi, met_tst_nolep_j2_dphi);
+if (debug){
+ print("met_tst_nolep_j1_dphi: ", met_tst_nolep_j1_dphi);
+ print("met_tst_nolep_j2_dphi: ", met_tst_nolep_j2_dphi);
+}
+content.met_tst_nolep_j1_dphi = met_tst_nolep_j1_dphi;
+content.met_tst_nolep_j2_dphi = met_tst_nolep_j2_dphi;
 
  // MET CST, for HT
- TLorentzVector myMET_cst;
- double myMETsig_cst;
- getMET(content.met_cst,
+TLorentzVector myMET_cst;
+double myMETsig_cst;
+getMET(content.met_cst,
 	content.met_cstAux,
 	content.jets, // use all objects (before OR and after corrections) for MET utility
 	content.electrons,
@@ -892,17 +892,17 @@ for (auto muon : content.allMuons)
 	kFALSE, // do JVT
 	nullptr, // invisible particles
 	myMET_cst,
-   	myMETsig_cst
- 	);
+  myMETsig_cst
+  );
 
- double met_cst_jet = -1.;
- met_cst_jet = (*content.met_cst)["RefJet"]->met();
- content.met_cst_jet = met_cst_jet;
+double met_cst_jet = -1.;
+met_cst_jet = (*content.met_cst)["RefJet"]->met();
+content.met_cst_jet = met_cst_jet;
 
-  if(debug) {
-    print("MET CST", met_cst_jet*1e-3);
-    print("MHT without jVT", mht*1e-3);
-    }
+if(debug) {
+  print("MET CST", met_cst_jet*1e-3);
+  print("MHT without jVT", mht*1e-3);
+}
 
 /*
 // MET, with invisble muons
@@ -1040,6 +1040,16 @@ if (m_isMC) {
   //-----------------------------------------------------------------------
   // Continue cleaning...
   //-----------------------------------------------------------------------
+
+//asg::AnaToolHandle< ST::ISUSYObjDef_xAODTool >&  handle{"ST::SUSYObjDef_xAOD/SUSYTools"};
+const asg::AsgTool* toolPtr = dynamic_cast< const asg::AsgTool* >( m_susytools_handle.get() );
+if( ! toolPtr ) {
+  // Handle the error...
+  std::cout << "Error with tool!" << std::endl;
+}
+//auto testProp = toolPtr->getProperty< int >( "Jet.InputType" );
+//std::cout << testProp << std::endl;
+
 // Jet cleaning
 // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/HowToCleanJets2017
   static SG::AuxElement::Accessor<char> acc_eventClean("DFCommonJets_eventClean_LooseBad");
@@ -1050,6 +1060,7 @@ if (m_isMC) {
     return EL::StatusCode::SUCCESS;
   }
 
+  // Tight cleaning for EMTopo
   Bool_t passesJetCleanTight = true;
   static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
   for (auto jet : content.goodJets) {
@@ -1060,9 +1071,34 @@ if (m_isMC) {
     }
   }
 
+  // Tight cleaning for PFlow
+  Bool_t passesJetCleanTightCustom = true;
+  for (auto jet : content.goodJets) {
+    std::vector<float> SumTrkPt500vec;
+    SumTrkPt500vec = jet->auxdata<std::vector<float>>("SumPtTrkPt500");
+    float SumTrkPt500 = -1;
+    if (SumTrkPt500vec.size()>0) SumTrkPt500 = SumTrkPt500vec.at(0);
+    float chf = SumTrkPt500/jet->pt();
+    float fmax = jet->auxdata<float>("FracSamplingMax");
+    if (std::fabs(jet->eta())<2.4 && chf/fmax<0.1) {passesJetCleanTightCustom = false;}
+  }
+
+//if (passesJetCleanTightCustom != passesJetCleanTight )
+//  std::cout << evtNbr << " cleaning: DFCommonJets_eventClean_LooseBad=" << passesJetCleanLoose << ", DFCommonJets_jetClean_TightBad=" << passesJetCleanTight << " > passesJetCleanTightCustom=" << passesJetCleanTightCustom << std::endl;
+
   m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
-  content.passJetCleanLoose = passesJetCleanLoose;
+  //content.passJetCleanLoose = passesJetCleanLoose;
   content.passJetCleanTight = passesJetCleanTight;
+
+int val = 0;
+if(passesJetCleanLoose)
+  val += 1;
+if(passesJetCleanTight)
+  val += 2;
+if(passesJetCleanTightCustom)
+  val += 3;
+
+content.passJetCleanLoose = val;
 
   //-----------------------------------------------------------------------
   // Fill tree
@@ -1113,6 +1149,7 @@ if (m_isMC) {
 
 EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outHolder &cand)
 {
+
  xAOD::TEvent *event = wk()->xaodEvent();
 
  cand.reset();
@@ -1155,12 +1192,12 @@ cand.evt.trigger["HLT_mu26_ivarmedium"] ||
 cand.evt.trigger["HLT_mu26_imedium"];
 
    // raw event info
-   cand.evt.runNumber = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
-   cand.evt.eventNumber = (ULong64_t)content.eventInfo->eventNumber();
-   cand.evt.lumiBlock = content.eventInfo->lumiBlock();
-   cand.evt.bcid = content.eventInfo->bcid();
-   cand.evt.averageIntPerXing = content.eventInfo->averageInteractionsPerCrossing();
-   cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
+cand.evt.runNumber = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
+cand.evt.eventNumber = (ULong64_t)content.eventInfo->eventNumber();
+cand.evt.lumiBlock = content.eventInfo->lumiBlock();
+cand.evt.bcid = content.eventInfo->bcid();
+cand.evt.averageIntPerXing = content.eventInfo->averageInteractionsPerCrossing();
+cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
 
 // Which year are we in?
   cand.evt.year = (m_isMC) ? m_susytools_handle->treatAsYear() : 0; // RandomRunNumber from the PRWTool
@@ -1179,48 +1216,48 @@ cand.evt.trigger["HLT_mu26_imedium"];
 /*cand.evt.trigger_met = (is2015 && cand.evt.trigger["HLT_xe70_mht"]) ||
                (is2016 && ( cand.evt.trigger["HLT_xe90_mht_L1XE50"] || cand.evt.trigger["HLT_xe110_mht_L1XE50"] )) ||
                cand.evt.trigger["HLT_noalg_L1J400"] ;*/
-cand.evt.randomRunNumber = m_susytools_handle->GetRandomRunNumber();
+   cand.evt.randomRunNumber = m_susytools_handle->GetRandomRunNumber();
 
-Bool_t customMETtrig(kFALSE);
-if(is2015 && cand.evt.trigger["HLT_xe70_mht"])
-  customMETtrig = kTRUE;
-else if(is2016 && cand.evt.randomRunNumber <= 304008 && cand.evt.trigger["HLT_xe90_mht_L1XE50"])
-  customMETtrig = kTRUE;
-else if(is2016 && cand.evt.randomRunNumber > 304008 && cand.evt.trigger["HLT_xe110_mht_L1XE50"])
-  customMETtrig = kTRUE;
-else if (cand.evt.trigger["HLT_noalg_L1J400"])
-  customMETtrig = kTRUE;
+   Bool_t customMETtrig(kFALSE);
+   if(is2015 && cand.evt.trigger["HLT_xe70_mht"])
+    customMETtrig = kTRUE;
+  else if(is2016 && cand.evt.randomRunNumber <= 304008 && cand.evt.trigger["HLT_xe90_mht_L1XE50"])
+    customMETtrig = kTRUE;
+  else if(is2016 && cand.evt.randomRunNumber > 304008 && cand.evt.trigger["HLT_xe110_mht_L1XE50"])
+    customMETtrig = kTRUE;
+  else if (cand.evt.trigger["HLT_noalg_L1J400"])
+    customMETtrig = kTRUE;
 
-cand.evt.trigger_met = customMETtrig;
+  cand.evt.trigger_met = customMETtrig;
 
   // pass event flags
-   cand.evt.passGRL = content.passGRL;
-   cand.evt.passPV = content.passPV;
+  cand.evt.passGRL = content.passGRL;
+  cand.evt.passPV = content.passPV;
 //   cand.evt.passTrigger = content.passTrigger;
-   cand.evt.passDetErr = content.passDetErr;
-   cand.evt.passJetCleanLoose = content.passJetCleanLoose;
-   cand.evt.passJetCleanTight = content.passJetCleanTight;
+  cand.evt.passDetErr = content.passDetErr;
+  cand.evt.passJetCleanLoose = content.passJetCleanLoose;
+  cand.evt.passJetCleanTight = content.passJetCleanTight;
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
 
    // jj and met_j
-  double jj_deta = -1., jj_mass=-1., jj_dphi=-1.;
-  HelperFunctions::computejj(content.goodJets, jj_mass, jj_deta, jj_dphi);
-  if(debug){
+   double jj_deta = -1., jj_mass=-1., jj_dphi=-1.;
+   HelperFunctions::computejj(content.goodJets, jj_mass, jj_deta, jj_dphi);
+   if(debug){
     print(" Mjj", jj_mass);
     print(" DEta", jj_deta);
     print(" DPhi", jj_dphi);
   }
 
-   cand.evt.jj_mass = jj_mass;
-   cand.evt.jj_deta = jj_deta;
-   cand.evt.jj_dphi = jj_dphi;
-   cand.evt.met_tst_j1_dphi = content.met_tst_j1_dphi;
-   cand.evt.met_tst_j2_dphi = content.met_tst_j2_dphi;
-   cand.evt.met_tst_nolep_j1_dphi = content.met_tst_nolep_j1_dphi;
-   cand.evt.met_tst_nolep_j2_dphi = content.met_tst_nolep_j2_dphi;
-   cand.evt.met_cst_jet = content.met_cst_jet;
+  cand.evt.jj_mass = jj_mass;
+  cand.evt.jj_deta = jj_deta;
+  cand.evt.jj_dphi = jj_dphi;
+  cand.evt.met_tst_j1_dphi = content.met_tst_j1_dphi;
+  cand.evt.met_tst_j2_dphi = content.met_tst_j2_dphi;
+  cand.evt.met_tst_nolep_j1_dphi = content.met_tst_nolep_j1_dphi;
+  cand.evt.met_tst_nolep_j2_dphi = content.met_tst_nolep_j2_dphi;
+  cand.evt.met_cst_jet = content.met_cst_jet;
 //   cand.evt.met_tst_nomuon_j1_dphi = content.met_tst_nomuon_j1_dphi;
 //   cand.evt.met_tst_nomuon_j2_dphi = content.met_tst_nomuon_j2_dphi;
 //   cand.evt.met_tst_noelectron_j1_dphi = content.met_tst_noelectron_j1_dphi;
@@ -1228,7 +1265,7 @@ cand.evt.trigger_met = customMETtrig;
 
    // MC-only information
 
-   if (m_isMC) {
+  if (m_isMC) {
       // Record all weights
     cand.evt.mcEventWeight     = content.eventInfo->mcEventWeight();
     cand.evt.mcEventWeights    = content.eventInfo->mcEventWeights();
@@ -1238,7 +1275,7 @@ cand.evt.trigger_met = customMETtrig;
 // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
     cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
 
-    // Lepton Scale Facgtors
+    // Lepton Scale Factors
     // See definition of Trig.Singlelep20XX in SUSYObjDef_xAOD.cxx
     // You can modify it in the ST config under Trigger SFs configuration
     // Total Electron SF: GetTotalElectronSF(const xAOD::ElectronContainer& electrons, const bool recoSF, const bool idSF, const bool triggerSF, const bool isoSF, const std::string& trigExpr, const bool chfSF)
@@ -1246,7 +1283,8 @@ cand.evt.trigger_met = customMETtrig;
     cand.evt.elSFTrigWeight    = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
     // Total Muon SF: GetTotalMuonTriggerSF(const xAOD::MuonContainer& sfmuons, const std::string& trigExpr)
     cand.evt.muSFWeight        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
-    cand.evt.muSFTrigWeight    = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false, is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50" : "HLT_mu24_imedium_OR_HLT_mu50" );
+    cand.evt.muSFTrigWeight    = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false, is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50" : "HLT_mu26_ivarmedium_OR_HLT_mu50" );
+
     if(debug)
     {
       print("Electron SF", cand.evt.elSFWeight);
@@ -1278,14 +1316,14 @@ cand.evt.trigger_met = customMETtrig;
   */
 
    // Rebalance and Smear
-  if(doRnS && !m_isMC ) {
-    cand.rns.rnsPSweight = cand.rns.getPSweight(m_susytools_handle, event,content.eventInfo->runNumber(), debug);
-  }
+    if(doRnS && !m_isMC ) {
+      cand.rns.rnsPSweight = cand.rns.getPSweight(m_susytools_handle, event,content.eventInfo->runNumber(), debug);
+    }
 
       // Truth
 
       //-- JETS --
-  const xAOD::JetContainer * truthJets(nullptr);
+    const xAOD::JetContainer * truthJets(nullptr);
       static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
       if (!failedLookingFor) {
        if (!event->retrieve(truthJets, "AntiKt4TruthJets").isSuccess()) {
@@ -1318,11 +1356,11 @@ cand.evt.trigger_met = customMETtrig;
   }
   cand.evt.n_jet_truth = nTruthJets;
   for (const auto& part : *truthJets) {
-       cand.evt.truth_jet_pt.push_back(part->pt());
-       cand.evt.truth_jet_eta.push_back(part->eta());
-       cand.evt.truth_jet_phi.push_back(part->phi());
-       cand.evt.truth_jet_m.push_back(part->m());
-     }
+   cand.evt.truth_jet_pt.push_back(part->pt());
+   cand.evt.truth_jet_eta.push_back(part->eta());
+   cand.evt.truth_jet_phi.push_back(part->phi());
+   cand.evt.truth_jet_m.push_back(part->m());
+ }
 
 }
 }
@@ -1341,7 +1379,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
        ANA_MSG_ERROR("Failed to retrieve Muons container");
        return EL::StatusCode::FAILURE;
      }
-       cand.evt.n_mu_truth = truthMuons->size();
+     cand.evt.n_mu_truth = truthMuons->size();
      for (const auto& part : *truthMuons) {
        cand.evt.truth_mu_pt.push_back(part->pt());
        cand.evt.truth_mu_eta.push_back(part->eta());
@@ -1357,7 +1395,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
        ANA_MSG_ERROR("Failed to retrieve Electrons container");
        return EL::StatusCode::FAILURE;
      }
-       cand.evt.n_el_truth = truthElectrons->size();
+     cand.evt.n_el_truth = truthElectrons->size();
      for (const auto& part : *truthElectrons) {
        cand.evt.truth_el_pt.push_back(part->pt());
        cand.evt.truth_el_eta.push_back(part->eta());
@@ -1416,10 +1454,23 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   //-----------------------------------------------------------------------
   cand.evt.n_mu = content.goodMuons.size();
   cand.evt.n_mu_baseline = content.baselineMuons.size();
+  //if( cand.evt.n_mu_baseline != 0)
+  //std::cout << "Number of muons in event=" << cand.evt.n_mu << ", baseline=" << cand.evt.n_mu_baseline << std::endl;
   static SG::AuxElement::Accessor<char> acc_bad("bad");
   for (auto muon : content.goodMuons) {
     cand.mu["mu"].add(*muon);
+    /* Isolation investigations
+        Float_t tmp_topoetcone20(-9999);
+        tmp_topoetcone20 = muon->auxdata<float>("topoetcone20");
+        Float_t tmp_ptvarcone30(-9999);
+        tmp_ptvarcone30 = muon->auxdata<float>("ptvarcone30");
+        Float_t tmp_ptvarcone30_TightTTVA_pt1000(-9999);
+        tmp_ptvarcone30_TightTTVA_pt1000 = muon->auxdata<float>("tmp_ptvarcone30_TightTTVA_pt1000");
+    if( tmp_ptvarcone30_TightTTVA_pt1000/muon->pt() > 0.04 || tmp_topoetcone20/muon->pt() > 0.15)
+         std::cout << "Muon pT=" << muon->pt()*1e-3 << ", ptvarcone30_TightTTVA_pt1000/pt=" << tmp_ptvarcone30_TightTTVA_pt1000/muon->pt() << ", topoetcone20/pt=" << tmp_topoetcone20/muon->pt() << std::endl;
+    */
   }
+
 
   //-----------------------------------------------------------------------
   // Selected electrons
@@ -1473,7 +1524,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
                                invis// invisible particles
                                ));
  ANA_CHECK(m_susytools_handle->GetMETSig(*met,
-			      myMETsig,
+   myMETsig,
 			      /*
 			      jet, // use all objects (before OR and after corrections) for MET utility
                               el,
@@ -1481,10 +1532,10 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
                               ph,
                               0, // tau term
 			      */
-                              doTST,
-                              doJVT
+   doTST,
+   doJVT
 			      //invis
-                              ));
+   ));
 
  xAOD::MissingETContainer::const_iterator met_it = met->find("Final");
 
