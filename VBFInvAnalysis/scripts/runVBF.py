@@ -24,7 +24,7 @@ parser.add_argument( "-k", "--nskip", type = int, dest = "nskip", help="Number o
 parser.add_argument( "-r", "--replicationSite", type = str, dest = "replicationSite", default = "DESY-HH_LOCALGROUPDISK", help="Name of disk where to replicate output of grid jobs" )
 parser.add_argument( "-w", "--overwrite", dest = "overwrite", action = "store_false", default = True, help = "don't overwrite previous submitDir")
 parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "prun"], help = "driver to be used (local, prun)", metavar="driver")
-parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
+parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth", "VBFInvSherpaTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
 parser.add_argument( "-u", "--user", type=str, dest="userName", default=os.environ["USER"], help="username for grid jobs", metavar="userName")
 
 # Algorithm configuration
@@ -53,6 +53,15 @@ parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true"
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
+
+# Configure arguments for Sherpa algorithm in a group.
+group = parser.add_argument_group('sherpa', description="Options for the Sherpa Truth algorithm.")
+group.add_argument('--parton-pt', dest='partonPt', default=20, type=float, help="Parton jet pT cut when selecting jets for mjj, in GeV.")
+group.add_argument('--truth-pt', dest='truthPt', default=20, type=float, help="Truth jet pT cut when selecting jets for mjj, in GeV.")
+group.add_argument('--no-cluster-partons', dest='noClusterPartons', action="store_true", help="Skip clustering the partons when selecting parton jets.")
+group.add_argument('--antikt-dr', dest='antiktDR', default=0.4, type=float, help="Value of delta R to use when clustering partons with anti-KT.")
+
+
 args, unknown = parser.parse_known_args()
 
 print "\nArguments used:"
@@ -158,13 +167,23 @@ if( args.algoName == "VBFInv" ):
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
+elif ( args.algoName == "VBFInvSherpaTruth"):
+  alg.skipCBK = args.skipCutBookKeper
+  alg.MultiWeight = args.isMultiWeight
+  alg.antiktDR = args.antiktDR
+  alg.shouldNotCluster = args.noClusterPartons
+  alg.partonJetPtCut = args.partonPt
+  alg.truthJetPtCut = args.truthPt
 else:
   print("ERROR: You need to enter a valid algorithm name: \"VBFInv\" or \"VBFInvTruth\"")
   sys.exit()
 job.algsAdd( alg )
 
 # make sure we can read trigger decision
-job.options().setString(ROOT.EL.Job.optXaodAccessMode, ROOT.EL.Job.optXaodAccessMode_class)
+if args.algoName == "VBFInvSherpaTruth":
+  job.options().setString(ROOT.EL.Job.optXaodAccessMode, ROOT.EL.Job.optXaodAccessMode_athena)
+else:
+  job.options().setString(ROOT.EL.Job.optXaodAccessMode, ROOT.EL.Job.optXaodAccessMode_class)
 # print to screen information about xAOD variables used
 # job.options().setDouble (ROOT.EL.Job.optXAODPerfStats, 1);
 # job.options().setDouble (ROOT.EL.Job.optPrintPerFileStats, 1);

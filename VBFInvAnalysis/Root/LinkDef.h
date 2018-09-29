@@ -13,5 +13,6 @@
 // Classes in the package
 #pragma link C++ class VBFInv+;
 #pragma link C++ class VBFInvTruth+;
+#pragma link C++ class VBFInvSherpaTruth+;
 
 #endif // __CINT__
