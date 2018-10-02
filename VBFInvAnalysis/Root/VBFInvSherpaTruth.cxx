@@ -80,38 +80,40 @@ EL::StatusCode VBFInvSherpaTruth::fileExecute()
     } else {
 
         // Read the CutBookkeeper container
+        // A failure here should not be fatal-- we want to allow running over our own TRUTH1s.
         const xAOD::CutBookkeeperContainer* completeCBC = 0;
-        if (!m_event->retrieveMetaInput(completeCBC, "CutBookkeepers").isSuccess()) {
-            ANA_MSG_ERROR( "Failed to retrieve CutBookkeepers from MetaData! Exiting.");
-        }
+        if (m_event->retrieveMetaInput(completeCBC, "CutBookkeepers").isSuccess()) {
 
-        const xAOD::CutBookkeeper* allEventsCBK = 0;
-        int maxcycle = -1;
+            const xAOD::CutBookkeeper* allEventsCBK = 0;
+            int maxcycle = -1;
 
-        // Let's find the right CBK (latest with StreamAOD input before derivations)
-        for ( auto cbk : *completeCBC ) {
-            if ( cbk->name() == "AllExecutedEvents" && cbk->inputStream() == "StreamAOD" && cbk->cycle() > maxcycle) {
-                maxcycle = cbk->cycle();
-                allEventsCBK = cbk;
+            // Let's find the right CBK (latest with StreamAOD input before derivations)
+            for ( auto cbk : *completeCBC ) {
+                if ( cbk->name() == "AllExecutedEvents" && cbk->inputStream() == "StreamAOD" && cbk->cycle() > maxcycle) {
+                    maxcycle = cbk->cycle();
+                    allEventsCBK = cbk;
+                }
             }
+
+            uint64_t nEventsProcessed  = 0;
+            double sumOfWeights        = 0.;
+            double sumOfWeightsSquared = 0.;
+            if (allEventsCBK) {
+                nEventsProcessed  = allEventsCBK->nAcceptedEvents();
+                sumOfWeights        = allEventsCBK->sumOfEventWeights();
+                sumOfWeightsSquared = allEventsCBK->sumOfEventWeightsSquared();
+                ANA_MSG_INFO("CutBookkeepers Accepted:" << nEventsProcessed << ", SumWei:" << sumOfWeights << ", sumWei2:" << sumOfWeightsSquared);
+            } else {
+                ANA_MSG_INFO("No relevent CutBookKeepers found" );
+                nEventsProcessed = m_event->getEntries();
+            }
+
+            NumberEvents->Fill(0., nEventsProcessed);
+            NumberEvents->Fill(1., sumOfWeights);
+            NumberEvents->Fill(2., sumOfWeightsSquared);
+
         }
 
-        uint64_t nEventsProcessed  = 0;
-        double sumOfWeights        = 0.;
-        double sumOfWeightsSquared = 0.;
-        if (allEventsCBK) {
-            nEventsProcessed  = allEventsCBK->nAcceptedEvents();
-            sumOfWeights        = allEventsCBK->sumOfEventWeights();
-            sumOfWeightsSquared = allEventsCBK->sumOfEventWeightsSquared();
-            ANA_MSG_INFO("CutBookkeepers Accepted:" << nEventsProcessed << ", SumWei:" << sumOfWeights << ", sumWei2:" << sumOfWeightsSquared);
-        } else {
-            ANA_MSG_INFO("No relevent CutBookKeepers found" );
-            nEventsProcessed = m_event->getEntries();
-        }
-
-        NumberEvents->Fill(0., nEventsProcessed);
-        NumberEvents->Fill(1., sumOfWeights);
-        NumberEvents->Fill(2., sumOfWeightsSquared);
     }
 
     return EL::StatusCode::SUCCESS;
