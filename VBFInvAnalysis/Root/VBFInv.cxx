@@ -24,6 +24,7 @@
 #include <EventLoop/OutputStream.h>
 #include "PathResolver/PathResolver.h"
 #include "AsgTools/AsgMetadataTool.h"
+#include "JetInterface/IJetModifier.h"
 
 // Local include(s):
 #include <VBFInvAnalysis/VBFInv.h>
@@ -50,6 +51,9 @@ debug(false),
 verbose(false),
 config_file(""),
 ST_config_file(""),
+ST_config_Tight_file(""),
+ST_config_Tighter_file(""),
+ST_config_Tenacious_file(""),
 prw_file(""),
 lumicalc_file(""),
 GRL_file(""),
@@ -83,7 +87,10 @@ m_eventCounter(0),
 m_determinedDerivation(false),
 m_isEXOT5(false),
 m_grl("GoodRunsListSelectionTool/grl", this),
-m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this)
+m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
+m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
+m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
+m_susytools_Tenacious_handle("ST::SUSYObjDef_xAOD/STTenacious", this)
 {
 }
 
@@ -219,10 +226,10 @@ EL::StatusCode VBFInv::initialize() {
  ANA_MSG_INFO("  - showerType = " << showerType);
  ANA_MSG_INFO("  - debug = " << debug);
 
-// Event counter
+ // Event counter
  m_eventCounter = 0;
 
-   // GRL
+ // GRL
  std::vector<std::string> vecStringGRL;
  vecStringGRL.push_back(PathResolverFindCalibFile("GoodRunsLists/data15_13TeV/20170619/physics_25ns_21.0.19.xml"));// 2015 GRL, R21 (3219.56 pb-1)
  vecStringGRL.push_back(PathResolverFindCalibFile("GoodRunsLists/data16_13TeV/20180129/physics_25ns_21.0.19.xml"));// 2016 GRL, R21 (32988.1 pb-1)
@@ -231,10 +238,25 @@ EL::StatusCode VBFInv::initialize() {
  ANA_CHECK(m_grl.setProperty("PassThrough", false)); // if true (default) will ignore result of GRL and will just pass all events
  ANA_CHECK(m_grl.initialize());
 
+ // configure forward JVT tool
+ m_jetFwdJvtTool.setTypeAndName("JetForwardJvtTool/JetForwardJvtTool_VBF");
+ ANA_CHECK( m_jetFwdJvtTool.setProperty("OutputDec", "passFJvt") ); //Output decoration
+ ANA_CHECK( m_jetFwdJvtTool.setProperty("UseTightOP", true) ); // Tight
+ ANA_CHECK( m_jetFwdJvtTool.setProperty("EtaThresh", 2.5) );
+ ANA_CHECK( m_jetFwdJvtTool.setProperty("ForwardMaxPt", 120.0e3) );
+ ANA_CHECK( m_jetFwdJvtTool.retrieve() );
+
   // SUSYTools
  const ST::ISUSYObjDef_xAODTool::DataSource datasource = (!m_isMC ? ST::ISUSYObjDef_xAODTool::Data : (m_isAFII ? ST::ISUSYObjDef_xAODTool::AtlfastII : ST::ISUSYObjDef_xAODTool::FullSim));
  ANA_CHECK(m_susytools_handle.setProperty("DataSource", datasource));
  ANA_CHECK(m_susytools_handle.setProperty("ConfigFile", ST_config_file.Data()));
+ ANA_CHECK(m_susytools_Tight_handle.setProperty("DataSource", datasource));
+ ANA_CHECK(m_susytools_Tight_handle.setProperty("ConfigFile", ST_config_Tight_file.Data()));
+ ANA_CHECK(m_susytools_Tighter_handle.setProperty("DataSource", datasource));
+ ANA_CHECK(m_susytools_Tighter_handle.setProperty("ConfigFile", ST_config_Tighter_file.Data()));
+ ANA_CHECK(m_susytools_Tenacious_handle.setProperty("DataSource", datasource));
+ ANA_CHECK(m_susytools_Tenacious_handle.setProperty("ConfigFile", ST_config_Tenacious_file.Data()));
+
  if(verbose){
  ANA_CHECK( m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
  ANA_CHECK( m_susytools_handle.setProperty("DebugMode", true));
@@ -385,11 +407,24 @@ if(doPileup && m_isMC){
       // define all elements of the output tree
       m_cand[thisSyst].met["met_tst"] = Analysis::outMET("met_tst", (trim && !doMETDetail) );
       m_cand[thisSyst].met["met_tst_nolep"] = Analysis::outMET("met_tst_nolep", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_soft_tst"] = Analysis::outMET("met_soft_tst", (trim && !doMETDetail));
+      
+      if(doMETDetail){
+	m_cand[thisSyst].met["met_tight_tst"] = Analysis::outMET("met_tight_tst", (trim && !doMETDetail) );
+	m_cand[thisSyst].met["met_tight_tst_nolep"] = Analysis::outMET("met_tight_tst_nolep", (trim && !doMETDetail));
+	m_cand[thisSyst].met["met_tighter_tst"] = Analysis::outMET("met_tighter_tst", (trim && !doMETDetail) );
+	m_cand[thisSyst].met["met_tighter_tst_nolep"] = Analysis::outMET("met_tighter_tst_nolep", (trim && !doMETDetail));
+	m_cand[thisSyst].met["met_tenacious_tst"] = Analysis::outMET("met_tenacious_tst", (trim && !doMETDetail) );
+	m_cand[thisSyst].met["met_tenacious_tst_nolep"] = Analysis::outMET("met_tenacious_tst_nolep", (trim && !doMETDetail));
+      }
+
       //      m_cand[thisSyst].met["met_cst"] = Analysis::outMET("met_cst", (trim && !doMETDetail) );
       m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", (trim && !doMETDetail));
       m_cand[thisSyst].met["met_truth"] = Analysis::outMET("met_truth", (trim && !doMETDetail));
       m_cand[thisSyst].mu["mu"] = Analysis::outMuon("mu", (trim && !doMuonDetail));
+      if(doMuonDetail) m_cand[thisSyst].mu["basemu"] = Analysis::outMuon("basemu", (trim && !doMuonDetail));
       m_cand[thisSyst].el["el"] = Analysis::outElectron("el", (trim && !doElectronDetail) );
+      if(doElectronDetail) m_cand[thisSyst].el["baseel"] = Analysis::outElectron("baseel", (trim && !doElectronDetail) );
       m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail));
       //m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
 
@@ -482,6 +517,9 @@ if(doPileup && m_isMC){
     }
 
     ST_config_file = env.GetValue("VBF.ST_config_file", "EMPTY");
+    ST_config_Tight_file = env.GetValue("VBF.ST_config_Tight_file", "EMPTY");
+    ST_config_Tighter_file = env.GetValue("VBF.ST_config_Tighter_file", "EMPTY");
+    ST_config_Tenacious_file = env.GetValue("VBF.ST_config_Tenacious_file", "EMPTY");
     prw_file = env.GetValue("VBF.prw_file", "EMPTY");
     lumicalc_file = env.GetValue("VBF.lumicalc_file", "EMPTY");
     GRL_file = env.GetValue("VBF.GRL_file", "EMPTY");
@@ -653,6 +691,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
         content.jetsAux = nullptr;
         content.allJets.clear(SG::VIEW_ELEMENTS);
         ANA_CHECK(m_susytools_handle->GetJets(content.jets, content.jetsAux, kTRUE));
+	m_jetFwdJvtTool->modify(*content.jets); // add fjvt
         for (auto jet : *content.jets) {
          if (acc_baseline(*jet) == 1) {
           content.allJets.push_back(jet);
@@ -673,6 +712,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
       // calculate d0 and z0
       const xAOD::Vertex* pv = m_susytools_handle->GetPrimVtx();
       const Float_t primary_vertex_z = pv ? pv->z() : 0;
+      //content.vtx_sumpt2 = sumPt2(*pv);
       dec_new_d0(*mu) = HelperFunctions::getD0(mu);
       dec_new_d0sig(*mu) = HelperFunctions::getD0sig(mu, content.eventInfo);
       dec_new_z0(*mu) = HelperFunctions::getZ0(mu, primary_vertex_z);
@@ -825,8 +865,25 @@ for (auto muon : content.allMuons)
           kTRUE, // do JVT
           nullptr, // invisible particles
           myMET_tst,
-          myMETsig_tst
-          );
+	myMETsig_tst,
+          0);
+ content.metsig_tst = myMETsig_tst;
+
+ TLorentzVector myMET_Tight_tst;
+ double myMETsig_Tight_tst;
+ getMET(content.met_tight_tst,
+	content.met_tight_tstAux,
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tight_tst,myMETsig_Tight_tst,1);
+ TLorentzVector myMET_Tighter_tst;
+ double myMETsig_Tighter_tst;
+ getMET(content.met_tighter_tst,
+	content.met_tighter_tstAux,
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tighter_tst,myMETsig_Tighter_tst,2);
+ TLorentzVector myMET_Tenacious_tst;
+ double myMETsig_Tenacious_tst;
+ getMET(content.met_tenacious_tst,
+	content.met_tenacious_tstAux,
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tenacious_tst,myMETsig_Tenacious_tst,3);
 
  double met_tst_j1_dphi=-1., met_tst_j2_dphi=-1.;
  HelperFunctions::computeMETj(myMET_tst, content.goodJets, met_tst_j1_dphi, met_tst_j2_dphi);
@@ -837,6 +894,17 @@ for (auto muon : content.allMuons)
  content.met_tst_j1_dphi = met_tst_j1_dphi;
  content.met_tst_j2_dphi = met_tst_j2_dphi;
 
+ // invisible particles
+ //DataVector<const xAOD::IParticle *> invis;
+ xAOD::IParticleContainer invis(SG::VIEW_ELEMENTS);
+ for (auto muon : content.goodMuons) {
+   //invis.push_back((const xAOD::IParticle*) muon);
+   invis.push_back(muon);
+ }
+ for (auto electron : content.goodElectrons) {
+   //invis.push_back((const xAOD::IParticle*) electron);
+   invis.push_back(electron);
+ }
 // MET, with invisble leptons
  TLorentzVector myMET_tst_nolep;
  double myMETsig_tst_nolep;
@@ -850,8 +918,26 @@ for (auto muon : content.allMuons)
           kTRUE, // do JVT
           nullptr, // invisible particles
           myMET_tst_nolep,
-          myMETsig_tst_nolep
-          );
+	myMETsig_tst_nolep,
+          0);
+ content.metsig_tst_nolep = myMETsig_tst_nolep;
+
+ TLorentzVector myMET_Tight_tst_nolep;
+ double myMETsig_Tight_tst_nolep;
+ getMET(content.met_tight_tst_nolep,
+	content.met_tight_tst_nolepAux,
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tight_tst_nolep,myMETsig_Tight_tst_nolep,1);
+ TLorentzVector myMET_Tighter_tst_nolep;
+ double myMETsig_Tighter_tst_nolep;
+ getMET(content.met_tighter_tst_nolep,
+	content.met_tighter_tst_nolepAux,
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tighter_tst_nolep,myMETsig_Tighter_tst_nolep,2);
+ TLorentzVector myMET_Tenacious_tst_nolep;
+ double myMETsig_Tenacious_tst_nolep;
+ getMET(content.met_tenacious_tst_nolep,
+	content.met_tenacious_tst_nolepAux,
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tenacious_tst_nolep,myMETsig_Tenacious_tst_nolep,3);
+ //std::cout << "tight: " << myMET_Tight_tst.Pt() << " Loose: " << myMET_tst.Pt() << " Tighter: " << myMET_Tighter_tst.Pt() << " Tenacious: " << myMET_Tenacious_tst.Pt() << std::endl; 
     // create sum of muon and electron pts
  {
   Float_t px = 0;
@@ -1088,6 +1174,9 @@ if (m_isMC) {
   // Skimming
   //Bool_t saveMe = ( met_nomuon_to_use.Mod() > metSkimToUse || met_noelectron_to_use.Mod() > metSkimToUse );
   Bool_t saveMe = ( met_nolep_to_use.Mod() > metSkimToUse );
+  if(doMETDetail) saveMe = saveMe || ( (*content.met_tight_tst_nolep)["Final"]->met() > metSkimToUse ) || ( (*content.met_tight_tst)["Final"]->met() > metSkimToUse )
+		    || ( (*content.met_tighter_tst_nolep)["Final"]->met() > metSkimToUse ) || ( (*content.met_tighter_tst)["Final"]->met() > metSkimToUse )
+		    || ( (*content.met_tenacious_tst_nolep)["Final"]->met() > metSkimToUse ) || ( (*content.met_tenacious_tst)["Final"]->met() > metSkimToUse );
   if(saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::MET_skim, event_weight);
   if(content.goodJets.size() < 2 ) // At least two good jet
     return EL::StatusCode::SUCCESS;
@@ -1221,6 +1310,8 @@ cand.evt.trigger_met = customMETtrig;
    cand.evt.met_tst_nolep_j1_dphi = content.met_tst_nolep_j1_dphi;
    cand.evt.met_tst_nolep_j2_dphi = content.met_tst_nolep_j2_dphi;
    cand.evt.met_cst_jet = content.met_cst_jet;
+   cand.evt.metsig_tst = content.metsig_tst;
+   cand.evt.metsig_tst_nolep = content.metsig_tst_nolep;
 //   cand.evt.met_tst_nomuon_j1_dphi = content.met_tst_nomuon_j1_dphi;
 //   cand.evt.met_tst_nomuon_j2_dphi = content.met_tst_nomuon_j2_dphi;
 //   cand.evt.met_tst_noelectron_j1_dphi = content.met_tst_noelectron_j1_dphi;
@@ -1282,9 +1373,9 @@ cand.evt.trigger_met = customMETtrig;
     cand.rns.rnsPSweight = cand.rns.getPSweight(m_susytools_handle, event,content.eventInfo->runNumber(), debug);
   }
 
-      // Truth
+  // Truth
 
-      //-- JETS --
+  //-- JETS --
   const xAOD::JetContainer * truthJets(nullptr);
       static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
       if (!failedLookingFor) {
@@ -1318,13 +1409,14 @@ cand.evt.trigger_met = customMETtrig;
   }
   cand.evt.n_jet_truth = nTruthJets;
   for (const auto& part : *truthJets) {
+    if(part->pt()<7.0e3) continue;
        cand.evt.truth_jet_pt.push_back(part->pt());
        cand.evt.truth_jet_eta.push_back(part->eta());
        cand.evt.truth_jet_phi.push_back(part->phi());
        cand.evt.truth_jet_m.push_back(part->m());
      }
 
-}
+ }
 }
 
       //-- MUONS --
@@ -1338,11 +1430,13 @@ if (!m_determinedDerivation) {
 }
 const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
       if (!event->retrieve(truthMuons, mu_container.Data()).isSuccess()) {    // retrieve arguments: container type, container key
-       ANA_MSG_ERROR("Failed to retrieve Muons container");
+       ANA_MSG_ERROR("Failed to retrieve TruthMuons container");
        return EL::StatusCode::FAILURE;
      }
        cand.evt.n_mu_truth = truthMuons->size();
      for (const auto& part : *truthMuons) {
+       if(part->pt()<4.0e3) continue;
+       if(part->status()!=1) continue;
        cand.evt.truth_mu_pt.push_back(part->pt());
        cand.evt.truth_mu_eta.push_back(part->eta());
        cand.evt.truth_mu_phi.push_back(part->phi());
@@ -1354,11 +1448,13 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
      const xAOD::TruthParticleContainer *truthElectrons = nullptr;
      const TString el_container = (m_isEXOT5) ? "EXOT5TruthElectrons" : "TruthElectrons";
       if (!event->retrieve(truthElectrons, el_container.Data()).isSuccess()) {    // retrieve arguments: container type, container key
-       ANA_MSG_ERROR("Failed to retrieve Electrons container");
+       ANA_MSG_ERROR("Failed to retrieve TruthElectrons container");
        return EL::StatusCode::FAILURE;
      }
        cand.evt.n_el_truth = truthElectrons->size();
      for (const auto& part : *truthElectrons) {
+       if(part->pt()<4.0e3) continue;
+       if(part->status()!=1) continue;
        cand.evt.truth_el_pt.push_back(part->pt());
        cand.evt.truth_el_eta.push_back(part->eta());
        cand.evt.truth_el_phi.push_back(part->phi());
@@ -1367,18 +1463,22 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
      }
 
       //-- TAUS --
-      /*
      const xAOD::TruthParticleContainer *truthTaus = nullptr;
-     ANA_CHECK(event->retrieve(truthTaus, "TruthTaus"));
-       cand.evt.n_tau_truth = truthTaus->size();
+     if (!event->retrieve(truthTaus, "TruthTaus").isSuccess()) {    // retrieve arguments: container type, container key
+       ANA_MSG_ERROR("Failed to retrieve TruthTaus container");
+       return EL::StatusCode::FAILURE;
+     }
+     cand.evt.n_tau_truth = truthTaus->size();
      for (const auto& part : *truthTaus) {
+       if(part->pt()<4.0e3) continue;
+       if(part->status()!=1) continue;
        cand.evt.truth_tau_pt.push_back(part->pt());
        cand.evt.truth_tau_eta.push_back(part->eta());
        cand.evt.truth_tau_phi.push_back(part->phi());
        cand.evt.truth_tau_m.push_back(part->m());
        cand.evt.truth_tau_status.push_back(part->status());
      }
-*/
+
       //-- BOSONS --
      const xAOD::TruthParticleContainer *truthParticles(nullptr);
      ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
@@ -1420,6 +1520,11 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   for (auto muon : content.goodMuons) {
     cand.mu["mu"].add(*muon);
   }
+  if(doMuonDetail){
+    for (auto muon : content.baselineMuons) {
+      cand.mu["basemu"].add(*muon);
+    }
+  }
 
   //-----------------------------------------------------------------------
   // Selected electrons
@@ -1428,6 +1533,11 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   cand.evt.n_el_baseline = content.baselineElectrons.size();
   for (auto electron : content.goodElectrons) {
     cand.el["el"].add(*electron);
+  }
+  if(doElectronDetail){
+    for (auto electron : content.baselineElectrons) {
+      cand.el["baseel"].add(*electron);
+    }
   }
 
    /////////////////////////////
@@ -1442,6 +1552,14 @@ for (auto thisTau : content.goodTaus) {
    // MET
   //-----------------------------------------------------------------------
   cand.met["met_tst"].add(*((*content.met_tst)["Final"]));
+  cand.met["met_tight_tst"].add(*((*content.met_tight_tst)["Final"]));
+  cand.met["met_tighter_tst"].add(*((*content.met_tighter_tst)["Final"]));
+  cand.met["met_tenacious_tst"].add(*((*content.met_tenacious_tst)["Final"]));
+  cand.met["met_soft_tst"].add(*((*content.met_tst)["PVSoftTrk"]));
+  cand.met["met_tight_tst_nolep"].add(*((*content.met_tight_tst_nolep)["Final"]));
+  cand.met["met_tighter_tst_nolep"].add(*((*content.met_tighter_tst_nolep)["Final"]));
+  cand.met["met_tenacious_tst_nolep"].add(*((*content.met_tenacious_tst_nolep)["Final"]));
+
 //  cand.met["met_tst_nomuon"].add(*((*content.met_tst_nomuon)["Final"]));
 //  cand.met["met_tst_noelectron"].add(*((*content.met_tst_noelectron)["Final"]));
   cand.met["met_tst_nolep"].add(*((*content.met_tst_nolep)["Final"]));
@@ -1455,49 +1573,91 @@ for (auto thisTau : content.goodTaus) {
   return EL::StatusCode::SUCCESS;
 }
 
-EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer * jet, xAOD::ElectronContainer * el, xAOD::MuonContainer * mu, xAOD::PhotonContainer * ph, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer * invis, TLorentzVector &myMET, double &myMETsig)
+EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer * jet, xAOD::ElectronContainer * el, xAOD::MuonContainer * mu, xAOD::PhotonContainer * /*ph*/, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer * invis, TLorentzVector &myMET, double &myMETsig, int METType)
 {
  myMETsig = 0;
  met = std::make_shared<xAOD::MissingETContainer>();
  metAux = std::make_shared<xAOD::MissingETAuxContainer>();
  met->setStore(metAux.get());
 
- ANA_CHECK(m_susytools_handle->GetMET(*met,
-                               jet, // use all objects (before OR and after corrections) for MET utility
-                               el,
-                               mu,
-			                         0,//ph, // ph term
-                               0, // tau term
-                               doTST,
-                               doJVT,
-                               invis// invisible particles
-                               ));
- ANA_CHECK(m_susytools_handle->GetMETSig(*met,
-			      myMETsig,
-			      /*
-			      jet, // use all objects (before OR and after corrections) for MET utility
-                              el,
-                              mu,
-                              ph,
-                              0, // tau term
-			      */
-                              doTST,
-                              doJVT
-			      //invis
-                              ));
+ if(METType==0){
+   ANA_CHECK(m_susytools_handle->GetMET(*met,
+					jet, // use all objects (before OR and after corrections) for MET utility
+					el,
+					mu,
+					0,//ph, // ph term
+					0, // tau term
+					doTST,
+					doJVT,
+					invis// invisible particles
+					));
+   ANA_CHECK(m_susytools_handle->GetMETSig(*met,
+					   myMETsig,
+					   doTST,
+					   doJVT
+					   ));
+ }else if(METType==1){
+   ANA_CHECK(m_susytools_Tight_handle->GetMET(*met,
+					jet, // use all objects (before OR and after corrections) for MET utility
+					el,
+					mu,
+					0,//ph, // ph term
+					0, // tau term
+					doTST,
+					doJVT,
+					invis// invisible particles
+					));
+   ANA_CHECK(m_susytools_Tight_handle->GetMETSig(*met,
+					   myMETsig,
+					   doTST,
+					   doJVT
+					   ));
+ }else if(METType==2){
+   ANA_CHECK(m_susytools_Tighter_handle->GetMET(*met,
+					jet, // use all objects (before OR and after corrections) for MET utility
+					el,
+					mu,
+					0,//ph, // ph term
+					0, // tau term
+					doTST,
+					doJVT,
+					invis// invisible particles
+					));
+   ANA_CHECK(m_susytools_Tighter_handle->GetMETSig(*met,
+					   myMETsig,
+					   doTST,
+					   doJVT
+					   ));
+ }else if(METType==3){
+   ANA_CHECK(m_susytools_Tenacious_handle->GetMET(*met,
+					jet, // use all objects (before OR and after corrections) for MET utility
+					el,
+					mu,
+					0,//ph, // ph term
+					0, // tau term
+					doTST,
+					doJVT,
+					invis// invisible particles
+					));
+   ANA_CHECK(m_susytools_Tenacious_handle->GetMETSig(*met,
+					   myMETsig,
+					   doTST,
+					   doJVT
+					   ));
+   }
 
  xAOD::MissingETContainer::const_iterator met_it = met->find("Final");
 
  if (met_it == met->end()) {
   ANA_MSG_ERROR("VBFInv::getMET : No RefFinal inside MET container");
   return EL::StatusCode::FAILURE;
-}
-else {
-  float Etmiss_Etx = (*met_it)->mpx();
-  float Etmiss_Ety = (*met_it)->mpy();
-  float Etmiss_Et = sqrt(Etmiss_Etx * Etmiss_Etx + Etmiss_Ety * Etmiss_Ety);
-  myMET.SetPxPyPzE(Etmiss_Etx, Etmiss_Ety, 0., Etmiss_Et);
-}
+ }
+ else {
+   float Etmiss_Etx = (*met_it)->mpx();
+   float Etmiss_Ety = (*met_it)->mpy();
+   float Etmiss_Et = sqrt(Etmiss_Etx * Etmiss_Etx + Etmiss_Ety * Etmiss_Ety);
+   myMET.SetPxPyPzE(Etmiss_Etx, Etmiss_Ety, 0., Etmiss_Et);
+ }
 
 return EL::StatusCode::SUCCESS;
 }

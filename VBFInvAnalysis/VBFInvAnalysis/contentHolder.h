@@ -41,6 +41,8 @@ namespace Analysis {
       Double_t met_tst_nolep_j1_dphi;
       Double_t met_tst_nolep_j2_dphi;
       Double_t met_cst_jet;
+      Double_t metsig_tst;
+      Double_t metsig_tst_nolep;
 //      Double_t met_tst_nomuon_j1_dphi;
 //      Double_t met_tst_nomuon_j2_dphi;
 //      Double_t met_tst_noelectron_j1_dphi;
@@ -55,6 +57,18 @@ namespace Analysis {
       //MET
       std::shared_ptr<xAOD::MissingETContainer> met_tst; //!
       std::shared_ptr<xAOD::MissingETAuxContainer> met_tstAux; //!
+      std::shared_ptr<xAOD::MissingETContainer> met_tight_tst; //!
+      std::shared_ptr<xAOD::MissingETAuxContainer> met_tight_tstAux; //!
+      std::shared_ptr<xAOD::MissingETContainer> met_tighter_tst; //!
+      std::shared_ptr<xAOD::MissingETAuxContainer> met_tighter_tstAux; //!
+      std::shared_ptr<xAOD::MissingETContainer> met_tenacious_tst; //!
+      std::shared_ptr<xAOD::MissingETAuxContainer> met_tenacious_tstAux; //!
+      std::shared_ptr<xAOD::MissingETContainer> met_tight_tst_nolep; //!
+      std::shared_ptr<xAOD::MissingETAuxContainer> met_tight_tst_nolepAux; //!
+      std::shared_ptr<xAOD::MissingETContainer> met_tighter_tst_nolep; //!
+      std::shared_ptr<xAOD::MissingETAuxContainer> met_tighter_tst_nolepAux; //!
+      std::shared_ptr<xAOD::MissingETContainer> met_tenacious_tst_nolep; //!
+      std::shared_ptr<xAOD::MissingETAuxContainer> met_tenacious_tst_nolepAux; //!
       std::shared_ptr<xAOD::MissingETContainer> met_tst_nolep; //!
       std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nolepAux; //!
       std::shared_ptr<xAOD::MissingETContainer> met_cst; //!

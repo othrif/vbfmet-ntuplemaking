@@ -29,6 +29,7 @@ void Analysis::outJet::reset()
    btag_weight.clear();
    isbjet.clear();
    jvt.clear();
+   fjvt.clear();
    passOR.clear();
    passJvt.clear();
 
@@ -60,6 +61,7 @@ void Analysis::outJet::attachToTree(TTree *tree)
    tree->Branch(prefix + "m", &m);
    tree->Branch(prefix + "timing", &timing);
    tree->Branch(prefix + "jvt", &jvt);
+   tree->Branch(prefix + "fjvt", &fjvt);
    tree->Branch(prefix + "isbjet", &isbjet);
    tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
    tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
@@ -108,6 +110,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    static SG::AuxElement::Accessor<char> acc_passOR("passOR");
    static SG::AuxElement::Accessor<char> acc_passJvt("passJvt");
    static SG::AuxElement::ConstAccessor<float> acc_jvt("Jvt");
+   static SG::AuxElement::ConstAccessor<float> acc_fjvt("fJvt");
 
    if (acc_passOR.isAvailable(input)) {
      passOR.push_back(acc_passOR(input));
@@ -124,8 +127,14 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    } else {
      jvt.push_back(-9999);
    }
-
+   if (acc_fjvt.isAvailable(input)) {
+     fjvt.push_back(acc_fjvt(input));
+   } else {
+     fjvt.push_back(-9999);
+   }
+   
    if (!doTrim()) {
+
      const xAOD::Jet *thisRawJet = dynamic_cast< const xAOD::Jet* >(xAOD::getOriginalObject(input));
      raw_pt.push_back(thisRawJet->pt());
      raw_eta.push_back(thisRawJet->eta());

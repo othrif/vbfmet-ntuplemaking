@@ -26,6 +26,7 @@ void Analysis::outEvent::reset()
  bcid = -9999;
  averageIntPerXing = -9999;
  corAverageIntPerXing = -9999;
+ vtx_sumpt2=-9999;
 
    // Weights
  mcEventWeight = 1.0;
@@ -75,14 +76,13 @@ void Analysis::outEvent::reset()
  truth_el_phi.clear();
  truth_el_m.clear();
  truth_el_status.clear();
-/*
  n_tau_truth = -9999;
  truth_tau_pt.clear();
  truth_tau_eta.clear();
  truth_tau_phi.clear();
  truth_tau_m.clear();
  truth_tau_status.clear();
-*/
+
  for (auto &kv : trigger) {
   kv.second = -9999;
 }
@@ -113,6 +113,8 @@ met_tst_j2_dphi= -9999;
 met_tst_nolep_j1_dphi= -9999;
 met_tst_nolep_j2_dphi= -9999;
 met_cst_jet = -9999;
+metsig_tst  = -9999;
+metsig_tst_nolep  = -9999;
 
 return;
 }
@@ -130,6 +132,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "bcid", &bcid);
    tree->Branch(prefix + "averageIntPerXing", &averageIntPerXing);
    tree->Branch(prefix + "corAverageIntPerXing", &corAverageIntPerXing);
+   tree->Branch(prefix + "vtx_sumpt2", &vtx_sumpt2);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
    if (!doTrim())
     tree->Branch(prefix + "mcEventWeights", &mcEventWeights);
@@ -215,12 +218,12 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "truth_el_phi", &truth_el_phi);
       tree->Branch(prefix + "truth_el_m", &truth_el_m);
       tree->Branch(prefix + "truth_el_status", &truth_el_status);
-/*    tree->Branch(prefix + "n_tau_truth", &n_tau_truth);
-    tree->Branch(prefix + "truth_tau_pt", &truth_tau_pt);
-    tree->Branch(prefix + "truth_tau_eta", &truth_tau_eta);
-    tree->Branch(prefix + "truth_tau_phi", &truth_tau_phi);
-    tree->Branch(prefix + "truth_tau_m", &truth_tau_m);
-    tree->Branch(prefix + "truth_tau_status", &truth_tau_status);*/
+      tree->Branch(prefix + "n_tau_truth", &n_tau_truth);
+      tree->Branch(prefix + "truth_tau_pt", &truth_tau_pt);
+      tree->Branch(prefix + "truth_tau_eta", &truth_tau_eta);
+      tree->Branch(prefix + "truth_tau_phi", &truth_tau_phi);
+      tree->Branch(prefix + "truth_tau_m", &truth_tau_m);
+    //tree->Branch(prefix + "truth_tau_status", &truth_tau_status);
     /* tree->Branch(prefix + "truth_V_bare_pt", &truth_V_bare_pt);
     tree->Branch(prefix + "truth_V_bare_eta", &truth_V_bare_eta);
     tree->Branch(prefix + "truth_V_bare_phi", &truth_V_bare_phi);
@@ -254,6 +257,8 @@ void Analysis::outEvent::attachToTree(TTree *tree)
     tree->Branch(prefix + "met_tst_nolep_j1_dphi", &met_tst_nolep_j1_dphi);
     tree->Branch(prefix + "met_tst_nolep_j2_dphi", &met_tst_nolep_j2_dphi);
     tree->Branch(prefix + "met_cst_jet", &met_cst_jet);
+    tree->Branch(prefix + "metsig_tst", &metsig_tst);
+    tree->Branch(prefix + "metsig_tst_nolep", &metsig_tst_nolep);
     return;
   }
 
