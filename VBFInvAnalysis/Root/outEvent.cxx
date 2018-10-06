@@ -139,8 +139,8 @@ void Analysis::outEvent::attachToTree(TTree *tree)
   tree->Branch(prefix + "jvtSFWeight", &jvtSFWeight);
   tree->Branch(prefix + "elSFWeight", &elSFWeight);
   tree->Branch(prefix + "muSFWeight", &muSFWeight);
-  tree->Branch(prefix + "elSFTrigWeight", &elSFWeight);
-  tree->Branch(prefix + "muSFTrigWeight", &muSFWeight);
+  tree->Branch(prefix + "elSFTrigWeight", &elSFTrigWeight);
+  tree->Branch(prefix + "muSFTrigWeight", &muSFTrigWeight);
 
   for (auto &itrig : trigger) {
     const TString trigName = itrig.first;
