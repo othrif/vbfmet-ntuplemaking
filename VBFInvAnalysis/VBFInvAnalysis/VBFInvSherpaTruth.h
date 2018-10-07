@@ -40,11 +40,13 @@ private:
     Analysis::DijetFinder* m_status3Dijets; //!
     Analysis::DijetFinder* m_status20Dijets; //!
     Analysis::DijetFinder* m_partonDijets; //!
+    Analysis::DijetFinder* m_postShowerDijets; //!
 
     // Parton clusterer objects.
     Analysis::PartonClusterer* m_status20Partons; //!
     Analysis::PartonClusterer* m_status3Partons; //!
     Analysis::PartonClusterer* m_partons; //!
+    Analysis::PartonClusterer* m_postShower; //!
 
     // Truth particles, sorted by status code.
     std::map<int, std::vector<const xAOD::TruthParticle*>> m_truthByStatus; //!
