@@ -178,6 +178,12 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     m_status3Partons->attachToTree(truthTree);
     m_partons->attachToTree(truthTree);
 
+    // This is an experiment-- create a clusterer for post-parton-shower particles.
+    m_postShower = this Analysis::PartonClusterer("postShower", this->partonJetPtCut, this->antiktDR, this->shouldNotCluster);
+    m_postShowerDijets = new Analysis::DijetFinder("postShower", this->partonJetPtCut);
+    m_postShower->attachToTree(truthTree);
+    m_postShowerDijets->attachToTree(truthTree);
+
     return EL::StatusCode::SUCCESS;
 }
 
@@ -192,6 +198,9 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     m_status20Partons->reset();
     m_status3Partons->reset();
     m_partons->reset();
+
+    m_postShower->reset();
+    m_postShowerDijets->reset();
 
     if (debug) ANA_MSG_INFO("***New event***" );
 
@@ -270,12 +279,28 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     std::vector<const xAOD::TruthParticle*> status20 = m_truthByStatus[20];
     std::vector<const xAOD::TruthParticle*> status3 = m_truthByStatus[3];
 
+    // Extract the status 11 particles. Only keep those which have a production
+    // vertex, and whose production vertex's id code == 4.
+    // (4 : Parton Shower or QED radiation).
+    std::vector<const xAOD::TruthParticle*> status11 = m_truthByStatus[11];
+    std::vector<const xAOD::TruthParticle*> showerOuts;
+    for (const auto* particle: *showerOuts) {
+        if (particle->hasProdVtx()) {
+            if (particle->prodVtx()->id() == 4) {
+                showerOuts.push_back(particle);
+            }
+        }
+    }
+
     // This is a pointer to either the status 3 or status 20 particles.
     std::vector<const xAOD::TruthParticle*>* particles;
 
     // Now, cluster the status 3 and status 20 particles.
     std::vector<TLorentzVector>* status20Jets = m_status20Partons->clusterPartons(&status20);
     std::vector<TLorentzVector>* status3Jets = m_status3Partons->clusterPartons(&status3);
+
+    std::vector<TLorentzVector>* showerJets = m_postShower->clusterPartons(&showerOuts);
+
     if (debug) ANA_MSG_INFO("Finished clustering particles into parton jets.");
 
     // If "clusterPartonCode" is 20, then we are a MC@NLO S Event.
@@ -332,6 +357,9 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     m_partonDijets->matchJets(&truthJets, this->antiktDR);
     m_status20Dijets->matchJets(&truthJets, this->antiktDR);
     m_status3Dijets->matchJets(&truthJets, this->antiktDR);
+
+    // Experiment: handle the parton shower outputs too.
+    m_postShowerDijets->computeMjj(showerJets);
 
     if (debug) ANA_MSG_INFO("Completed handling mjj computation.");
 
