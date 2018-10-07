@@ -179,7 +179,7 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     m_partons->attachToTree(truthTree);
 
     // This is an experiment-- create a clusterer for post-parton-shower particles.
-    m_postShower = this Analysis::PartonClusterer("postShower", this->partonJetPtCut, this->antiktDR, this->shouldNotCluster);
+    m_postShower = new Analysis::PartonClusterer("postShower", this->partonJetPtCut, this->antiktDR, this->shouldNotCluster);
     m_postShowerDijets = new Analysis::DijetFinder("postShower", this->partonJetPtCut);
     m_postShower->attachToTree(truthTree);
     m_postShowerDijets->attachToTree(truthTree);
@@ -284,7 +284,7 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     // (4 : Parton Shower or QED radiation).
     std::vector<const xAOD::TruthParticle*> status11 = m_truthByStatus[11];
     std::vector<const xAOD::TruthParticle*> showerOuts;
-    for (const auto* particle: *showerOuts) {
+    for (const auto* particle: showerOuts) {
         if (particle->hasProdVtx()) {
             if (particle->prodVtx()->id() == 4) {
                 showerOuts.push_back(particle);
