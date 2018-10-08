@@ -24,7 +24,6 @@
 #include <EventLoop/OutputStream.h>
 #include "PathResolver/PathResolver.h"
 #include "AsgTools/AsgMetadataTool.h"
-#include "JetInterface/IJetModifier.h"
 
 // Local include(s):
 #include <VBFInvAnalysis/VBFInv.h>
@@ -90,7 +89,8 @@ m_grl("GoodRunsListSelectionTool/grl", this),
 m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
 m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
 m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
-m_susytools_Tenacious_handle("ST::SUSYObjDef_xAOD/STTenacious", this)
+m_susytools_Tenacious_handle("ST::SUSYObjDef_xAOD/STTenacious", this),
+m_jetFwdJvtTool("JetForwardJvtTool/JetForwardJvtTool_VBF", this)
 {
 }
 
@@ -239,7 +239,7 @@ EL::StatusCode VBFInv::initialize() {
  ANA_CHECK(m_grl.initialize());
 
  // configure forward JVT tool
- m_jetFwdJvtTool.setTypeAndName("JetForwardJvtTool/JetForwardJvtTool_VBF");
+ //m_jetFwdJvtTool.setTypeAndName("JetForwardJvtTool/JetForwardJvtTool_VBF");
  ANA_CHECK( m_jetFwdJvtTool.setProperty("OutputDec", "passFJvt") ); //Output decoration
  ANA_CHECK( m_jetFwdJvtTool.setProperty("UseTightOP", true) ); // Tight
  ANA_CHECK( m_jetFwdJvtTool.setProperty("EtaThresh", 2.5) );
@@ -426,7 +426,7 @@ if(doPileup && m_isMC){
       m_cand[thisSyst].el["el"] = Analysis::outElectron("el", (trim && !doElectronDetail) );
       if(doElectronDetail) m_cand[thisSyst].el["baseel"] = Analysis::outElectron("baseel", (trim && !doElectronDetail) );
       m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail));
-      //m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
+      m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
 
       // Set trimming option for remaning outHolder objects
       m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail));
@@ -568,7 +568,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
   const Bool_t syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon,     systInfo.affectsType);
   const Bool_t syst_affectsJets      = ST::testAffectsObject(xAOD::Type::Jet,      systInfo.affectsType);
   const Bool_t syst_affectsPhotons   = ST::testAffectsObject(xAOD::Type::Photon,   systInfo.affectsType);
-  //  const Bool_t syst_affectsTaus      = ST::testAffectsObject(xAOD::Type::Tau, systInfo.affectsType);
+  const Bool_t syst_affectsTaus      = ST::testAffectsObject(xAOD::Type::Tau, systInfo.affectsType);
 
    // apply systematic uncertainty
   const CP::SystematicSet& sys = systInfo.systset;
@@ -581,7 +581,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     content.doMuons = (syst_affectsMuons || content.isNominal);
     content.doJets = (syst_affectsJets || content.isNominal);
     content.doPhotons = (syst_affectsPhotons || content.isNominal); // needed for overlap removal
-    content.doTaus = false;//(syst_affectsTaus || content.isNominal);
+    content.doTaus = (syst_affectsTaus || content.isNominal);
     content.doMET = kTRUE;
     content.doOverlapRemoval = (content.doElectrons || content.doMuons || content.doJets  || content.doPhotons || content.doMET || content.doTaus);
 
@@ -764,7 +764,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
   }
 
    //-- TAUS --
-/*
+    /*
   if (content.doTaus) {
     content.taus = nullptr;
     content.tausAux = nullptr;
@@ -779,7 +779,8 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     }
     content.allTaus.sort(&HelperFunctions::comparePt);
   }
-*/
+    */
+
   //-----------------------------------------------------------------------
   // Select good objects after overlap removal
   //-----------------------------------------------------------------------
@@ -845,10 +846,10 @@ for (auto muon : content.allMuons)
 
   //-- TAUS --
   // No selection
-  /*
+  
  for (auto tau : content.allTaus) {
    content.goodTaus.push_back(tau);
- }*/
+ }
 
 //-- MET --
 
@@ -1543,10 +1544,9 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
    /////////////////////////////
    // Selected taus
    ////////////////////////////
-   /*
 for (auto thisTau : content.goodTaus) {
    cand.tau["tau"].add(*thisTau);
-}*/
+}
 
   //-----------------------------------------------------------------------
    // MET

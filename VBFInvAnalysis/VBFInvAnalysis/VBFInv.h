@@ -10,7 +10,7 @@
 #include <PathResolver/PathResolver.h>
 #include <AsgAnalysisInterfaces/IGoodRunsListSelectionTool.h>
 #include <SUSYTools/ISUSYObjDef_xAODTool.h>
-class IJetModifier;
+#include <JetInterface/IJetModifier.h>
 
 // ROOT include(s):
 #include <TROOT.h>
@@ -117,7 +117,7 @@ private:
   asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool> m_susytools_Tight_handle; //!
   asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool> m_susytools_Tighter_handle; //!
   asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool> m_susytools_Tenacious_handle; //!
-  asg::AnaToolHandle<IJetModifier> m_jetFwdJvtTool;
+  asg::AnaToolHandle<IJetModifier> m_jetFwdJvtTool; //!
 
   xAOD::TEvent *m_event; //!
   xAOD::TStore *m_store; //!

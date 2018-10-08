@@ -27,7 +27,7 @@ namespace Analysis {
       std::map<TString, outElectron> el;
       std::map<TString, outJet> jet;
 //      std::map<TString, outPhoton> ph;
-      //std::map<TString, outTau> tau;
+      std::map<TString, outTau> tau;
 
 
    public:
