@@ -72,7 +72,7 @@ namespace Analysis {
       std::shared_ptr<xAOD::MissingETContainer> met_tst_nolep; //!
       std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nolepAux; //!
       std::shared_ptr<xAOD::MissingETContainer> met_cst; //!
-      std::shared_ptr<xAOD::MissingETAuxContainer> met_cstAux; //!              
+      std::shared_ptr<xAOD::MissingETAuxContainer> met_cstAux; //!
 //      std::shared_ptr<xAOD::MissingETContainer> met_tst_nomuon; //!
 //      std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nomuonAux; //!
 //      std::shared_ptr<xAOD::MissingETContainer> met_tst_noelectron; //!
