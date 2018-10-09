@@ -284,7 +284,7 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     // (4 : Parton Shower or QED radiation).
     std::vector<const xAOD::TruthParticle*> status11 = m_truthByStatus[11];
     std::vector<const xAOD::TruthParticle*> showerOuts;
-    for (const auto* particle: showerOuts) {
+    for (const auto* particle: status11) {
         if (particle->hasProdVtx()) {
             if (particle->prodVtx()->id() == 4) {
                 showerOuts.push_back(particle);
