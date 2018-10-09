@@ -56,7 +56,7 @@ def printPartons(tree, numPartons, varBase, withMass=False):
 
 	return partons
 
-def printTruthJets(tree, numTruthJets):
+def printTruthJets(tree, numTruthJets, pt_cut=-1):
 
 	jets = {}
 
@@ -68,21 +68,30 @@ def printTruthJets(tree, numTruthJets):
 
 		jet = ROOT.TLorentzVector()
 		jet.SetPtEtaPhiE(pt, eta, phi, e)
-		jets[i+1] = jet
 
-		print("\tTruth Jet %d:\t(Pt, Eta, Phi, E) = (%f, %f, %f, %f)" % (i+1, pt, eta, phi, e))
+		if pt >= pt_cut:
+			print("\tTruth Jet %d:\t(Pt, Eta, Phi, E) = (%f, %f, %f, %f)" % (i+1, pt, eta, phi, e))
+			jets[i+1] = jet
 
 	return jets
 
-def printPartonJets(tree, numTruthJets, varBase):
+def printPartonJets(tree, numTruthJets, varBase, pt_cut=-1):
 
+	jets = {}
 	for i in range(numTruthJets):
 		pt = eval("tree." + varBase + "Pt[i]") / 1000.
 		eta = eval("tree." + varBase + "Eta[i]")
 		phi = eval("tree." + varBase + "Phi[i]")
 		e = eval("tree." + varBase + "E[i]") / 1000.
 
-		print("\tParton Jet %d:\t(Pt, Eta, Phi, E) = (%f, %f, %f, %f)" % (i+1, pt, eta, phi, e))
+		jet = ROOT.TLorentzVector()
+		jet.SetPtEtaPhiE(pt, eta, phi, e)
+
+		if pt >= pt_cut:
+			print("\tParton Jet %d:\t(Pt, Eta, Phi, E) = (%f, %f, %f, %f)" % (i+1, pt, eta, phi, e))
+			jets[i+1] = jet
+
+	return jets
 
 def printMatchedJetsPartons(jets, status20s, status3s):
 
@@ -132,8 +141,34 @@ def printMatchedJetsPartons(jets, status20s, status3s):
 				deltaR = jet.DeltaR(parton)
 				print("\t\tDOES NOT match Status 3 Particle %d with Delta R = %f" % (partonIndex, deltaR))
 
+def printMatchedJets(jets, otherJets):
 
-def printSingleEvent(tree, event, withMass=False):
+	# This is awkwardly hard-coded.
+	matched = []
+	for jetIndex, jet in jets.items():
+		print("\tTruth Jet %d:" % jetIndex)
+
+		hasMatched = False
+		for partonIndex, parton in otherJets.items():
+			deltaR = jet.DeltaR(parton)
+
+			if partonIndex in matched:
+				continue
+
+			if deltaR <= 0.4:
+				print("\t\tMatches Post-Shower Jet %d with Delta R = %f" % (partonIndex, deltaR))
+				matched.append(partonIndex)
+				hasMatched = True
+
+		if not hasMatched:
+			for partonIndex, parton in otherJets.items():
+				if partonIndex in matched:
+					continue
+
+				deltaR = jet.DeltaR(parton)
+				print("\t\tDOES NOT match Post-Shower Jet %d with Delta R = %f" % (partonIndex, deltaR))
+
+def printSingleEvent(tree, event, withMass=False, truthPt=10):
 	tree.GetEntry(event)
 
 	print("# Event %d (Event Number %d):" % (event, tree.EventNumber))
@@ -168,9 +203,14 @@ def printSingleEvent(tree, event, withMass=False):
 	printPartonJets(tree, tree.status3_numJets, "status3_jet")
 	print("")
 
+	# Print the post-shower status 11 jets.
+	print("## Post-Shower Status 11 Jets (Down to %.1f GeV)" % truthPt)
+	status11_jets = printPartonJets(tree, tree.postShower_numJets, "postShower_jet", pt_cut=truthPt)
+	print("")
+
 	# Print the truth jets.
-	print("## Truth Jets")
-	jets = printTruthJets(tree, tree.truth_numJets)
+	print("## Truth Jets (Down to %.1f GeV)" % truthPt)
+	jets = printTruthJets(tree, tree.truth_numJets, pt_cut=truthPt)
 	print("")
 
 	# Print matchings.
@@ -178,6 +218,11 @@ def printSingleEvent(tree, event, withMass=False):
 		status20s = {}
 	print("## Truth-Parton Matching")
 	printMatchedJetsPartons(jets, status20s, status3s)
+	print("")
+
+	# Do post-shower truth matching.
+	print("## Truth + Post-Shower Matching")
+	printMatchedJets(jets, status11_jets)
 	print("")
 
 	# Print other possible mjj. Re-add support for this later.
@@ -195,6 +240,7 @@ def main():
 
 	# For now, just support a single event.
 	parser.add_argument('-e', '--event', default=0, dest='event', type=int, help='Event index to print out.')
+	parser.add_argument('-p', '--pt', default=10.0, dest='ptcut', type=float, help='pT below which to ignore truth/post-shower jets.')
 
 	parser.add_argument('-r', '--random', action='store_true', dest='random', help='Print out ten random events from file.')
 
@@ -218,14 +264,14 @@ def main():
 			print("Error: event index %d outside bounds of tree (0, %d)." % (args.event, tree.GetEntries()))
 			sys.exit(1)
 
-		printSingleEvent(tree, args.event, withMass=args.mass)
+		printSingleEvent(tree, args.event, withMass=args.mass, truthPt=args.ptcut)
 
 	else:
 		entries = tree.GetEntries()
 		# Make this random!
 		for i in range(10):
 			entry = random.randint(0, entries)
-			printSingleEvent(tree, entry, withMass=args.mass)
+			printSingleEvent(tree, entry, withMass=args.mass, truthPt=args.ptcut)
 
 if __name__ == '__main__':
 	main()
