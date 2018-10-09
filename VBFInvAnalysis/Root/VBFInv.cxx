@@ -1511,7 +1511,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
      cand.evt.n_tau_truth = truthTaus->size();
      for (const auto& part : *truthTaus) {
        if(part->pt()<4.0e3) continue;
-       if(part->status()!=1) continue;
+       //if(part->status()!=1) continue;
        cand.evt.truth_tau_pt.push_back(part->pt());
        cand.evt.truth_tau_eta.push_back(part->eta());
        cand.evt.truth_tau_phi.push_back(part->phi());

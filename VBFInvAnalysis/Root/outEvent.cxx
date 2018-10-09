@@ -223,7 +223,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "truth_tau_eta", &truth_tau_eta);
       tree->Branch(prefix + "truth_tau_phi", &truth_tau_phi);
       tree->Branch(prefix + "truth_tau_m", &truth_tau_m);
-    //tree->Branch(prefix + "truth_tau_status", &truth_tau_status);
+      tree->Branch(prefix + "truth_tau_status", &truth_tau_status);
     /* tree->Branch(prefix + "truth_V_bare_pt", &truth_V_bare_pt);
     tree->Branch(prefix + "truth_V_bare_eta", &truth_V_bare_eta);
     tree->Branch(prefix + "truth_V_bare_phi", &truth_V_bare_phi);
