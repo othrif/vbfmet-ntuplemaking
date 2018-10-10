@@ -1218,7 +1218,7 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
 /*cand.evt.trigger_met = (is2015 && cand.evt.trigger["HLT_xe70_mht"]) ||
                (is2016 && ( cand.evt.trigger["HLT_xe90_mht_L1XE50"] || cand.evt.trigger["HLT_xe110_mht_L1XE50"] )) ||
                cand.evt.trigger["HLT_noalg_L1J400"] ;*/
-   cand.evt.randomRunNumber = m_susytools_handle->GetRandomRunNumber();
+   cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : 0;
 
    Bool_t customMETtrig(kFALSE);
    if(is2015 && cand.evt.trigger["HLT_xe70_mht"])
