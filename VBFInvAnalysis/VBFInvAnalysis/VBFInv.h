@@ -93,6 +93,8 @@ public:
   Bool_t doElectronDetail;
   Bool_t doMuonDetail;
   Bool_t doJetDetail;
+  Bool_t doTauDetail;
+  Bool_t doPhotonDetail;
   Bool_t doMETDetail;
   Bool_t doEventDetail;
 

@@ -78,6 +78,8 @@ doRnS(false),
 doElectronDetail(false),
 doMuonDetail(false),
 doJetDetail(false),
+doTauDetail(false),
+doPhotonDetail(false),
 doMETDetail(false),
 doEventDetail(false),
 m_isMC(false),
@@ -426,7 +428,8 @@ EL::StatusCode VBFInv::initialize() {
       m_cand[thisSyst].el["el"] = Analysis::outElectron("el", (trim && !doElectronDetail) );
       if(doElectronDetail) m_cand[thisSyst].el["baseel"] = Analysis::outElectron("baseel", (trim && !doElectronDetail) );
       m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail));
-      m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
+      if(doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
+      if(doPhotonDetail) m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim);
 
       // Set trimming option for remaning outHolder objects
       m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail));
@@ -764,22 +767,23 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     }
 
    //-- TAUS --
-    /*
+    
   if (content.doTaus) {
     content.taus = nullptr;
     content.tausAux = nullptr;
     content.allTaus.clear(SG::VIEW_ELEMENTS);
+    //ANA_CHECK(m_susytools_handle->);
     ANA_CHECK(m_susytools_handle->GetTaus(content.taus, content.tausAux, kTRUE));
     for (auto tau : *content.taus) {
       static SG::AuxElement::Accessor<char> acc_baseline("baseline");
-      ANA_MSG_INFO ("tau pt=" << tau->pt()*0.001 );
-      if (acc_baseline(*tau) == 1) {
+      //ANA_MSG_INFO ("tau pt=" << tau->pt()*0.001 );
+      //if (acc_baseline(*tau) == 1) {
         content.allTaus.push_back(tau);
-      }
+	//}
     }
     content.allTaus.sort(&HelperFunctions::comparePt);
   }
-    */
+    
 
   //-----------------------------------------------------------------------
   // Select good objects after overlap removal
@@ -821,34 +825,35 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
 
   //-- MUONS --
     for (auto muon : content.allMuons)
-     if (acc_passOR(*muon) == 1 && acc_cosmic(*muon) == 0 && acc_bad(*muon) == 0) {
-      content.baselineMuons.push_back(muon);
-      if (acc_signal(*muon) == 1){
-      content.goodMuons.push_back(muon); // CR muons
+      if (acc_passOR(*muon) == 1 && acc_cosmic(*muon) == 0 && acc_bad(*muon) == 0) {
+	content.baselineMuons.push_back(muon);
+	if (acc_signal(*muon) == 1){
+	  content.goodMuons.push_back(muon); // CR muons
+	}
       }
-  }
 
   //-- ELECTRONS --
-  for (auto electron : content.allElectrons)
-   if (acc_passOR(*electron) == 1) {
-    content.baselineElectrons.push_back(electron);
+    for (auto electron : content.allElectrons){
+      if (acc_passOR(*electron) == 1) 
+	content.baselineElectrons.push_back(electron);
     if (acc_signal(*electron) == 1)
       content.goodElectrons.push_back(electron); // CR electrons
   }
 
   //-- PHOTONS --
-  for (auto photon : content.allPhotons)
-   if (acc_passOR(*photon) == 1) {
-    content.baselinePhotons.push_back(photon);
+  for (auto photon : content.allPhotons){
+    if (acc_baseline(*photon)==1 && acc_passOR(*photon) == 1) 
+      content.baselinePhotons.push_back(photon);
     if (acc_signal(*photon) == 1)
-     content.goodPhotons.push_back(photon);
- }
+      content.goodPhotons.push_back(photon);
+  }
 
   //-- TAUS --
-  // No selection
-  
  for (auto tau : content.allTaus) {
-   content.goodTaus.push_back(tau);
+   if (acc_baseline(*tau) == 1) 
+     content.baselineTaus.push_back(tau);
+   if (acc_signal(*tau) == 1)
+     content.goodTaus.push_back(tau);
  }
 
 //-- MET --
@@ -1555,7 +1560,6 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   // Selected muons
   //-----------------------------------------------------------------------
   cand.evt.n_mu = content.goodMuons.size();
-  cand.evt.n_mu_baseline = content.baselineMuons.size();
   //if( cand.evt.n_mu_baseline != 0)
   //std::cout << "Number of muons in event=" << cand.evt.n_mu << ", baseline=" << cand.evt.n_mu_baseline << std::endl;
   static SG::AuxElement::Accessor<char> acc_bad("bad");
@@ -1575,6 +1579,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   if(doMuonDetail){
     for (auto muon : content.baselineMuons) {
       cand.mu["basemu"].add(*muon);
+      ++cand.evt.n_mu_baseline;  
     }
   }
 
@@ -1583,22 +1588,33 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   // Selected electrons
   //-----------------------------------------------------------------------
   cand.evt.n_el = content.goodElectrons.size();
-  cand.evt.n_el_baseline = content.baselineElectrons.size();
   for (auto electron : content.goodElectrons) {
     cand.el["el"].add(*electron);
   }
   if(doElectronDetail){
     for (auto electron : content.baselineElectrons) {
       cand.el["baseel"].add(*electron);
+      ++cand.evt.n_el_baseline;
+    }
+  }
+
+   /////////////////////////////
+   // Selected photons
+   ////////////////////////////
+  if(doPhotonDetail){
+    for (auto thisPh : content.goodPhotons) {
+      cand.ph["ph"].add(*thisPh);
     }
   }
 
    /////////////////////////////
    // Selected taus
    ////////////////////////////
-for (auto thisTau : content.goodTaus) {
-   cand.tau["tau"].add(*thisTau);
-}
+  if(doTauDetail){
+    for (auto thisTau : content.goodTaus) {
+      cand.tau["tau"].add(*thisTau);
+    }
+  }
 
   //-----------------------------------------------------------------------
    // MET
