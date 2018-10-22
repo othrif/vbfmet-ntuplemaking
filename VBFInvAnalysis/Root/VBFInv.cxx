@@ -234,14 +234,14 @@ EL::StatusCode VBFInv::initialize() {
   // SUSYTools
  const ST::ISUSYObjDef_xAODTool::DataSource datasource = (!m_isMC ? ST::ISUSYObjDef_xAODTool::Data : (m_isAFII ? ST::ISUSYObjDef_xAODTool::AtlfastII : ST::ISUSYObjDef_xAODTool::FullSim));
  ANA_CHECK(m_susytools_handle.setProperty("DataSource", datasource));
- ANA_CHECK(m_susytools_handle.setProperty("ConfigFile", ST_config_file.Data()));
+ //ANA_CHECK(m_susytools_handle.setProperty("ConfigFile", ST_config_file.Data()));
  if(verbose){
    ANA_CHECK( m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
    ANA_CHECK( m_susytools_handle.setProperty("DebugMode", true));
  }
   // Pile up configuration
  xAOD::TEvent *event = wk()->xaodEvent();
- if(doPileup && m_isMC){
+ if(/*doPileup &&*/ m_isMC){
       // get metadata
   const xAOD::FileMetaData* fmd = nullptr;
   std::string amiTag = "unknown";
@@ -295,6 +295,7 @@ EL::StatusCode VBFInv::initialize() {
         ANA_CHECK(m_susytools_handle.setProperty("PRWConfigFiles", prw_conf) );
         ANA_CHECK(m_susytools_handle.setProperty("PRWLumiCalcFiles", prw_lumicalc) );
         ANA_CHECK(m_susytools_handle.setProperty("mcCampaign", mc_campaign));
+        //ANA_CHECK(m_susytools_handle.setProperty("UsePeriodConfig", "MC16"));
       }
 
       //Guess shower type for btagging MC/MC SFs
@@ -1052,16 +1053,20 @@ if( ! toolPtr ) {
 
 // Jet cleaning
 // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/HowToCleanJets2017
+
+Bool_t passesJetCleanLoose = true;
+Bool_t passesJetCleanTight = true;
+  if(doPileup){
   static SG::AuxElement::Accessor<char> acc_eventClean("DFCommonJets_eventClean_LooseBad");
   if(debug)
     print("eventClean_LooseBad", (bool)acc_eventClean(*content.eventInfo));
-  Bool_t passesJetCleanLoose = !(acc_eventClean(*content.eventInfo) == 0);
+  passesJetCleanLoose = !(acc_eventClean(*content.eventInfo) == 0);
   if( !passesJetCleanLoose && doSkim){
     return EL::StatusCode::SUCCESS;
   }
 
+
   // Tight cleaning for EMTopo
-  Bool_t passesJetCleanTight = true;
   static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
   for (auto jet : content.goodJets) {
     if(debug)
@@ -1070,6 +1075,7 @@ if( ! toolPtr ) {
       passesJetCleanTight = false;
     }
   }
+}
 
   // Tight cleaning for PFlow
   Bool_t passesJetCleanTightCustom = true;
@@ -1218,7 +1224,8 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
 /*cand.evt.trigger_met = (is2015 && cand.evt.trigger["HLT_xe70_mht"]) ||
                (is2016 && ( cand.evt.trigger["HLT_xe90_mht_L1XE50"] || cand.evt.trigger["HLT_xe110_mht_L1XE50"] )) ||
                cand.evt.trigger["HLT_noalg_L1J400"] ;*/
-   cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : 0;
+
+    cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : 0;
 
    Bool_t customMETtrig(kFALSE);
    if(is2015 && cand.evt.trigger["HLT_xe70_mht"])
@@ -1323,7 +1330,7 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     }
 
       // Truth
-
+if(doPileup){
       //-- JETS --
     const xAOD::JetContainer * truthJets(nullptr);
       static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
@@ -1437,6 +1444,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
      cand.evt.truth_V_bare_m = truth_V_bare.M();
      */
 
+}
    } // done with MC only
 
   //-----------------------------------------------------------------------
