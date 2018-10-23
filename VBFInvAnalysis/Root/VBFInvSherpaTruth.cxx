@@ -83,7 +83,7 @@ EL::StatusCode VBFInvSherpaTruth::fileExecute()
         // A failure here should not be fatal-- we want to allow running over our own TRUTH1s.
         const xAOD::CutBookkeeperContainer* completeCBC = 0;
         if (m_event->retrieveMetaInput(completeCBC, "CutBookkeepers").isSuccess()) {
-
+            auto_skipCBK = false;
             const xAOD::CutBookkeeper* allEventsCBK = 0;
             int maxcycle = -1;
 
@@ -104,14 +104,19 @@ EL::StatusCode VBFInvSherpaTruth::fileExecute()
                 sumOfWeightsSquared = allEventsCBK->sumOfEventWeightsSquared();
                 ANA_MSG_INFO("CutBookkeepers Accepted:" << nEventsProcessed << ", SumWei:" << sumOfWeights << ", sumWei2:" << sumOfWeightsSquared);
             } else {
-                ANA_MSG_INFO("No relevent CutBookKeepers found" );
+                // If we somehow end up here-- set auto_skipCBK to true, I think.
+                ANA_MSG_INFO("No relevant CutBookKeepers found" );
                 nEventsProcessed = m_event->getEntries();
+                auto_skipCBK = true;
             }
 
             NumberEvents->Fill(0., nEventsProcessed);
             NumberEvents->Fill(1., sumOfWeights);
             NumberEvents->Fill(2., sumOfWeightsSquared);
 
+        } else {
+            // But, if we do fail here-- set auto_skipCBK so we can do the right thing.
+            auto_skipCBK = true;
         }
 
     }
@@ -152,9 +157,12 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     // Status code used to do clustering.
     truthTree->Branch("clusterPartonCode", &m_clusterPartonCode);
 
-    // MET
+    // MET. These should probably be removed (or filled).
     truthTree->Branch("met_et", &m_met_et);
     truthTree->Branch("met_phi", &m_met_phi);
+
+    // Truth HT.
+    truthTree->Branch("truth_HT", &m_truth_HT);
 
     // Create (and attach) dijet finders for everything.
     m_truthDijets = new Analysis::DijetFinder("truth", this->truthJetPtCut);
@@ -202,6 +210,9 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     m_postShower->reset();
     m_postShowerDijets->reset();
 
+    // Reset the truth HT.
+    m_truth_HT = 0;
+
     if (debug) ANA_MSG_INFO("***New event***" );
 
     //----------------------------
@@ -220,7 +231,7 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     m_WeightEvents = eventInfo->mcEventWeight(); //.at(0);
     m_ChannelNumber = eventInfo->mcChannelNumber();
 
-    if (skipCBK) {
+    if (skipCBK || auto_skipCBK) {
         NumberEvents->Fill(1, m_WeightEvents);
         NumberEvents->Fill(2, m_WeightEvents * m_WeightEvents);
     }
@@ -261,6 +272,11 @@ EL::StatusCode VBFInvSherpaTruth::execute()
         TLorentzVector truthJet;
         truthJet.SetPtEtaPhiE(jet->pt(), jet->eta(), jet->phi(), jet->e());
         truthJets.push_back(truthJet);
+
+        // While we're here-- calculate truth HT.
+        if ((truthJet.Pt()/1000.) >= truthJetPtCut) {
+            m_truth_HT += (truthJet.Pt() / 1000.);
+        }
     }
 
     // Pass the truth jets to the truth dijet finder.
