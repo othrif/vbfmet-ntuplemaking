@@ -834,26 +834,30 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
 
   //-- ELECTRONS --
     for (auto electron : content.allElectrons){
-      if (acc_passOR(*electron) == 1) 
+      if (acc_passOR(*electron) == 1) {
 	content.baselineElectrons.push_back(electron);
-    if (acc_signal(*electron) == 1)
-      content.goodElectrons.push_back(electron); // CR electrons
+	if (acc_signal(*electron) == 1)
+	  content.goodElectrons.push_back(electron); // CR electrons
+      }
   }
 
   //-- PHOTONS --
   for (auto photon : content.allPhotons){
-    if (acc_baseline(*photon)==1 && acc_passOR(*photon) == 1) 
+    if (acc_baseline(*photon)==1){ // && acc_passOR(*photon) == 1)  // overlap removal is not run on photons
       content.baselinePhotons.push_back(photon);
-    if (acc_signal(*photon) == 1)
-      content.goodPhotons.push_back(photon);
+      if (acc_signal(*photon) == 1)
+	content.goodPhotons.push_back(photon);
+    }
   }
 
   //-- TAUS --
  for (auto tau : content.allTaus) {
-   if (acc_baseline(*tau) == 1) 
+   // apply baseline
+   if (acc_baseline(*tau) == 1) {
      content.baselineTaus.push_back(tau);
-   if (acc_signal(*tau) == 1)
-     content.goodTaus.push_back(tau);
+     if (acc_signal(*tau) == 1)
+       content.goodTaus.push_back(tau);
+   }
  }
 
 //-- MET --
