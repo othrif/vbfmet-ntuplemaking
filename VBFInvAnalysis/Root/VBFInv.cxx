@@ -572,7 +572,8 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     float event_weight = 1.;
     if(m_isMC){
       event_weight *=  content.eventInfo->mcEventWeight();
-      event_weight *=  m_susytools_handle->GetPileupWeight();
+      if(doPileup)
+        event_weight *=  m_susytools_handle->GetPileupWeight();
     }
 
   //-----------------------------------------------------------------------
@@ -1056,26 +1057,27 @@ if( ! toolPtr ) {
 
 Bool_t passesJetCleanLoose = true;
 Bool_t passesJetCleanTight = true;
-  if(doPileup){
-  static SG::AuxElement::Accessor<char> acc_eventClean("DFCommonJets_eventClean_LooseBad");
+static SG::AuxElement::Accessor<char> acc_eventClean("DFCommonJets_eventClean_LooseBad");
+if(acc_eventClean.isAvailable(*content.eventInfo)){
   if(debug)
     print("eventClean_LooseBad", (bool)acc_eventClean(*content.eventInfo));
   passesJetCleanLoose = !(acc_eventClean(*content.eventInfo) == 0);
   if( !passesJetCleanLoose && doSkim){
     return EL::StatusCode::SUCCESS;
   }
-
+}
 
   // Tight cleaning for EMTopo
   static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
+  if(acc_jetCleanTight.isAvailable(*content.eventInfo)){
   for (auto jet : content.goodJets) {
     if(debug)
       print("jetClean_TightBad", (bool)acc_jetCleanTight(*jet));
     if (acc_jetCleanTight(*jet) == 0) {
       passesJetCleanTight = false;
     }
+    }
   }
-}
 
   // Tight cleaning for PFlow
   Bool_t passesJetCleanTightCustom = true;
@@ -1330,7 +1332,6 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     }
 
       // Truth
-if(doPileup){
       //-- JETS --
     const xAOD::JetContainer * truthJets(nullptr);
       static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
@@ -1444,7 +1445,6 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
      cand.evt.truth_V_bare_m = truth_V_bare.M();
      */
 
-}
    } // done with MC only
 
   //-----------------------------------------------------------------------
