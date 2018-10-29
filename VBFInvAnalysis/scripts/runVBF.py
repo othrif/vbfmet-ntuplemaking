@@ -48,6 +48,8 @@ parser.add_argument("--doTrim", dest="doTrim", action="store_true", default=Fals
 parser.add_argument("--doElectronDetail", dest="doElectronDetail", action="store_true", default=False, help="add detailed branches for electrons")
 parser.add_argument("--doMuonDetail", dest="doMuonDetail", action="store_true", default=False, help="add detailed branches for muons")
 parser.add_argument("--doJetDetail", dest="doJetDetail", action="store_true", default=False, help="add detailed branches for jets")
+parser.add_argument("--doTauDetail", dest="doTauDetail", action="store_true", default=False, help="add detailed branches for taus")
+parser.add_argument("--doPhotonDetail", dest="doPhotonDetail", action="store_true", default=False, help="add detailed branches for photons")
 parser.add_argument("--doMETDetail", dest="doMETDetail", action="store_true", default=False, help="add detailed branches for met")
 parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
@@ -156,14 +158,11 @@ if( args.algoName == "VBFInv" ):
   alg.doElectronDetail = args.doElectronDetail
   alg.doMuonDetail = args.doMuonDetail
   alg.doJetDetail = args.doJetDetail
+  alg.doTauDetail = args.doTauDetail
+  alg.doPhotonDetail = args.doPhotonDetail
   alg.doMETDetail = args.doMETDetail
   alg.doEventDetail = args.doEventDetail
   alg.doRnS = args.doRnS
-  alg.doElectronDetail = args.doElectronDetail
-  alg.doMuonDetail = args.doMuonDetail
-  alg.doJetDetail = args.doJetDetail
-  alg.doMETDetail = args.doMETDetail
-  alg.doEventDetail = args.doEventDetail
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
@@ -224,6 +223,7 @@ elif (args.driver == 'prun'):
       #--nGBPerJob=10
     driver.options().setString('nc_outputSampleName', dset_name_mask)
     driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
+    #driver.options().setString("nc_optGridDestSE","MWT2_UC_LOCALGROUPDISK")
     if args.replicationSite != None:
         driver.options().setString('nc_destSE', args.replicationSite)
     driver.submitOnly(job, args.submitDir )

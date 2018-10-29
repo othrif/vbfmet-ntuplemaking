@@ -20,6 +20,7 @@ void Analysis::outMuon::reset()
    eta.clear();
    phi.clear();
    m.clear();
+   type.clear();
    ptcone20.clear();
    ptvarcone20.clear();
    etcone20.clear();
@@ -52,6 +53,7 @@ void Analysis::outMuon::attachToTree(TTree *tree)
    tree->Branch(prefix + "phi", &phi);
    tree->Branch(prefix + "m", &m);
    if (!doTrim()) {
+     tree->Branch(prefix + "type", &type);
      tree->Branch(prefix + "d0", &d0);
      tree->Branch(prefix + "d0sig", &d0sig);
      tree->Branch(prefix + "z0", &z0);
@@ -85,6 +87,7 @@ void Analysis::outMuon::add(const xAOD::Muon &input)
    m.push_back(input.m());
 
    if (!doTrim()) {
+     type.push_back((int)(input.quality()));
      Float_t tmp_ptcone20(-9999);
      Float_t tmp_ptcone30(-9999);
      Float_t tmp_ptcone40(-9999);

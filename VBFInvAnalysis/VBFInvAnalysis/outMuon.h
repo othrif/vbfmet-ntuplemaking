@@ -13,6 +13,7 @@ namespace Analysis {
       std::vector<Float_t> eta;
       std::vector<Float_t> phi;
       std::vector<Float_t> m;
+      std::vector<Int_t>   type;
       std::vector<Float_t> ptcone20;
       std::vector<Float_t> ptvarcone20;
       std::vector<Float_t> etcone20;

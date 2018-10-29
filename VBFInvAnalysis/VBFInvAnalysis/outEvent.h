@@ -21,6 +21,7 @@ namespace Analysis {
       Int_t bcid;
       Float_t averageIntPerXing;
       Float_t corAverageIntPerXing;
+      Float_t vtx_sumpt2;
 
       Float_t mcEventWeight;
       std::vector<Float_t> mcEventWeights;
@@ -72,14 +73,12 @@ namespace Analysis {
       std::vector<Float_t> truth_mu_m;
       std::vector<Int_t>   truth_mu_status;
 
-/*
       Int_t n_tau_truth;
       std::vector<Float_t> truth_tau_pt;
       std::vector<Float_t> truth_tau_eta;
       std::vector<Float_t> truth_tau_phi;
       std::vector<Float_t> truth_tau_m;
       std::vector<Int_t>   truth_tau_status;
-      */
 
       std::map<TString, Int_t> trigger;
       Int_t trigger_lep;
@@ -107,6 +106,9 @@ namespace Analysis {
 //      Double_t met_tst_nomuon_j2_dphi;
 //      Double_t met_tst_noelectron_j1_dphi;
 //      Double_t met_tst_noelectron_j2_dphi;
+      Double_t metsig_tst;
+      Double_t metsig_tst_nolep;
+
       Int_t n_bjet;
       Int_t n_mu;
       Int_t n_mu_baseline;

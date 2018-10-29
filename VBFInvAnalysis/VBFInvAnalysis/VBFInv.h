@@ -10,6 +10,7 @@
 #include <PathResolver/PathResolver.h>
 #include <AsgAnalysisInterfaces/IGoodRunsListSelectionTool.h>
 #include <SUSYTools/ISUSYObjDef_xAODTool.h>
+#include <JetInterface/IJetModifier.h>
 
 // ROOT include(s):
 #include <TROOT.h>
@@ -47,7 +48,7 @@ public:
  std::vector<std::string> getTokens(TString line, TString delim);
  virtual EL::StatusCode analyzeEvent(Analysis::ContentHolder &content, const ST::SystInfo &systInfo, Analysis::outHolder &cand);
  virtual EL::StatusCode fillTree(Analysis::ContentHolder &content, Analysis::outHolder &cand);
- virtual EL::StatusCode getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet, xAOD::ElectronContainer *el, xAOD::MuonContainer *mu, xAOD::PhotonContainer *ph, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer *invis, TLorentzVector &myMET, double &myMETSig);
+ virtual EL::StatusCode getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet, xAOD::ElectronContainer *el, xAOD::MuonContainer *mu, xAOD::PhotonContainer *ph, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer *invis, TLorentzVector &myMET, double &myMETSig, int METType=0);
  virtual EL::StatusCode getTrackMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet, xAOD::ElectronContainer *el, xAOD::MuonContainer *mu);
  void printObjects(xAOD::IParticleContainer obj, TString label);
  void printMET(TLorentzVector myMET, double myMETsig, TLorentzVector myTruthMET, TString label);
@@ -64,6 +65,9 @@ public:
   Bool_t verbose;
   TString config_file;
   TString ST_config_file;
+  TString ST_config_Tight_file;
+  TString ST_config_Tighter_file;
+  TString ST_config_Tenacious_file;
   TString prw_file;
   TString lumicalc_file;
   TString GRL_file;
@@ -89,6 +93,8 @@ public:
   Bool_t doElectronDetail;
   Bool_t doMuonDetail;
   Bool_t doJetDetail;
+  Bool_t doTauDetail;
+  Bool_t doPhotonDetail;
   Bool_t doMETDetail;
   Bool_t doEventDetail;
 
@@ -110,6 +116,10 @@ private:
 
   asg::AnaToolHandle<IGoodRunsListSelectionTool> m_grl; //!
   asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool> m_susytools_handle; //!
+  asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool> m_susytools_Tight_handle; //!
+  asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool> m_susytools_Tighter_handle; //!
+  asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool> m_susytools_Tenacious_handle; //!
+  asg::AnaToolHandle<IJetModifier> m_jetFwdJvtTool; //!
 
   xAOD::TEvent *m_event; //!
   xAOD::TStore *m_store; //!
