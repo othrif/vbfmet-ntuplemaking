@@ -65,9 +65,6 @@ public:
   Bool_t verbose;
   TString config_file;
   TString ST_config_file;
-  TString ST_config_Tight_file;
-  TString ST_config_Tighter_file;
-  TString ST_config_Tenacious_file;
   TString prw_file;
   TString lumicalc_file;
   TString GRL_file;

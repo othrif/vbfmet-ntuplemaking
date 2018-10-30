@@ -50,9 +50,6 @@ debug(false),
 verbose(false),
 config_file(""),
 ST_config_file(""),
-ST_config_Tight_file(""),
-ST_config_Tighter_file(""),
-ST_config_Tenacious_file(""),
 prw_file(""),
 lumicalc_file(""),
 GRL_file(""),
@@ -253,11 +250,14 @@ EL::StatusCode VBFInv::initialize() {
  ANA_CHECK(m_susytools_handle.setProperty("DataSource", datasource));
  ANA_CHECK(m_susytools_handle.setProperty("ConfigFile", ST_config_file.Data()));
  ANA_CHECK(m_susytools_Tight_handle.setProperty("DataSource", datasource));
- ANA_CHECK(m_susytools_Tight_handle.setProperty("ConfigFile", ST_config_Tight_file.Data()));
+ ANA_CHECK(m_susytools_Tight_handle.setProperty("ConfigFile", ST_config_file.Data()));
+ ANA_CHECK(m_susytools_Tight_handle.setProperty("METJetSelection", "Tight"));
  ANA_CHECK(m_susytools_Tighter_handle.setProperty("DataSource", datasource));
- ANA_CHECK(m_susytools_Tighter_handle.setProperty("ConfigFile", ST_config_Tighter_file.Data()));
+ ANA_CHECK(m_susytools_Tighter_handle.setProperty("ConfigFile", ST_config_file.Data()));
+ ANA_CHECK(m_susytools_Tighter_handle.setProperty("METJetSelection", "Tighter"));
  ANA_CHECK(m_susytools_Tenacious_handle.setProperty("DataSource", datasource));
- ANA_CHECK(m_susytools_Tenacious_handle.setProperty("ConfigFile", ST_config_Tenacious_file.Data()));
+ ANA_CHECK(m_susytools_Tenacious_handle.setProperty("ConfigFile", ST_config_file.Data()));
+ ANA_CHECK(m_susytools_Tenacious_handle.setProperty("METJetSelection", "Tenacious"));
 
  if(verbose){
    ANA_CHECK( m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
@@ -324,6 +324,11 @@ EL::StatusCode VBFInv::initialize() {
       //Guess shower type for btagging MC/MC SFs
       if (m_isMC)
        ANA_CHECK(m_susytools_handle.setProperty("ShowerType", (Int_t)showerType));
+      // Init susytools
+      ANA_CHECK(m_susytools_handle.initialize());
+      ANA_CHECK(m_susytools_Tight_handle.initialize());
+      ANA_CHECK(m_susytools_Tighter_handle.initialize());
+      ANA_CHECK(m_susytools_Tenacious_handle.initialize());
 
    //
    // list of systematics to process
@@ -520,9 +525,6 @@ EL::StatusCode VBFInv::initialize() {
     }
 
     ST_config_file = env.GetValue("VBF.ST_config_file", "EMPTY");
-    ST_config_Tight_file = env.GetValue("VBF.ST_config_Tight_file", "EMPTY");
-    ST_config_Tighter_file = env.GetValue("VBF.ST_config_Tighter_file", "EMPTY");
-    ST_config_Tenacious_file = env.GetValue("VBF.ST_config_Tenacious_file", "EMPTY");
     prw_file = env.GetValue("VBF.prw_file", "EMPTY");
     lumicalc_file = env.GetValue("VBF.lumicalc_file", "EMPTY");
     GRL_file = env.GetValue("VBF.GRL_file", "EMPTY");
