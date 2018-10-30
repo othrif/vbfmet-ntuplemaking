@@ -1434,11 +1434,8 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
       cand.rns.rnsPSweight = cand.rns.getPSweight(m_susytools_handle, event,content.eventInfo->runNumber(), debug);
     }
 
-  // Truth
-      //-- JETS --
-    const xAOD::JetContainer * truthJets(nullptr);
-      static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
-      //-- JETS --
+    // Truth
+    //-- JETS --
     const xAOD::JetContainer * truthJets(nullptr);
       static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
       if (!failedLookingFor) {
