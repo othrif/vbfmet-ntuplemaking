@@ -1,4 +1,4 @@
-# Sherpa Truth/Parton Filtering
+# Sherpa Truth Algorithm: Parton Filtering
 
 The ```VBFInvSherpaTruth ``` algorithm was written to do studies of SHERPA
 parton-level (matrix element) filtering. It is designed to run over either
@@ -75,6 +75,18 @@ To account for this, a variety of different schemes are tried by this algorithm:
 
 All four techniques are implemented for both truth and parton jets.
 
+### Post-Shower Parton Jets
+
+These "parton jets" are marked as "postShower". The Sherpa source code
+indicates that the vertex ID "4" is used for any parton shower or QED
+radiation vertices; further, all intermediary documentation particles
+are assigned a status code of 11.
+
+Therefore, to produce these post-shower pre-hadronization parton jets,
+I stepped through all truth particles with status code 11 and with an
+ID 4 production vertex. Then they were clustered and the rest of the
+algorithm ran.
+
 ## Output
 
 The output ntuples contain five different sets of variables:
@@ -87,15 +99,14 @@ The output ntuples contain five different sets of variables:
 (this is a new experimental addition).
 
 For everything but the truth jets, the full collection of all particle kinematics
-and PDG IDs are written to the output ntuple.
+and PDG IDs are written to the output ntuple as vectors.
 
-Then, for each of the above sets of variables, jet kinematics are written.
+Then, for each of the above sets of variables, jet kinematics are written
+as vectors as well.
 
 Each of the MJJ computation schemes described in "Selecting Jets" are
 used to compute dijet mass for all these sets of variables. In
 addition to just "Mjj", "deta" and "dphi" are computed as well.
-
-TODO: write more.
 
 ## Running
 
