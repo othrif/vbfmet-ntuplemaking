@@ -248,6 +248,7 @@ EL::StatusCode VBFInv::initialize() {
   // SUSYTools
  const ST::ISUSYObjDef_xAODTool::DataSource datasource = (!m_isMC ? ST::ISUSYObjDef_xAODTool::Data : (m_isAFII ? ST::ISUSYObjDef_xAODTool::AtlfastII : ST::ISUSYObjDef_xAODTool::FullSim));
  ANA_CHECK(m_susytools_handle.setProperty("DataSource", datasource));
+<<<<<<< HEAD
  ANA_CHECK(m_susytools_handle.setProperty("ConfigFile", ST_config_file.Data()));
  ANA_CHECK(m_susytools_Tight_handle.setProperty("DataSource", datasource));
  ANA_CHECK(m_susytools_Tight_handle.setProperty("ConfigFile", ST_config_file.Data()));
@@ -259,13 +260,16 @@ EL::StatusCode VBFInv::initialize() {
  ANA_CHECK(m_susytools_Tenacious_handle.setProperty("ConfigFile", ST_config_file.Data()));
  ANA_CHECK(m_susytools_Tenacious_handle.setProperty("METJetSelection", "Tenacious"));
 
+=======
+ //ANA_CHECK(m_susytools_handle.setProperty("ConfigFile", ST_config_file.Data()));
+>>>>>>> origin/PRWnotRecommended
  if(verbose){
    ANA_CHECK( m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
    ANA_CHECK( m_susytools_handle.setProperty("DebugMode", true));
  }
   // Pile up configuration
  xAOD::TEvent *event = wk()->xaodEvent();
- if(m_isMC){
+ if(/*doPileup &&*/ m_isMC){
       // get metadata
   const xAOD::FileMetaData* fmd = nullptr;
   std::string amiTag = "unknown";
@@ -416,7 +420,7 @@ EL::StatusCode VBFInv::initialize() {
       m_cand[thisSyst].met["met_tst"] = Analysis::outMET("met_tst", (trim && !doMETDetail) );
       m_cand[thisSyst].met["met_tst_nolep"] = Analysis::outMET("met_tst_nolep", (trim && !doMETDetail));
       m_cand[thisSyst].met["met_soft_tst"] = Analysis::outMET("met_soft_tst", (trim && !doMETDetail));
-
+      
       if(doMETDetail){
 	m_cand[thisSyst].met["met_tight_tst"] = Analysis::outMET("met_tight_tst", (trim && !doMETDetail) );
 	m_cand[thisSyst].met["met_tight_tst_nolep"] = Analysis::outMET("met_tight_tst_nolep", (trim && !doMETDetail));
@@ -771,7 +775,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     }
 
    //-- TAUS --
-
+    
   if (content.doTaus) {
     content.taus = nullptr;
     content.tausAux = nullptr;
@@ -787,7 +791,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     }
     content.allTaus.sort(&HelperFunctions::comparePt);
   }
-
+    
 
   //-----------------------------------------------------------------------
   // Select good objects after overlap removal
@@ -951,7 +955,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
  getMET(content.met_tenacious_tst_nolep,
 	content.met_tenacious_tst_nolepAux,
 	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tenacious_tst_nolep,myMETsig_Tenacious_tst_nolep,3);
- //std::cout << "tight: " << myMET_Tight_tst.Pt() << " Loose: " << myMET_tst.Pt() << " Tighter: " << myMET_Tighter_tst.Pt() << " Tenacious: " << myMET_Tenacious_tst.Pt() << std::endl;
+ //std::cout << "tight: " << myMET_Tight_tst.Pt() << " Loose: " << myMET_tst.Pt() << " Tighter: " << myMET_Tighter_tst.Pt() << " Tenacious: " << myMET_Tenacious_tst.Pt() << std::endl; 
     // create sum of muon and electron pts
  {
   Float_t px = 0;
@@ -1327,7 +1331,8 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
 /*cand.evt.trigger_met = (is2015 && cand.evt.trigger["HLT_xe70_mht"]) ||
                (is2016 && ( cand.evt.trigger["HLT_xe90_mht_L1XE50"] || cand.evt.trigger["HLT_xe110_mht_L1XE50"] )) ||
                cand.evt.trigger["HLT_noalg_L1J400"] ;*/
-   cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : 0;
+
+    cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : 0;
 
    Bool_t customMETtrig(kFALSE);
    if(is2015 && cand.evt.trigger["HLT_xe70_mht"])
@@ -1434,10 +1439,11 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
       cand.rns.rnsPSweight = cand.rns.getPSweight(m_susytools_handle, event,content.eventInfo->runNumber(), debug);
     }
 
+<<<<<<< HEAD
   // Truth
-      //-- JETS --
-    const xAOD::JetContainer * truthJets(nullptr);
-      static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
+=======
+      // Truth
+>>>>>>> origin/PRWnotRecommended
       //-- JETS --
     const xAOD::JetContainer * truthJets(nullptr);
       static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
@@ -1596,7 +1602,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   if(doMuonDetail){
     for (auto muon : content.baselineMuons) {
       cand.mu["basemu"].add(*muon);
-      ++cand.evt.n_mu_baseline;
+      ++cand.evt.n_mu_baseline;  
     }
   }
 
