@@ -324,6 +324,11 @@ EL::StatusCode VBFInv::initialize() {
       //Guess shower type for btagging MC/MC SFs
       if (m_isMC)
        ANA_CHECK(m_susytools_handle.setProperty("ShowerType", (Int_t)showerType));
+      // Init susytools
+      ANA_CHECK(m_susytools_handle.initialize());
+      ANA_CHECK(m_susytools_Tight_handle.initialize());
+      ANA_CHECK(m_susytools_Tighter_handle.initialize());
+      ANA_CHECK(m_susytools_Tenacious_handle.initialize());
 
    //
    // list of systematics to process
