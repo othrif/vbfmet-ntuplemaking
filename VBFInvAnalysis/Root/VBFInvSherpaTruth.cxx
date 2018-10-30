@@ -80,38 +80,45 @@ EL::StatusCode VBFInvSherpaTruth::fileExecute()
     } else {
 
         // Read the CutBookkeeper container
+        // A failure here should not be fatal-- we want to allow running over our own TRUTH1s.
         const xAOD::CutBookkeeperContainer* completeCBC = 0;
-        if (!m_event->retrieveMetaInput(completeCBC, "CutBookkeepers").isSuccess()) {
-            ANA_MSG_ERROR( "Failed to retrieve CutBookkeepers from MetaData! Exiting.");
-        }
+        if (m_event->retrieveMetaInput(completeCBC, "CutBookkeepers").isSuccess()) {
+            auto_skipCBK = false;
+            const xAOD::CutBookkeeper* allEventsCBK = 0;
+            int maxcycle = -1;
 
-        const xAOD::CutBookkeeper* allEventsCBK = 0;
-        int maxcycle = -1;
-
-        // Let's find the right CBK (latest with StreamAOD input before derivations)
-        for ( auto cbk : *completeCBC ) {
-            if ( cbk->name() == "AllExecutedEvents" && cbk->inputStream() == "StreamAOD" && cbk->cycle() > maxcycle) {
-                maxcycle = cbk->cycle();
-                allEventsCBK = cbk;
+            // Let's find the right CBK (latest with StreamAOD input before derivations)
+            for ( auto cbk : *completeCBC ) {
+                if ( cbk->name() == "AllExecutedEvents" && cbk->inputStream() == "StreamAOD" && cbk->cycle() > maxcycle) {
+                    maxcycle = cbk->cycle();
+                    allEventsCBK = cbk;
+                }
             }
-        }
 
-        uint64_t nEventsProcessed  = 0;
-        double sumOfWeights        = 0.;
-        double sumOfWeightsSquared = 0.;
-        if (allEventsCBK) {
-            nEventsProcessed  = allEventsCBK->nAcceptedEvents();
-            sumOfWeights        = allEventsCBK->sumOfEventWeights();
-            sumOfWeightsSquared = allEventsCBK->sumOfEventWeightsSquared();
-            ANA_MSG_INFO("CutBookkeepers Accepted:" << nEventsProcessed << ", SumWei:" << sumOfWeights << ", sumWei2:" << sumOfWeightsSquared);
+            uint64_t nEventsProcessed  = 0;
+            double sumOfWeights        = 0.;
+            double sumOfWeightsSquared = 0.;
+            if (allEventsCBK) {
+                nEventsProcessed  = allEventsCBK->nAcceptedEvents();
+                sumOfWeights        = allEventsCBK->sumOfEventWeights();
+                sumOfWeightsSquared = allEventsCBK->sumOfEventWeightsSquared();
+                ANA_MSG_INFO("CutBookkeepers Accepted:" << nEventsProcessed << ", SumWei:" << sumOfWeights << ", sumWei2:" << sumOfWeightsSquared);
+            } else {
+                // If we somehow end up here-- set auto_skipCBK to true, I think.
+                ANA_MSG_INFO("No relevant CutBookKeepers found" );
+                nEventsProcessed = m_event->getEntries();
+                auto_skipCBK = true;
+            }
+
+            NumberEvents->Fill(0., nEventsProcessed);
+            NumberEvents->Fill(1., sumOfWeights);
+            NumberEvents->Fill(2., sumOfWeightsSquared);
+
         } else {
-            ANA_MSG_INFO("No relevent CutBookKeepers found" );
-            nEventsProcessed = m_event->getEntries();
+            // But, if we do fail here-- set auto_skipCBK so we can do the right thing.
+            auto_skipCBK = true;
         }
 
-        NumberEvents->Fill(0., nEventsProcessed);
-        NumberEvents->Fill(1., sumOfWeights);
-        NumberEvents->Fill(2., sumOfWeightsSquared);
     }
 
     return EL::StatusCode::SUCCESS;
@@ -150,9 +157,12 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     // Status code used to do clustering.
     truthTree->Branch("clusterPartonCode", &m_clusterPartonCode);
 
-    // MET
+    // MET. These should probably be removed (or filled).
     truthTree->Branch("met_et", &m_met_et);
     truthTree->Branch("met_phi", &m_met_phi);
+
+    // Truth HT.
+    truthTree->Branch("truth_HT", &m_truth_HT);
 
     // Create (and attach) dijet finders for everything.
     m_truthDijets = new Analysis::DijetFinder("truth", this->truthJetPtCut);
@@ -176,6 +186,12 @@ EL::StatusCode VBFInvSherpaTruth::initialize()
     m_status3Partons->attachToTree(truthTree);
     m_partons->attachToTree(truthTree);
 
+    // This is an experiment-- create a clusterer for post-parton-shower particles.
+    m_postShower = new Analysis::PartonClusterer("postShower", this->partonJetPtCut, this->antiktDR, this->shouldNotCluster);
+    m_postShowerDijets = new Analysis::DijetFinder("postShower", this->partonJetPtCut);
+    m_postShower->attachToTree(truthTree);
+    m_postShowerDijets->attachToTree(truthTree);
+
     return EL::StatusCode::SUCCESS;
 }
 
@@ -190,6 +206,12 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     m_status20Partons->reset();
     m_status3Partons->reset();
     m_partons->reset();
+
+    m_postShower->reset();
+    m_postShowerDijets->reset();
+
+    // Reset the truth HT.
+    m_truth_HT = 0;
 
     if (debug) ANA_MSG_INFO("***New event***" );
 
@@ -209,7 +231,7 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     m_WeightEvents = eventInfo->mcEventWeight(); //.at(0);
     m_ChannelNumber = eventInfo->mcChannelNumber();
 
-    if (skipCBK) {
+    if (skipCBK || auto_skipCBK) {
         NumberEvents->Fill(1, m_WeightEvents);
         NumberEvents->Fill(2, m_WeightEvents * m_WeightEvents);
     }
@@ -250,6 +272,11 @@ EL::StatusCode VBFInvSherpaTruth::execute()
         TLorentzVector truthJet;
         truthJet.SetPtEtaPhiE(jet->pt(), jet->eta(), jet->phi(), jet->e());
         truthJets.push_back(truthJet);
+
+        // While we're here-- calculate truth HT.
+        if ((truthJet.Pt()/1000.) >= truthJetPtCut) {
+            m_truth_HT += (truthJet.Pt() / 1000.);
+        }
     }
 
     // Pass the truth jets to the truth dijet finder.
@@ -268,12 +295,28 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     std::vector<const xAOD::TruthParticle*> status20 = m_truthByStatus[20];
     std::vector<const xAOD::TruthParticle*> status3 = m_truthByStatus[3];
 
+    // Extract the status 11 particles. Only keep those which have a production
+    // vertex, and whose production vertex's id code == 4.
+    // (4 : Parton Shower or QED radiation).
+    std::vector<const xAOD::TruthParticle*> status11 = m_truthByStatus[11];
+    std::vector<const xAOD::TruthParticle*> showerOuts;
+    for (const auto* particle: status11) {
+        if (particle->hasProdVtx()) {
+            if (particle->prodVtx()->id() == 4) {
+                showerOuts.push_back(particle);
+            }
+        }
+    }
+
     // This is a pointer to either the status 3 or status 20 particles.
     std::vector<const xAOD::TruthParticle*>* particles;
 
     // Now, cluster the status 3 and status 20 particles.
     std::vector<TLorentzVector>* status20Jets = m_status20Partons->clusterPartons(&status20);
     std::vector<TLorentzVector>* status3Jets = m_status3Partons->clusterPartons(&status3);
+
+    std::vector<TLorentzVector>* showerJets = m_postShower->clusterPartons(&showerOuts);
+
     if (debug) ANA_MSG_INFO("Finished clustering particles into parton jets.");
 
     // If "clusterPartonCode" is 20, then we are a MC@NLO S Event.
@@ -330,6 +373,9 @@ EL::StatusCode VBFInvSherpaTruth::execute()
     m_partonDijets->matchJets(&truthJets, this->antiktDR);
     m_status20Dijets->matchJets(&truthJets, this->antiktDR);
     m_status3Dijets->matchJets(&truthJets, this->antiktDR);
+
+    // Experiment: handle the parton shower outputs too.
+    m_postShowerDijets->computeMjj(showerJets);
 
     if (debug) ANA_MSG_INFO("Completed handling mjj computation.");
 

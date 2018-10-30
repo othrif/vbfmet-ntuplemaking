@@ -40,11 +40,13 @@ private:
     Analysis::DijetFinder* m_status3Dijets; //!
     Analysis::DijetFinder* m_status20Dijets; //!
     Analysis::DijetFinder* m_partonDijets; //!
+    Analysis::DijetFinder* m_postShowerDijets; //!
 
     // Parton clusterer objects.
     Analysis::PartonClusterer* m_status20Partons; //!
     Analysis::PartonClusterer* m_status3Partons; //!
     Analysis::PartonClusterer* m_partons; //!
+    Analysis::PartonClusterer* m_postShower; //!
 
     // Truth particles, sorted by status code.
     std::map<int, std::vector<const xAOD::TruthParticle*>> m_truthByStatus; //!
@@ -87,12 +89,21 @@ public:
     UInt_t m_ChannelNumber; //!
 
     // Which status code was used to do clustering for this event?
-    int m_clusterPartonCode = -1;
+    int m_clusterPartonCode = -1; //!
+
+    // Calculate the truth HT from the truth jets collection.
+    // There isn't a good place to do this elsewhere.
+    float m_truth_HT = 0; //!
 
     TH1D *NumberEvents; //!
     TH1D *NumberEventsinNtuple; //!
 
     xAOD::TEvent *m_event;  //!
+
+    // If we failed to load the cut bookkeeper, that's fine for this algorithm.
+    // Even if skipCBK wasn't passed, we then want to fill the event weight
+    // histogram automatically.
+    bool auto_skipCBK; //!
 
     // this is a standard constructor
     VBFInvSherpaTruth();
