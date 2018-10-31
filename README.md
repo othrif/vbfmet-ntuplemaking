@@ -2,7 +2,7 @@
 # VBF Higgs to Invisible Full Run 2 Analysis
 #############################################
 
-[![pipeline status](https://gitlab.cern.ch/othrif/STAnalysisCode/badges/master/pipeline.svg)](https://gitlab.cern.ch/othrif/STAnalysisCode/commits/master)
+[![pipeline status](https://gitlab.cern.ch/STAnalysisCode/badges/master/pipeline.svg)](https://gitlab.cern.ch/STAnalysisCode/commits/master)
 
 ## Developer ##
 Othmane Rifki (othmane.rifki@cern.ch) - DESY
@@ -75,3 +75,52 @@ python STAnalysisCode/VBFInvAnalysis/scripts/listSamples.py -t mc16_13TeV,data15
 git tag -a vXX-AB21p2pYY -m "Tag version vXX"
 git push origin vXX-AB21p2pYY
 ```
+
+## Code Development ##
+
+When developing new code, it is important to work on a seperate branch. Once the development is over you can make a merge request to 
+merged the changes into master. The CI tests  [.gitlab-ci.yml][.gitlab-ci.yml] will check that the code still compiles correctly before accepting the 
+changes. In the merge request, tag @othrif so that I get a notification to approve the merge.
+
+### Check out latest version code ###
+Make sure you have the latest version of STAnalysisCode checked out, otherwise you run into conflicts:
+```bash
+cd STAnalysisCode
+git fetch upstream
+git merge upstream/master
+```
+
+Each time, before developing any change to the code, obtain the latest changes in the upstream project:
+```bash
+git fetch upstream
+```
+
+### Working with a branch ###
+Create a topic branch with a meaningful name (here we used `master-my-topic` but consider using a meaningful name)
+```bash
+git checkout -b master-my-topic upstream/master --no-track
+```
+
+### How to commit ###
+
+For each of the files you want to commit, do
+```bash
+git add <file>
+```
+double-check the status of the repository with
+```bash
+git status
+```
+Modifications can be listed with
+``` bash
+git diff STAnalysisCode
+```
+and commit locally
+```bash
+git commit -m "message"
+```
+Push the changes from your local repository to your fork with
+```bash
+git push --set-upstream origin master-my-topic
+```
+Git will now print an output message with a link to submit the merge request. The request can be submitted also by accessing on the browser your forked repository on GitLab and selecting the relevant branch. Make sure to tag Othmane Rifki (@othrif).
