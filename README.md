@@ -55,6 +55,9 @@ See more options in the runVBF.py help:
 runVBF.py -h
 ```
 
+# To check that you have downloaded all of the samples. you'll need the input file from the postprocessing code
+python VBFInvAnalysis/scripts/checkMC.py -i /home/schae/testarea/HInvProd50/STAnalysisCode/fout_v15raw.root
+
 ### test SUSYTools ###
 ``` bash
 SUSYToolsTester <myAOD.pool.root> maxEvents=100 isData=0 isAtlfast=0 Debug=0 NoSyst=0 2>&1 | tee log
