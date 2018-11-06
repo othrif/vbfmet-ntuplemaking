@@ -26,6 +26,7 @@ def commandline():
   parser.add_argument("-o","--output",  dest='output',  action='store_true', default=False,                    help='sets up output mode (default: %default)')
   parser.add_argument("-r","--ratio",  dest='ratio',  action='store_true', default=False,                    help='only prints a row of AOD/DAOD(ratio) for each campaign, for mass running (default: %default)')
   parser.add_argument("-a","--aod",  dest='aod',  action='store_true', default=False,                    help='only prints AODs')
+  parser.add_argument("-x","--deriv",  dest='deriv',  action='store_true', default=False,                    help='run derivations')
   parser.add_argument("-e","--evnt",  dest='evnt',  action='store_true', default=False,                    help='only prints EVNTs')
   parser.add_argument("-v","--verbose", dest='verbose', action='store_true', default=False,                    help='prints details for debugging (default: %default)')
   args, unknown = parser.parse_known_args()
@@ -35,9 +36,10 @@ def commandline():
   aod      = args.aod
   evnt     = args.evnt
   verbose  = args.verbose
+  run_deriv  = args.deriv
   if not args.dsid:
     parser.error("Give 6-digit DISD number as argument")
-  return args.dsid, args.campaign.split(','), summary, output, ratio, aod, evnt, verbose
+  return args.dsid, args.campaign.split(','), summary, output, ratio, aod, evnt, verbose, run_deriv
 def safe_div(x,y):
     if y == 0:
         return 0
@@ -45,6 +47,12 @@ def safe_div(x,y):
 
 # Main function
 def main(argv=None):
+  dsid, campaigns, summary, output, ratio, aod, evnt, verbose, run_deriv = commandline();
+  run(dsid, campaigns, summary, output, ratio, aod, evnt, verbose, argv=argv, run_deriv=run_deriv)
+
+# running
+def run(dsid, campaigns, summary, output, ratio, aod, evnt, verbose, argv=None, run_deriv=False):
+
   import pprint
   import re
   pp = pprint.PrettyPrinter(indent=1)
@@ -59,7 +67,7 @@ def main(argv=None):
     print "Please first setup rucio"
     return
   if argv is None: argv = sys.argv
-  dsid, campaigns, summary, output, ratio, aod, evnt, verbose = commandline();
+
   allflags = not ( output or ratio or aod or evnt or verbose) 
   if verbose:
     print (__doc__)
@@ -178,6 +186,9 @@ def main(argv=None):
       if ( campaign == "MC16d" and "r10201" not in name ):
         if verbose: print "Found MC16d Sample but not r-tag!"
         continue
+      if ( campaign == "MC16e" and "r10724" not in name ): #10724
+        if verbose: print "Found MC16e Sample but not r-tag!"
+        continue
       for data in dsnInfo:
         events += int(data['events'])
       contevents+=events
@@ -194,6 +205,83 @@ def main(argv=None):
         aod_mc_map["TOT"] += contevents
   if count == 0: print "No recon.AOD containers for", dsid, "found [", name, "]"
 
+  # print EXOT5
+  if not ( output or summary) and run_deriv:
+    print '---Running derivation of EXOT5----'
+  deriv_mc_map = {"Name":"mySAMPLE","shortName":"mySAMPLE", "TOT":0, "MC16a":0, "MC16c":0, "MC16d":0, "MC16e":0,"mc16_13TeV":0}
+  name = scope + "." + dsid + ".*.deriv.DAOD_EXOT5.*"
+  dids = {'name': name}
+  List=[]
+  if run_deriv:
+    List = DIDClient.list_dids(client,scope,dids,'container')
+  campaign=""
+  for dsn in List:
+    container = dsn
+    if ':' in container:
+      scope = container.split(':')[0]
+      container = container.split(':')[1]
+    else:
+      scope = container.split('.')[0]
+    contents = DIDClient.list_content(client,scope,container)
+    
+    if "_r9364" in container:
+      campaign='MC16a'
+    elif "_r9781"  in container:
+      campaign='MC16c'
+    elif "_r10201" in container:
+      campaign='MC16d'
+    elif "_r10724" in container:
+      campaign='MC16e'
+    else:
+      campaign='mc16_13TeV'
+    if 'p3575' not in container:
+      continue;
+    if campaign=='MC16a' and  'r9364_p3575' not in container:
+      continue;
+
+    for task in contents:
+      name = task['name']
+      if verbose: print name
+      scope = name.split('.')[0]
+      meta = DIDClient.get_metadata(client,scope,name)
+      if verbose: pp.pprint(meta)
+      #if ':' in meta['campaign']:
+      #  campaign = meta['campaign'].split(':')[1]
+      #else:
+      #  campaign = meta['campaign']
+      if verbose: print campaign
+      if campaign in campaigns:
+          matchcampaign=True
+      dsnInfo  = DIDClient.list_files(client,scope,name)
+      events = 0
+      if campaign not in contcampaigns: contcampaigns.append(campaign)
+      if ( campaign == "MC16a" and ("r9364" not in name) ):
+        if verbose: print "Found MC16a Sample but not r-tag!"
+        continue
+      if ( campaign == "MC16c" and "r9781" not in name ):
+        if verbose: print "Found MC16c Sample but not r-tag!"
+        continue
+      if ( campaign == "MC16d" and "r10201" not in name ):
+        if verbose: print "Found MC16d Sample but not r-tag!"
+        continue
+      if ( campaign == "MC16e" and "r10724" not in name ): #10724
+        if verbose: print "Found MC16e Sample but not r-tag!"
+        continue
+      for data in dsnInfo:
+        events += int(data['events'])
+      contevents+=events
+      if verbose: print events
+      # print campaign, events, tid
+      if not ( output or summary):
+        print '*EXOT5 %10s %10s %s' % (campaign, str(events), name)
+      # Store events in each campaign
+      deriv_mc_map["Name"] = dsn
+      deriv_mc_map["shortName"] = short_name
+    if matchcampaign and campaigns!='':
+      #deriv_mc_map[",".join(contcampaigns)] += contevenst
+      deriv_mc_map[campaign] += contevents
+      #aod_name_map[",".join(contcampaigns)] = container
+      deriv_mc_map["TOT"] += contevents
   ############################################################
   # Print Summary
   ############################################################
@@ -241,7 +329,8 @@ def main(argv=None):
       str(aod_mc_map["MC16d"]/1e6), str((evnt_mc_map["MC16d"]+evnt_mc_map["MC16c"])/1e6), safe_div(float(aod_mc_map["MC16d"]),(evnt_mc_map["MC16d"]+evnt_mc_map["MC16c"])),
       str(aod_mc_map["MC16e"]/1e6), str(evnt_mc_map["MC16e"]/1e6), safe_div(float(aod_mc_map["MC16e"]),evnt_mc_map["MC16e"])
       )
-
+  # return the event count information  
+  return aod_mc_map,evnt_mc_map,deriv_mc_map
 
 import sys
 if __name__ == '__main__':
