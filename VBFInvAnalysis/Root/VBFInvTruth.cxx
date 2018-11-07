@@ -55,11 +55,11 @@ EL::StatusCode VBFInvTruth :: setupJob (EL::Job &job)
 EL::StatusCode VBFInvTruth :: histInitialize ()
 {
 
-    NumberEvents = new TH1D("NumberEvents", "Number Events", 3, 0, 3);
+    NumberEvents = new TH1D("NumberEvents", "Number Events", 4, 0, 4);
     NumberEvents->GetXaxis()->SetBinLabel(1, "Raw");
     NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
     NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
-
+    NumberEvents->GetXaxis()->SetBinLabel(4, "RawEXOT5");
     return EL::StatusCode::SUCCESS;
 }
 
@@ -71,6 +71,7 @@ EL::StatusCode VBFInvTruth :: fileExecute()
 
     if (skipCBK) {
         NumberEvents->Fill(0., m_event->getEntries());
+        NumberEvents->Fill(3., m_event->getEntries());
     }
     else {
         //Read the CutBookkeeper container
@@ -106,6 +107,7 @@ EL::StatusCode VBFInvTruth :: fileExecute()
         NumberEvents->Fill(0., nEventsProcessed);
         NumberEvents->Fill(1., sumOfWeights);
         NumberEvents->Fill(2., sumOfWeightsSquared);
+        NumberEvents->Fill(3., m_event->getEntries());
     }
 
 

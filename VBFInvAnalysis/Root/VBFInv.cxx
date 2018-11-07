@@ -175,8 +175,7 @@ if (allEventsCBK) {
 }
 
 
-if(m_event->getEntries() && wk()->metaData()->castDouble("isData") != 1 ){
-
+ if(m_event->getEntries()){
   const xAOD::EventInfo *eventInfo = nullptr;
   ANA_CHECK (evtStore()->retrieve (eventInfo, "EventInfo"));
   m_NumberEvents->Fill(0., nEventsProcessed);
