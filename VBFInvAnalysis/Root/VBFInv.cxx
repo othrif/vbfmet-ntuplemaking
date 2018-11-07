@@ -110,10 +110,11 @@ EL::StatusCode VBFInv :: histInitialize()
  ANA_MSG_INFO("in histInitialize");
 
    // Events processed before derivation
- m_NumberEvents = new TH1D("NumberEvents", "Number Events", 3, 0, 3);
+ m_NumberEvents = new TH1D("NumberEvents", "Number Events", 4, 0, 4);
  m_NumberEvents->GetXaxis()->SetBinLabel(1, "Raw");
  m_NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
  m_NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
+ m_NumberEvents->GetXaxis()->SetBinLabel(4, "RawEXOT5");
 
   // CutFlow
  TString NameCut("Nominal");
@@ -182,6 +183,8 @@ if(m_event->getEntries() && wk()->metaData()->castDouble("isData") != 1 ){
   m_NumberEvents->Fill(1., sumOfWeights);
   m_NumberEvents->Fill(2., sumOfWeightsSquared);
 }
+// events processed by this VBFInv code
+ m_NumberEvents->Fill(3., m_event->getEntries());
 
 
 return EL::StatusCode::SUCCESS;
