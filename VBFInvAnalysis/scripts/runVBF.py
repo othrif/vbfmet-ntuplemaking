@@ -87,7 +87,7 @@ sh = ROOT.SH.SampleHandler()
 if args.input:
     chain = ROOT.TChain( "CollectionTree" )
     chain.Add( args.input )
-    sampleName = '.'.join(args.input.split('/')[-1].split('.')[:-3])
+    sampleName = '.'.join(args.input.split('/')[-2].split('.')[:-3])
     sh.add( ROOT.SH.makeFromTChain( sampleName, chain ) )
 getlist = lambda x: filter(lambda y: y != '', x.replace(' ', '').split(','))
 txts = getlist(args.txt)
@@ -121,6 +121,7 @@ for isample in xrange(sh.size()):
     state = False
     if this_re.search(sample.name()):
       state = True
+      print 'CheckingMC - found: ',opt,' sample: ',isample
     sample.setMetaDouble(opt, state)
     print 'Sample {name} has {opt} set to {val}'.format(name=sample.name(), opt=opt, val=state)
 sh.setMetaString( "nc_tree", "CollectionTree" )
