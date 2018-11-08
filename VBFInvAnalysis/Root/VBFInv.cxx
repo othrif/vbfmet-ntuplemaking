@@ -1388,8 +1388,9 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     cand.evt.puWeight          = m_susytools_handle->GetPileupWeight();
     cand.evt.btagSFWeight      = m_susytools_handle->BtagSF(&content.goodJets);
 
-// GetTotalJetSF(jets, bool btagSF, bool jvtSF)
+    // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
     cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
+    cand.evt.fjvtSFWeight      = m_susytools_handle->FJVT_SF(content.jets);
 
     // Lepton Scale Factors
     // See definition of Trig.Singlelep20XX in SUSYObjDef_xAOD.cxx

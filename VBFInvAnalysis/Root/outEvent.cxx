@@ -34,6 +34,7 @@ void Analysis::outEvent::reset()
  puWeight = 1.0;
  btagSFWeight = 1.0;
  jvtSFWeight = 1.0;
+ fjvtSFWeight = 1.0;
  elSFWeight = 1.0;
  muSFWeight = 1.0;
  elSFTrigWeight = 1.0;
@@ -140,6 +141,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
   tree->Branch(prefix + "puWeight", &puWeight);
   tree->Branch(prefix + "btagSFWeight", &btagSFWeight);
   tree->Branch(prefix + "jvtSFWeight", &jvtSFWeight);
+  tree->Branch(prefix + "fjvtSFWeight", &fjvtSFWeight);
   tree->Branch(prefix + "elSFWeight", &elSFWeight);
   tree->Branch(prefix + "muSFWeight", &muSFWeight);
   tree->Branch(prefix + "elSFTrigWeight", &elSFTrigWeight);

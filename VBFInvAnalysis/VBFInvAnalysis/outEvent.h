@@ -32,6 +32,7 @@ namespace Analysis {
       Float_t muSFTrigWeight;
       Float_t btagSFWeight;
       Float_t jvtSFWeight;
+      Float_t fjvtSFWeight;
 
 /*
       Int_t pdf_id1;
