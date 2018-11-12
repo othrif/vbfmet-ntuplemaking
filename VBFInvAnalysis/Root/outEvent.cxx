@@ -103,9 +103,9 @@ n_vx   = -9999;
 n_jet  = -9999;
 n_bjet = -9999;
 n_el = -9999;
-n_el_baseline = -9999;
+n_el_baseline = 0;
 n_mu = -9999;
-n_mu_baseline = -9999;
+n_mu_baseline = 0;
 
 jj_mass = -9999;
 jj_deta = -9999;

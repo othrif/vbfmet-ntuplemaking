@@ -1682,14 +1682,12 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
          std::cout << "Muon pT=" << muon->pt()*1e-3 << ", ptvarcone30_TightTTVA_pt1000/pt=" << tmp_ptvarcone30_TightTTVA_pt1000/muon->pt() << ", topoetcone20/pt=" << tmp_topoetcone20/muon->pt() << std::endl;
     */
   }
-  if(doMuonDetail){
-    for (auto muon : content.baselineMuons) {
-      cand.mu["basemu"].add(*muon);
+  for (auto muon : content.baselineMuons) {
+    if(doMuonDetail) cand.mu["basemu"].add(*muon);
+    if(muon->auxdata<float>("ptvarcone20")/muon->pt()<0.25)
       ++cand.evt.n_mu_baseline;
-    }
   }
-
-
+  
   //-----------------------------------------------------------------------
   // Selected electrons
   //-----------------------------------------------------------------------
@@ -1697,11 +1695,10 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   for (auto electron : content.goodElectrons) {
     cand.el["el"].add(*electron);
   }
-  if(doElectronDetail){
-    for (auto electron : content.baselineElectrons) {
-      cand.el["baseel"].add(*electron);
+  for (auto electron : content.baselineElectrons) {
+    if(doElectronDetail) cand.el["baseel"].add(*electron);
+    if(electron->auxdata<float>("ptvarcone20")/electron->pt()<0.25)
       ++cand.evt.n_el_baseline;
-    }
   }
 
    /////////////////////////////
