@@ -1684,7 +1684,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   }
   for (auto muon : content.baselineMuons) {
     if(doMuonDetail) cand.mu["basemu"].add(*muon);
-    if(muon->auxdata<float>("ptvarcone20")/muon->pt()<0.25)
+    if(muon->auxdata<float>("ptvarcone20")/muon->pt()<0.30)
       ++cand.evt.n_mu_baseline;
   }
   
@@ -1697,7 +1697,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   }
   for (auto electron : content.baselineElectrons) {
     if(doElectronDetail) cand.el["baseel"].add(*electron);
-    if(electron->auxdata<float>("ptvarcone20")/electron->pt()<0.25)
+    if(electron->auxdata<float>("ptvarcone20")/electron->pt()<0.30)
       ++cand.evt.n_el_baseline;
   }
 
@@ -1874,7 +1874,7 @@ void VBFInv::GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthPart
     if (acc_baseline(*el) == 1) {  
       Float_t tmp_ptvarcone20;
       el->isolationValue(tmp_ptvarcone20, xAOD::Iso::IsolationType::ptvarcone20);
-      if(tmp_ptvarcone20/el->pt()>0.25){
+      if(tmp_ptvarcone20/el->pt()>0.30){
 	double el_iso_sf=1.0;
 	CP::CorrectionCode result = m_elecEfficiencySFTool_anti_iso->getEfficiencyScaleFactor(*el, el_iso_sf);
 	switch (result) {
