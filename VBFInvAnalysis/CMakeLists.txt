@@ -31,6 +31,7 @@ atlas_depends_on_subdirs(
    PhysicsAnalysis/ElectronPhotonID/ElectronPhotonSelectorTools
    PhysicsAnalysis/TauID/TauAnalysisTools
    PhysicsAnalysis/ElectronPhotonID/ElectronEfficiencyCorrection
+   PhysicsAnalysis/Interfaces/EgammaAnalysisInterfaces
    Trigger/TrigAnalysis/TrigDecisionTool
    Trigger/TrigConfiguration/TrigConfxAOD
    Trigger/TrigAnalysis/TriggerMatchingTool
@@ -58,7 +59,7 @@ atlas_add_library( VBFInvAnalysisLib
    VBFInvAnalysis/*.h Root/*.h Root/*.cxx ${VBFInvAnalysisDictSource}
    INCLUDE_DIRS ${FASTJET_INCLUDE_DIR}
    PUBLIC_HEADERS VBFInvAnalysis
-   LINK_LIBRARIES EventLoop xAODEventInfo PATInterfaces xAODJet xAODTruth xAODCore AsgAnalysisInterfaces JetInterface JetResolutionLib xAODMuon
+   LINK_LIBRARIES EventLoop xAODEventInfo PATInterfaces xAODJet xAODTruth xAODCore AsgAnalysisInterfaces JetInterface JetResolutionLib xAODMuon 
     MuonSelectorToolsLib MuonMomentumCorrectionsLib TrigDecisionToolLib TrigConfInterfaces EventLoopAlgs PathResolver
 
    AthContainers CxxUtils
@@ -66,7 +67,7 @@ atlas_add_library( VBFInvAnalysisLib
    xAODEventInfo xAODTracking xAODCaloEvent xAODTruth xAODCutFlow xAODTrigger xAODMetaData
    GoodRunsListsLib PileupReweightingLib PathResolver TrigConfxAODLib TrigDecisionToolLib TriggerMatchingToolLib
    MuonMomentumCorrectionsLib FourMomUtils IsolationSelectionLib IsolationCorrectionsLib
-   ElectronPhotonSelectorToolsLib TauAnalysisToolsLib ElectronEfficiencyCorrectionLib
+   ElectronPhotonSelectorToolsLib TauAnalysisToolsLib ElectronEfficiencyCorrectionLib EgammaAnalysisInterfacesLib
    SUSYToolsLib
    ${FASTJET_LIBRARIES}
 

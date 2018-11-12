@@ -39,6 +39,7 @@ void Analysis::outEvent::reset()
  muSFWeight = 1.0;
  elSFTrigWeight = 1.0;
  muSFTrigWeight = 1.0;
+ eleANTISF = 1.0;
 
   // PDF
   /*
@@ -117,6 +118,10 @@ met_cst_jet = -9999;
 metsig_tst  = -9999;
 metsig_tst_nolep  = -9999;
 
+// clear the map
+ for(std::map<TString,Float_t>::iterator it=syst_var_map.begin(); it!=syst_var_map.end();++it){
+   it->second=1.0;
+ }
 return;
 }
 
@@ -146,6 +151,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
   tree->Branch(prefix + "muSFWeight", &muSFWeight);
   tree->Branch(prefix + "elSFTrigWeight", &elSFTrigWeight);
   tree->Branch(prefix + "muSFTrigWeight", &muSFTrigWeight);
+  tree->Branch(prefix + "eleANTISF", &eleANTISF);
 
   for (auto &itrig : trigger) {
     const TString trigName = itrig.first;
@@ -269,4 +275,15 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    for (auto &trigName : trigs) {
     trigger[trigName] = 0;
   }
+}
+
+float &Analysis::outEvent::GetSystVar(TString var, TString syst, TTree *tree){
+
+  const TString var_name = ((name() != "") ? name() + "_" : "") + var + syst; // no prefix by default
+  if(syst_var_map.find(var_name)==syst_var_map.end()){
+    syst_var_map[var_name]=1.0;
+    tree->Branch(var_name, &syst_var_map[var_name]); 
+  }
+
+  return syst_var_map[var_name];
 }
