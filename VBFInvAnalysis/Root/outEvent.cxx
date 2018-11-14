@@ -34,10 +34,12 @@ void Analysis::outEvent::reset()
  puWeight = 1.0;
  btagSFWeight = 1.0;
  jvtSFWeight = 1.0;
+ fjvtSFWeight = 1.0;
  elSFWeight = 1.0;
  muSFWeight = 1.0;
  elSFTrigWeight = 1.0;
  muSFTrigWeight = 1.0;
+ eleANTISF = 1.0;
 
   // PDF
   /*
@@ -101,9 +103,9 @@ n_vx   = -9999;
 n_jet  = -9999;
 n_bjet = -9999;
 n_el = -9999;
-n_el_baseline = -9999;
+n_el_baseline = 0;
 n_mu = -9999;
-n_mu_baseline = -9999;
+n_mu_baseline = 0;
 
 jj_mass = -9999;
 jj_deta = -9999;
@@ -116,6 +118,10 @@ met_cst_jet = -9999;
 metsig_tst  = -9999;
 metsig_tst_nolep  = -9999;
 
+// clear the map
+ for(std::map<TString,Float_t>::iterator it=syst_var_map.begin(); it!=syst_var_map.end();++it){
+   it->second=1.0;
+ }
 return;
 }
 
@@ -140,10 +146,12 @@ void Analysis::outEvent::attachToTree(TTree *tree)
   tree->Branch(prefix + "puWeight", &puWeight);
   tree->Branch(prefix + "btagSFWeight", &btagSFWeight);
   tree->Branch(prefix + "jvtSFWeight", &jvtSFWeight);
+  tree->Branch(prefix + "fjvtSFWeight", &fjvtSFWeight);
   tree->Branch(prefix + "elSFWeight", &elSFWeight);
   tree->Branch(prefix + "muSFWeight", &muSFWeight);
   tree->Branch(prefix + "elSFTrigWeight", &elSFTrigWeight);
   tree->Branch(prefix + "muSFTrigWeight", &muSFTrigWeight);
+  tree->Branch(prefix + "eleANTISF", &eleANTISF);
 
   for (auto &itrig : trigger) {
     const TString trigName = itrig.first;
@@ -267,4 +275,15 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    for (auto &trigName : trigs) {
     trigger[trigName] = 0;
   }
+}
+
+float &Analysis::outEvent::GetSystVar(TString var, TString syst, TTree *tree){
+
+  const TString var_name = ((name() != "") ? name() + "_" : "") + var + syst; // no prefix by default
+  if(syst_var_map.find(var_name)==syst_var_map.end()){
+    syst_var_map[var_name]=1.0;
+    tree->Branch(var_name, &syst_var_map[var_name]); 
+  }
+
+  return syst_var_map[var_name];
 }

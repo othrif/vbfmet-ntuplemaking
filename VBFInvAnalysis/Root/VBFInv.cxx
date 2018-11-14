@@ -89,7 +89,9 @@ m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
 m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
 m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
 m_susytools_Tenacious_handle("ST::SUSYObjDef_xAOD/STTenacious", this),
-m_jetFwdJvtTool("JetForwardJvtTool/JetForwardJvtTool_VBF", this)
+m_jetFwdJvtTool("JetForwardJvtTool/JetForwardJvtTool_VBF", this),
+m_elecEfficiencySFTool_anti_id("AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_id", this),
+m_elecEfficiencySFTool_anti_iso("AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_iso", this)
 {
 }
 
@@ -247,6 +249,18 @@ EL::StatusCode VBFInv::initialize() {
  ANA_CHECK( m_jetFwdJvtTool.setProperty("ForwardMaxPt", 120.0e3) );
  ANA_CHECK( m_jetFwdJvtTool.retrieve() );
 
+ // anti-id sf's
+ //if (m_eleId == "VeryLooseLLH" || m_eleId == "LooseLLH" || m_eleId == "Loose" )
+ //std::vector<std::string> inputFiles_ID{"dev/ElectronEfficiencyCorrection/2015_2017/rel21.2/Consolidation_September2018_v1/inefficiency/efficiencySF.offline.LooseAndBLayerLLH_d0z0_v13.root"} ;
+ std::vector<std::string> inputFiles_ID{"VBFInvAnalysis/electronSF/efficiencySF.offline.LooseAndBLayerLLH_d0z0_v13.root"} ;
+ ANA_CHECK(m_elecEfficiencySFTool_anti_id.setProperty("CorrectionFileNameList",inputFiles_ID));
+ ANA_CHECK(m_elecEfficiencySFTool_anti_id.setProperty("CorrelationModel","TOTAL"));
+ ANA_CHECK(m_elecEfficiencySFTool_anti_id.initialize() );
+ std::vector<std::string> inputFiles_ISO{"VBFInvAnalysis/electronSF/efficiencySF.Isolation.LooseAndBLayerLLH_d0z0_v13_FCLoose.root"} ;
+ ANA_CHECK(m_elecEfficiencySFTool_anti_iso.setProperty("CorrectionFileNameList",inputFiles_ISO));
+ ANA_CHECK(m_elecEfficiencySFTool_anti_iso.setProperty("CorrelationModel","TOTAL"));
+ ANA_CHECK(m_elecEfficiencySFTool_anti_iso.initialize() );
+
   // SUSYTools
  const ST::ISUSYObjDef_xAODTool::DataSource datasource = (!m_isMC ? ST::ISUSYObjDef_xAODTool::Data : (m_isAFII ? ST::ISUSYObjDef_xAODTool::AtlfastII : ST::ISUSYObjDef_xAODTool::FullSim));
  ANA_CHECK(m_susytools_handle.setProperty("DataSource", datasource));
@@ -338,29 +352,35 @@ EL::StatusCode VBFInv::initialize() {
    //
 
      m_sysList.clear();
+     m_sysWeightList.clear();
      if (doSystematics && m_isMC) {
       auto fullSystList = m_susytools_handle->getSystInfoList();
 
       // list of uncertainties to be skipped
       std::vector<std::string> skip = getTokens(skip_syst, ",");
-
+      
       for (const auto& syst : fullSystList) {
        const TString thisSyst = syst.systset.name();
        Bool_t keepThis(kTRUE);
        for (const auto& toSkip : skip) {
-        if (thisSyst.Contains(toSkip)) {
-         ANA_MSG_INFO("Skipping the systematic variation \"" << thisSyst << "\"");
-         keepThis = kFALSE;
-         break;
+	 if (thisSyst.Contains(toSkip)) {
+	   ANA_MSG_INFO("Skipping the systematic variation \"" << thisSyst << "\"");
+	   keepThis = kFALSE;
+	   break;
+	 }
+       } // loop over skip systematics
+       
+       if (keepThis) {
+	 ANA_MSG_INFO("********** Processing systematic variation: \"" << thisSyst << "\"");
+	 if(syst.affectsWeights){
+	   ANA_MSG_INFO("running weightsyst: " << thisSyst);
+	   m_sysWeightList.push_back(syst); 
+	 }else{
+	   m_sysList.push_back(syst);
+	 }
        }
-         } // loop over skip systematics
-
-         if (keepThis) {
-          ANA_MSG_INFO("********** Processing systematic variation: \"" << thisSyst << "\"");
-          m_sysList.push_back(syst);
-        }
       }
-    } else {
+     } else {
 
       ANA_MSG_INFO("********** Processing only nominal: \"\"" );
       ST::SystInfo nominal;
@@ -393,13 +413,17 @@ EL::StatusCode VBFInv::initialize() {
       m_NumberEventsinNtuple->SetDirectory(outputFile);
     }
 
-
     for (const auto& syst : m_sysList) {
       const TString thisSyst = syst.systset.name();
       const TString treeName = (thisSyst == "") ? "MiniNtuple" : ("MiniNtuple_" + thisSyst).ReplaceAll(" ", "_");
       const TString treeTitle = thisSyst;
       ANA_MSG_INFO("Will consider the systematic variation \"" << thisSyst << "\"");
 
+      // skipping the weight syst
+      //if(syst.affectsWeights){
+      //	ANA_MSG_INFO("Weight systematic variation...saving only the weight \"" << thisSyst << "\"");
+      //	continue;
+      //}
       const Bool_t isNominal = (thisSyst == "");
       const Bool_t trim = (!isNominal || doTrim || doElectronDetail || doMuonDetail || doJetDetail || doMETDetail || doEventDetail || doRnS);
 
@@ -478,7 +502,7 @@ EL::StatusCode VBFInv::initialize() {
    for (const auto& systInfo : m_sysList) {
     const TString systName = systInfo.systset.name();
 
-    if (isFirstIteration) {
+    if (isFirstIteration){// || sysInfo.affectsWeights) {
      m_content_nominal.isNominal = kTRUE;
    } else {
          m_content_current = m_content_nominal; // copy from nominal
@@ -716,7 +740,6 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     content.allMuons.clear(SG::VIEW_ELEMENTS);
     ANA_CHECK(m_susytools_handle->GetMuons(content.muons, content.muonsAux, kTRUE));
     for (auto mu : *content.muons) {
-     //static SG::AuxElement::Accessor<char> acc_baseline("baseline");
      if (acc_baseline(*mu) == 1) {
       // calculate d0 and z0
       const xAOD::Vertex* pv = m_susytools_handle->GetPrimVtx();
@@ -1252,7 +1275,7 @@ content.passJetCleanLoose = passesJetCleanLoose;
   saveMe |= !doSkim; // user flag to skim or not
 
   if(saveMe)
-    fillTree(content, cand);
+    fillTree(content, cand, systInfo);
 
   if(debug)
     ANA_MSG_INFO ("====================================================================");
@@ -1260,7 +1283,7 @@ content.passJetCleanLoose = passesJetCleanLoose;
   return EL::StatusCode::SUCCESS;
 }
 
-EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outHolder &cand)
+EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outHolder &cand, const ST::SystInfo &systInfo)
 {
 
  xAOD::TEvent *event = wk()->xaodEvent();
@@ -1382,14 +1405,64 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
    // MC-only information
 
   if (m_isMC) {
-      // Record all weights
+
+    // Record all weights
     cand.evt.mcEventWeight     = content.eventInfo->mcEventWeight();
     cand.evt.mcEventWeights    = content.eventInfo->mcEventWeights();
     cand.evt.puWeight          = m_susytools_handle->GetPileupWeight();
     cand.evt.btagSFWeight      = m_susytools_handle->BtagSF(&content.goodJets);
 
-// GetTotalJetSF(jets, bool btagSF, bool jvtSF)
+    // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
     cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
+    cand.evt.fjvtSFWeight      = m_susytools_handle->FJVT_SF(content.jets);
+    
+    // electron anti-id SF
+    // implementing setup https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronEfficiencyAntiID#Correlation%20of%20uncertainties
+    static SG::AuxElement::Accessor<char> acc_baseline("baseline");
+    //-- ELECTRONS --
+    const xAOD::TruthParticleContainer *truthElectrons = nullptr;
+    if (!m_determinedDerivation) {
+      ANA_MSG_INFO("Determining derivation type");
+      m_isEXOT5 = event->retrieve(truthElectrons, "EXOT5TruthElectrons").isSuccess();
+      m_determinedDerivation = kTRUE;
+      TString isEXOT5 = (m_isEXOT5) ? "YES" : "NO";
+      ANA_MSG_INFO("Is it EXOT5? (will trigger access to dedicated truth electron and muon containers): " << isEXOT5);
+    }
+
+    const TString el_container = (m_isEXOT5) ? "EXOT5TruthElectrons" : "TruthElectrons";
+    if (!event->retrieve(truthElectrons, el_container.Data()).isSuccess()) {    // retrieve arguments: container type, container key
+      ANA_MSG_ERROR("Failed to retrieve TruthElectrons container");
+      return EL::StatusCode::FAILURE;
+    }
+
+    // apply antiID SF
+    cand.evt.eleANTISF = 1.0;
+    GetAntiIDSF(content, truthElectrons, cand.evt.eleANTISF);
+
+    if(content.isNominal){ // only run for the nominal
+      m_elecEfficiencySFTool_anti_id->applySystematicVariation(systInfo.systset);
+      const CP::SystematicSet& syst_anti_id_set = m_elecEfficiencySFTool_anti_id->recommendedSystematics();
+      CP::SystematicSet systset;	
+      for (const auto& systE : syst_anti_id_set) {
+    	systset.clear(); systset.insert(systE);
+    	const TString thisSyst = systE.name();
+    	CP::SystematicCode ret = m_elecEfficiencySFTool_anti_id->applySystematicVariation(systset);
+    	if ( ret != CP::SystematicCode::Ok) ATH_MSG_ERROR("cannot configure anti ID tool");
+    	float &sysEleAntiSF = cand.evt.GetSystVar("eleANTISF", thisSyst, m_tree[""]);
+    	GetAntiIDSF(content, truthElectrons, sysEleAntiSF);
+      }
+      m_elecEfficiencySFTool_anti_id->applySystematicVariation(systInfo.systset);
+      const CP::SystematicSet& syst_anti_iso_set = m_elecEfficiencySFTool_anti_iso->recommendedSystematics();
+      for (const auto& systE : syst_anti_iso_set) {
+    	systset.clear(); systset.insert(systE);
+    	const TString thisSyst = systE.name();
+    	CP::SystematicCode ret = m_elecEfficiencySFTool_anti_iso->applySystematicVariation(systset);
+    	if ( ret != CP::SystematicCode::Ok) ATH_MSG_ERROR("cannot configure anti iso tool");
+    	float &sysEleAntiSF = cand.evt.GetSystVar("eleANTISF", thisSyst, m_tree[""]);
+    	GetAntiIDSF(content, truthElectrons, sysEleAntiSF);
+      }
+      m_elecEfficiencySFTool_anti_iso->applySystematicVariation(systInfo.systset);
+    }
 
     // Lepton Scale Factors
     // See definition of Trig.Singlelep20XX in SUSYObjDef_xAOD.cxx
@@ -1407,6 +1480,36 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
       print("Electron Trig SF", cand.evt.elSFTrigWeight);
       print("Muon SF", cand.evt.muSFWeight);
       print("Muon Trig SF", cand.evt.muSFTrigWeight);
+    }
+
+    // add the weight systematics
+    if(content.isNominal){ // only run for the nominal 
+      for(const auto &weightSysInfo : m_sysWeightList){
+	const CP::SystematicSet& sysWeight = weightSysInfo.systset; 
+	const TString thisSyst = sysWeight.name();
+	if (m_susytools_handle->applySystematicVariation(sysWeight) != CP::SystematicCode::Ok) { 
+	  ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << sysWeight.name().c_str()); 
+	  return EL::StatusCode::FAILURE;}
+	if (thisSyst.Contains("PRW_")) { float &sysSF=cand.evt.GetSystVar("puWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->GetPileupWeight(); 
+	}else if (thisSyst.Contains("FT_EFF_")) { float &sysSF=cand.evt.GetSystVar("btagSFWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->BtagSF(&content.goodJets);
+	}else if (thisSyst.Contains("JET_JvtEfficiency")) {  float &sysSF=cand.evt.GetSystVar("jvtSFWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
+	}else if (thisSyst.Contains("JET_fJvtEfficiency")) { float &sysSF=cand.evt.GetSystVar("fjvtSFWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->FJVT_SF(content.jets);
+	}else if (thisSyst.Contains("EL_EFF_Trigger")) {
+	  float &sysSF2=cand.evt.GetSystVar("elSFTrigWeight", thisSyst, m_tree[""]); sysSF2 = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
+	}else if (thisSyst.Contains("EL_EFF")) {
+	  float &sysSF=cand.evt.GetSystVar("elSFWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
+	}else if (thisSyst.Contains("MUON_EFF_Trig")) {
+	  float &sysSF2=cand.evt.GetSystVar("muSFTrigWeight", thisSyst, m_tree[""]); sysSF2 = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false, is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50" : "HLT_mu26_ivarmedium_OR_HLT_mu50" );
+	}else if (thisSyst.Contains("MUON_EFF")) {
+	  float &sysSF=cand.evt.GetSystVar("muSFWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
+	}else if (thisSyst.Contains("TAUS_EFF")) { // not implemented!! we do not use photons
+	}else if (thisSyst.Contains("PH_EFF")) { // not implemented!! we do not use photons
+	}else { ANA_MSG_INFO("Not configured to save this weight systematic var. " << sysWeight.name().c_str()); }
+      }
+      // set back to nominal
+      if (m_susytools_handle->applySystematicVariation(systInfo.systset) != CP::SystematicCode::Ok) { 
+	ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << systInfo.systset.name().c_str()); 
+	return EL::StatusCode::FAILURE;}
     }
 
   // PDF
@@ -1482,13 +1585,6 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
 
       //-- MUONS --
 const xAOD::TruthParticleContainer *truthMuons = nullptr;
-if (!m_determinedDerivation) {
- ANA_MSG_INFO("Determining derivation type");
- m_isEXOT5 = event->retrieve(truthMuons, "EXOT5TruthMuons").isSuccess();
- m_determinedDerivation = kTRUE;
- TString isEXOT5 = (m_isEXOT5) ? "YES" : "NO";
- ANA_MSG_INFO("Is it EXOT5? (will trigger access to dedicated truth electron and muon containers): " << isEXOT5);
-}
 const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
       if (!event->retrieve(truthMuons, mu_container.Data()).isSuccess()) {    // retrieve arguments: container type, container key
        ANA_MSG_ERROR("Failed to retrieve TruthMuons container");
@@ -1506,12 +1602,6 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
      }
 
       //-- ELECTRONS --
-     const xAOD::TruthParticleContainer *truthElectrons = nullptr;
-     const TString el_container = (m_isEXOT5) ? "EXOT5TruthElectrons" : "TruthElectrons";
-      if (!event->retrieve(truthElectrons, el_container.Data()).isSuccess()) {    // retrieve arguments: container type, container key
-       ANA_MSG_ERROR("Failed to retrieve TruthElectrons container");
-       return EL::StatusCode::FAILURE;
-     }
      cand.evt.n_el_truth = truthElectrons->size();
      for (const auto& part : *truthElectrons) {
        if(part->pt()<4.0e3) continue;
@@ -1592,14 +1682,12 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
          std::cout << "Muon pT=" << muon->pt()*1e-3 << ", ptvarcone30_TightTTVA_pt1000/pt=" << tmp_ptvarcone30_TightTTVA_pt1000/muon->pt() << ", topoetcone20/pt=" << tmp_topoetcone20/muon->pt() << std::endl;
     */
   }
-  if(doMuonDetail){
-    for (auto muon : content.baselineMuons) {
-      cand.mu["basemu"].add(*muon);
+  for (auto muon : content.baselineMuons) {
+    if(doMuonDetail) cand.mu["basemu"].add(*muon);
+    if(muon->auxdata<float>("ptvarcone20")/muon->pt()<0.30)
       ++cand.evt.n_mu_baseline;
-    }
   }
-
-
+  
   //-----------------------------------------------------------------------
   // Selected electrons
   //-----------------------------------------------------------------------
@@ -1607,11 +1695,10 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   for (auto electron : content.goodElectrons) {
     cand.el["el"].add(*electron);
   }
-  if(doElectronDetail){
-    for (auto electron : content.baselineElectrons) {
-      cand.el["baseel"].add(*electron);
+  for (auto electron : content.baselineElectrons) {
+    if(doElectronDetail) cand.el["baseel"].add(*electron);
+    if(electron->auxdata<float>("ptvarcone20")/electron->pt()<0.30)
       ++cand.evt.n_el_baseline;
-    }
   }
 
    /////////////////////////////
@@ -1765,6 +1852,63 @@ EL::StatusCode VBFInv::getTrackMET(std::shared_ptr<xAOD::MissingETContainer> &me
 }
 
 return EL::StatusCode::SUCCESS;
+}
+
+void VBFInv::GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthParticleContainer *truthElectrons, float &antiIdSF)
+{
+  static SG::AuxElement::Accessor<char> acc_baseline("baseline");
+  for (auto el : *content.electrons) {
+    if(fabs(el->caloCluster()->eta()) >= 2.47) continue;
+    if(el->pt() <4.5e3) continue;
+    
+    // match truth
+    bool matchEleTruth=false;
+    for (const auto& part : *truthElectrons) {
+      if(part->pt()<2.0e3) continue;
+      if(part->status()!=1) continue;
+      if(part->p4().DeltaR(el->p4())<0.3){ matchEleTruth=true; break; }
+    }
+    if(!matchEleTruth) continue;
+    
+    // compute SF's
+    if (acc_baseline(*el) == 1) {  
+      Float_t tmp_ptvarcone20;
+      el->isolationValue(tmp_ptvarcone20, xAOD::Iso::IsolationType::ptvarcone20);
+      if(tmp_ptvarcone20/el->pt()>0.30){
+	double el_iso_sf=1.0;
+	CP::CorrectionCode result = m_elecEfficiencySFTool_anti_iso->getEfficiencyScaleFactor(*el, el_iso_sf);
+	switch (result) {
+	case CP::CorrectionCode::Ok:
+	  antiIdSF *= el_iso_sf;
+	  break;
+	case CP::CorrectionCode::Error:
+	  ATH_MSG_ERROR( "Failed to retrieve signal electron reco SF");
+	  break;
+	case CP::CorrectionCode::OutOfValidityRange:
+	  ATH_MSG_VERBOSE( "OutOfValidityRange found for signal electron reco SF");
+	  break;
+	default:
+	  ATH_MSG_WARNING( "Don't know what to do for signal electron reco SF");
+	}
+      }
+    }else{
+      double el_pid_sf=1.0;
+      CP::CorrectionCode result = m_elecEfficiencySFTool_anti_id->getEfficiencyScaleFactor(*el, el_pid_sf);
+      switch (result) {
+      case CP::CorrectionCode::Ok:
+	antiIdSF *= el_pid_sf;
+	break;
+      case CP::CorrectionCode::Error:
+	ATH_MSG_ERROR( "Failed to retrieve signal electron reco SF");
+	break;
+      case CP::CorrectionCode::OutOfValidityRange:
+	ATH_MSG_VERBOSE( "OutOfValidityRange found for signal electron reco SF");
+	break;
+      default:
+	ATH_MSG_WARNING( "Don't know what to do for signal electron reco SF");
+      }
+    }
+  }// end loop over electrons
 }
 
 void VBFInv::printObjects(xAOD::IParticleContainer obj, TString label){

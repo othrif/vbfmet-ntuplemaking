@@ -32,6 +32,8 @@ namespace Analysis {
       Float_t muSFTrigWeight;
       Float_t btagSFWeight;
       Float_t jvtSFWeight;
+      Float_t fjvtSFWeight;
+      Float_t eleANTISF;
 
 /*
       Int_t pdf_id1;
@@ -80,6 +82,7 @@ namespace Analysis {
       std::vector<Float_t> truth_tau_m;
       std::vector<Int_t>   truth_tau_status;
 
+      std::map<TString, Float_t> syst_var_map;
       std::map<TString, Int_t> trigger;
       Int_t trigger_lep;
       Int_t trigger_met;
@@ -122,6 +125,7 @@ public:
       void reset();
       void attachToTree(TTree *tree);
       void setTriggers(const std::vector<std::string> &trigs);
+      float &GetSystVar(TString var, TString syst, TTree *tree);
 };
 }
 
