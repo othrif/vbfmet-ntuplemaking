@@ -79,6 +79,7 @@ doTauDetail(false),
 doPhotonDetail(false),
 doMETDetail(false),
 doEventDetail(false),
+doContLepDetail(false),
 m_isMC(false),
 m_isAFII(false),
 m_eventCounter(0),
@@ -425,7 +426,7 @@ EL::StatusCode VBFInv::initialize() {
       //	continue;
       //}
       const Bool_t isNominal = (thisSyst == "");
-      const Bool_t trim = (!isNominal || doTrim || doElectronDetail || doMuonDetail || doJetDetail || doMETDetail || doEventDetail || doRnS);
+      const Bool_t trim = (!isNominal || doTrim || doElectronDetail || doMuonDetail || doJetDetail || doMETDetail || doEventDetail || doRnS || doContLepDetail);
 
       ANA_MSG_INFO("Creating TTree named " <<  treeName.Data() << " for systematic named \"" << thisSyst.Data() << "\"");
 
@@ -457,8 +458,10 @@ EL::StatusCode VBFInv::initialize() {
       m_cand[thisSyst].met["met_truth"] = Analysis::outMET("met_truth", (trim && !doMETDetail));
       m_cand[thisSyst].mu["mu"] = Analysis::outMuon("mu", (trim && !doMuonDetail));
       if(doMuonDetail) m_cand[thisSyst].mu["basemu"] = Analysis::outMuon("basemu", (trim && !doMuonDetail));
+      if(doContLepDetail) m_cand[thisSyst].mu["contmu"] = Analysis::outMuon("contmu", (trim && !doContLepDetail));
       m_cand[thisSyst].el["el"] = Analysis::outElectron("el", (trim && !doElectronDetail) );
       if(doElectronDetail) m_cand[thisSyst].el["baseel"] = Analysis::outElectron("baseel", (trim && !doElectronDetail) );
+      if(doContLepDetail) m_cand[thisSyst].el["contel"] = Analysis::outElectron("contel", (trim && !doContLepDetail) );
       m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail));
       if(doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
       if(doPhotonDetail) m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim);
@@ -740,7 +743,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     content.allMuons.clear(SG::VIEW_ELEMENTS);
     ANA_CHECK(m_susytools_handle->GetMuons(content.muons, content.muonsAux, kTRUE));
     for (auto mu : *content.muons) {
-     if (acc_baseline(*mu) == 1) {
+      //if (acc_baseline(*mu) == 1) {
       // calculate d0 and z0
       const xAOD::Vertex* pv = m_susytools_handle->GetPrimVtx();
       const Float_t primary_vertex_z = pv ? pv->z() : 0;
@@ -752,7 +755,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
       if(debug)
         ANA_MSG_INFO("d0  >>  " << HelperFunctions::getD0sig(mu, content.eventInfo) << ", z0 >> " << HelperFunctions::getZ0(mu, primary_vertex_z));
       content.allMuons.push_back(mu);
-    }
+      //}
   }
   content.allMuons.sort(&HelperFunctions::comparePt);
     } // done with muons
@@ -766,7 +769,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
 
       for (auto el : *content.electrons) {
         //static SG::AuxElement::Accessor<char> acc_baseline("baseline");
-        if (acc_baseline(*el) == 1) {
+        //if (acc_baseline(*el) == 1) {
           // impact parameters
           const xAOD::Vertex* pv = m_susytools_handle->GetPrimVtx();
           const Float_t primary_vertex_z = pv ? pv->z() : 0;
@@ -775,7 +778,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
           dec_new_z0(*el) = HelperFunctions::getZ0(el, primary_vertex_z);
           dec_new_z0sig(*el) = HelperFunctions::getZ0sig(el);
           content.allElectrons.push_back(el);
-        }
+	  //}
       }
       content.allElectrons.sort(&HelperFunctions::comparePt);
     } // done with electrons
@@ -820,7 +823,9 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
 
    //Good objects containers clear
     content.goodMuons.clear(SG::VIEW_ELEMENTS);
+    content.contMuons.clear(SG::VIEW_ELEMENTS);
     content.baselineMuons.clear(SG::VIEW_ELEMENTS);
+    content.contElectrons.clear(SG::VIEW_ELEMENTS);
     content.goodElectrons.clear(SG::VIEW_ELEMENTS);
     content.baselineElectrons.clear(SG::VIEW_ELEMENTS);
     content.goodJets.clear(SG::VIEW_ELEMENTS);
@@ -854,20 +859,24 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
 
   //-- MUONS --
     for (auto muon : content.allMuons)
-      if (acc_passOR(*muon) == 1 && acc_cosmic(*muon) == 0 && acc_bad(*muon) == 0) {
+      if (acc_baseline(*muon) == 1 && acc_passOR(*muon) == 1 && acc_cosmic(*muon) == 0 && acc_bad(*muon) == 0) {
 	content.baselineMuons.push_back(muon);
 	if (acc_signal(*muon) == 1){
 	  content.goodMuons.push_back(muon); // CR muons
+	}
+	if(acc_cosmic(*muon) == 0 && acc_bad(*muon) == 0) {
+	  content.contMuons.push_back(muon); // Container muons
 	}
       }
 
   //-- ELECTRONS --
     for (auto electron : content.allElectrons){
-      if (acc_passOR(*electron) == 1) {
+      if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) {
 	content.baselineElectrons.push_back(electron);
 	if (acc_signal(*electron) == 1)
 	  content.goodElectrons.push_back(electron); // CR electrons
       }
+      content.contElectrons.push_back(electron); // Container electrons
   }
 
   //-- PHOTONS --
@@ -1147,10 +1156,12 @@ if (m_isMC) {
   //-- MUONS --
     printObjects(content.allMuons, "allMuons");
     printObjects(content.baselineMuons, "baselineMuons");
+    printObjects(content.contMuons, "contMuons");
     printObjects(content.goodMuons, "goodMuons");
   //-- ELECTRONS --
     printObjects(content.allElectrons, "allElectrons");
     printObjects(content.baselineElectrons, "baselineElectrons");
+    printObjects(content.contElectrons, "contElectrons");
     printObjects(content.goodElectrons, "goodElectrons");
   //-- MET --
     printMET(myMET_tst, myMETsig_tst, myTruthMET,"MET");
@@ -1699,6 +1710,15 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
     if(doElectronDetail) cand.el["baseel"].add(*electron);
     if(electron->auxdata<float>("ptvarcone20")/electron->pt()<0.30)
       ++cand.evt.n_el_baseline;
+  }
+  // add the container leptons for lepton veto studies
+  if(doContLepDetail){
+    for (auto electron : content.contElectrons) {
+      cand.el["contel"].add(*electron);
+    }
+    for (auto muon : content.contMuons) {
+      cand.mu["contmu"].add(*muon);
+    }    
   }
 
    /////////////////////////////

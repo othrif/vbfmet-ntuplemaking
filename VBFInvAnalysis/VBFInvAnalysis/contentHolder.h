@@ -102,9 +102,11 @@ namespace Analysis {
 
       // after selection criteria
       xAOD::MuonContainer allMuons; //!
+      xAOD::MuonContainer contMuons; //!
       xAOD::MuonContainer baselineMuons; //!
       xAOD::MuonContainer goodMuons; //!
       xAOD::ElectronContainer allElectrons; //!
+      xAOD::ElectronContainer contElectrons; //!
       xAOD::ElectronContainer baselineElectrons; //!
       xAOD::ElectronContainer goodElectrons; //!
       xAOD::JetContainer allJets; //!

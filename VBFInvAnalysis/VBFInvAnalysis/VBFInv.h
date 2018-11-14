@@ -96,6 +96,7 @@ public:
   Bool_t doPhotonDetail;
   Bool_t doMETDetail;
   Bool_t doEventDetail;
+  Bool_t doContLepDetail;
 
 private:
   // Configuration, and any other types of variables go here.
