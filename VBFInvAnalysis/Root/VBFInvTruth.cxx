@@ -194,6 +194,7 @@ EL::StatusCode VBFInvTruth :: initialize ()
     m_parton_pdfid1 = new std::vector<int>();
     m_parton_pdfid2 = new std::vector<int>();
     m_parton_pp = new std::vector<int>();
+    m_EventWeightSys = new std::vector<float>();
 
     ANA_MSG_INFO("Histogram output name is " << outputNameHist);
     TFile *outputFileHist = wk()->getOutputFile (outputNameHist);
@@ -211,6 +212,7 @@ EL::StatusCode VBFInvTruth :: initialize ()
     truthTree->Branch("crossSection", &m_crossSection);
     truthTree->Branch("EventWeight", &m_WeightEvents);
     truthTree->Branch("ChannelNumber", &m_ChannelNumber);
+    truthTree->Branch("EventWeightSys", &m_EventWeightSys);
 
     // Jets
     truthTree->Branch ("njets", &m_njets);
@@ -360,6 +362,7 @@ EL::StatusCode VBFInvTruth :: execute ()
     m_parton_pdfid1->clear();
     m_parton_pdfid2->clear();
     m_parton_pp->clear();
+    m_EventWeightSys->clear();
 
     if (debug) ANA_MSG_INFO("***New event***" );
 
@@ -378,6 +381,9 @@ EL::StatusCode VBFInvTruth :: execute ()
     m_RunNumber = eventInfo->runNumber();
     m_WeightEvents = eventInfo->mcEventWeight(); //.at(0);
     m_ChannelNumber = eventInfo->mcChannelNumber();
+    const std::vector<float> EventWeightSys = eventInfo->mcEventWeights();
+    for(unsigned iE=0; iE<EventWeightSys.size(); ++iE)
+      m_EventWeightSys->push_back(EventWeightSys.at(iE));
 
     if (skipCBK) {
         NumberEvents->Fill(1, m_WeightEvents);
@@ -399,14 +405,14 @@ EL::StatusCode VBFInvTruth :: execute ()
 
     static Bool_t failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
     if (!failedLookingFor) {
-     if (!event->retrieve(jets, "AntiKt4TruthJets").isSuccess()) {
+      if (!event->retrieve(jets, "AntiKt4TruthJets").isSuccess()) {
         if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
         ANA_CHECK (evtStore()->retrieve( jets, "AntiKt4TruthDressedWZJets"));
         failedLookingFor = kTRUE;
-    }
-    else {
-        if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthJets!");
-    }
+      }
+      else {
+	if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthJets!");
+      }
     } else {
         if(debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
         ANA_CHECK (evtStore()->retrieve( jets, "AntiKt4TruthDressedWZJets"));

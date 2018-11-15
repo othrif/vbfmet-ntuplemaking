@@ -56,7 +56,8 @@ mcCampaign = {"mc16a":"r9364", "mc16c":"r9781", "mc16d":"r10201"}
 #####################
 pTagDict = { "data15_13TeV"                  : "p3576",
              "data16_13TeV"                  : "p3576",
-             "mc16_13TeV"                    : "p3575"} # skimmed or unskimmed here
+             "mc16_13TeV"                    : "p3596"} # skimmed or unskimmed here
+#"mc16_13TeV"                    : "p3575"} # skimmed or unskimmed here
 #myMC = mainMCTest
 myMC = mainMC
 myMC.update(altMC)

@@ -34,9 +34,9 @@ parser.add_argument("--configFile", type=str, dest="configFile", default="VBFInv
 parser.add_argument("--doSyst", dest="doSystematics", action="store_true", default=False, help="do systematic variations")
 parser.add_argument("--noPileup", dest="noPileup", action="store_true", default=False, help="no pileup reweighting")
 parser.add_argument("--doSkim", dest="doSkim", action="store_true", default=False, help="Apply skimming")
-parser.add_argument("--pt1Skim", type=float, dest="pt1Skim", default=25000, help="leading jet pt skim (nominal tree), in MeV", metavar="cut")
+parser.add_argument("--pt1Skim", type=float, dest="pt1Skim", default=50000, help="leading jet pt skim (nominal tree), in MeV", metavar="cut")
 parser.add_argument("--pt1SkimForSyst", type=float, dest="pt1SkimForSyst", default=25000, help="leading jet pt skim (systematics), in MeV", metavar="cut")
-parser.add_argument("--pt2Skim", type=float, dest="pt2Skim", default=25000, help="subleading jet pt skim (nominal tree), in MeV", metavar="cut")
+parser.add_argument("--pt2Skim", type=float, dest="pt2Skim", default=35000, help="subleading jet pt skim (nominal tree), in MeV", metavar="cut")
 parser.add_argument("--pt2SkimForSyst", type=float, dest="pt2SkimForSyst", default=25000, help="subleading jet pt skim (systematics), in MeV", metavar="cut")
 parser.add_argument("--metSkim", type=float, dest="metSkim", default=100000, help="MET skim (nominal tree), in MeV", metavar="cut")
 parser.add_argument("--metSkimForSyst", type=float, dest="metSkimForSyst", default=100000, help="MET skim (systematics), in MeV", metavar="cut")
@@ -51,6 +51,7 @@ parser.add_argument("--doJetDetail", dest="doJetDetail", action="store_true", de
 parser.add_argument("--doTauDetail", dest="doTauDetail", action="store_true", default=False, help="add detailed branches for taus")
 parser.add_argument("--doPhotonDetail", dest="doPhotonDetail", action="store_true", default=False, help="add detailed branches for photons")
 parser.add_argument("--doMETDetail", dest="doMETDetail", action="store_true", default=False, help="add detailed branches for met")
+parser.add_argument("--doContLepDetail", dest="doContLepDetail", action="store_true", default=False, help="add container leptons for study of the lepton veto")
 parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
@@ -87,7 +88,14 @@ sh = ROOT.SH.SampleHandler()
 if args.input:
     chain = ROOT.TChain( "CollectionTree" )
     chain.Add( args.input )
-    sampleName = '.'.join(args.input.split('/')[-2].split('.')[:-3])
+    sampleName = args.input.split('/')[-2].split('.')
+    if len(sampleName)==1:
+        sampleName = '.'.join(args.input.split('/')[-2].split('.'))
+    else:
+        sampleName = '.'.join(args.input.split('/')[-2].split('.')[:-3])        
+    print 'sampleName: ',sampleName
+    print args.input.split('/')[-2]
+    print args.input.split('/')[-2].split('.')
     sh.add( ROOT.SH.makeFromTChain( sampleName, chain ) )
 getlist = lambda x: filter(lambda y: y != '', x.replace(' ', '').split(','))
 txts = getlist(args.txt)
@@ -163,6 +171,7 @@ if( args.algoName == "VBFInv" ):
   alg.doPhotonDetail = args.doPhotonDetail
   alg.doMETDetail = args.doMETDetail
   alg.doEventDetail = args.doEventDetail
+  alg.doContLepDetail = args.doContLepDetail
   alg.doRnS = args.doRnS
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
@@ -223,8 +232,8 @@ elif (args.driver == 'prun'):
       driver.options().setString('nc_optGridNfilesPerJob', '5')
       #--nGBPerJob=10
     driver.options().setString('nc_outputSampleName', dset_name_mask)
-    driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
-    #driver.options().setString("nc_optGridDestSE","MWT2_UC_LOCALGROUPDISK")
+    #driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
+    driver.options().setString("nc_optGridDestSE","MWT2_UC_LOCALGROUPDISK")
     if args.replicationSite != None:
         driver.options().setString('nc_destSE', args.replicationSite)
     driver.submitOnly(job, args.submitDir )
