@@ -88,7 +88,14 @@ sh = ROOT.SH.SampleHandler()
 if args.input:
     chain = ROOT.TChain( "CollectionTree" )
     chain.Add( args.input )
-    sampleName = '.'.join(args.input.split('/')[-2].split('.')[:-3])
+    sampleName = args.input.split('/')[-2].split('.')
+    if len(sampleName)==1:
+        sampleName = '.'.join(args.input.split('/')[-2].split('.'))
+    else:
+        sampleName = '.'.join(args.input.split('/')[-2].split('.')[:-3])        
+    print 'sampleName: ',sampleName
+    print args.input.split('/')[-2]
+    print args.input.split('/')[-2].split('.')
     sh.add( ROOT.SH.makeFromTChain( sampleName, chain ) )
 getlist = lambda x: filter(lambda y: y != '', x.replace(' ', '').split(','))
 txts = getlist(args.txt)

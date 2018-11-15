@@ -117,6 +117,7 @@ public:
   std::vector<int> *m_parton_pdfid1; //!
   std::vector<int> *m_parton_pdfid2; //!
   std::vector<int> *m_parton_pp; //!
+  std::vector<float> *m_EventWeightSys; //!
 
   float m_met_et; //!
   float m_met_phi; //!
@@ -124,7 +125,7 @@ public:
   ULong64_t m_EventNumber; //!
   UInt_t m_RunNumber; //!
   double m_crossSection; //!
-  float m_WeightEvents; //!
+  float m_WeightEvents; //!  
   UInt_t m_ChannelNumber; //!
 
   TH1D *NumberEvents; //!
