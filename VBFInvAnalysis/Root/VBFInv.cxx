@@ -357,7 +357,7 @@ EL::StatusCode VBFInv::initialize() {
 
       // list of uncertainties to be skipped
       std::vector<std::string> skip = getTokens(skip_syst, ",");
-      
+
       for (const auto& syst : fullSystList) {
        const TString thisSyst = syst.systset.name();
        Bool_t keepThis(kTRUE);
@@ -368,12 +368,12 @@ EL::StatusCode VBFInv::initialize() {
 	   break;
 	 }
        } // loop over skip systematics
-       
+
        if (keepThis) {
 	 ANA_MSG_INFO("********** Processing systematic variation: \"" << thisSyst << "\"");
 	 if(syst.affectsWeights){
 	   ANA_MSG_INFO("running weightsyst: " << thisSyst);
-	   m_sysWeightList.push_back(syst); 
+	   m_sysWeightList.push_back(syst);
 	 }else{
 	   m_sysList.push_back(syst);
 	 }
@@ -1424,7 +1424,7 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
     cand.evt.jvtSFWeight       = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
     cand.evt.fjvtSFWeight      = m_susytools_handle->FJVT_SF(content.jets);
-    
+
     // electron anti-id SF
     // implementing setup https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronEfficiencyAntiID#Correlation%20of%20uncertainties
     static SG::AuxElement::Accessor<char> acc_baseline("baseline");
@@ -1448,10 +1448,10 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     cand.evt.eleANTISF = 1.0;
     GetAntiIDSF(content, truthElectrons, cand.evt.eleANTISF);
 
-    if(content.isNominal){ // only run for the nominal
+    if(content.isNominal && doSystematics ){ // only run for the nominal
       ANA_CHECK(m_elecEfficiencySFTool_anti_id->applySystematicVariation(systInfo.systset));
       const CP::SystematicSet& syst_anti_id_set = m_elecEfficiencySFTool_anti_id->recommendedSystematics();
-      CP::SystematicSet systset;	
+      CP::SystematicSet systset;
       for (const auto& systE : syst_anti_id_set) {
     	systset.clear(); systset.insert(systE);
     	const TString thisSyst = systE.name();
@@ -1492,14 +1492,14 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     }
 
     // add the weight systematics
-    if(content.isNominal){ // only run for the nominal 
+    if(content.isNominal){ // only run for the nominal
       for(const auto &weightSysInfo : m_sysWeightList){
-	const CP::SystematicSet& sysWeight = weightSysInfo.systset; 
+	const CP::SystematicSet& sysWeight = weightSysInfo.systset;
 	const TString thisSyst = sysWeight.name();
-	if (m_susytools_handle->applySystematicVariation(sysWeight) != CP::SystematicCode::Ok) { 
-	  ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << sysWeight.name().c_str()); 
+	if (m_susytools_handle->applySystematicVariation(sysWeight) != CP::SystematicCode::Ok) {
+	  ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << sysWeight.name().c_str());
 	  return EL::StatusCode::FAILURE;}
-	if (thisSyst.Contains("PRW_")) { float &sysSF=cand.evt.GetSystVar("puWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->GetPileupWeight(); 
+	if (thisSyst.Contains("PRW_")) { float &sysSF=cand.evt.GetSystVar("puWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->GetPileupWeight();
 	}else if (thisSyst.Contains("FT_EFF_")) { float &sysSF=cand.evt.GetSystVar("btagSFWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->BtagSF(&content.goodJets);
 	}else if (thisSyst.Contains("JET_JvtEfficiency")) {  float &sysSF=cand.evt.GetSystVar("jvtSFWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
 	}else if (thisSyst.Contains("JET_fJvtEfficiency")) { float &sysSF=cand.evt.GetSystVar("fjvtSFWeight", thisSyst, m_tree[""]); sysSF = m_susytools_handle->FJVT_SF(content.jets);
@@ -1516,8 +1516,8 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
 	}else { ANA_MSG_INFO("Not configured to save this weight systematic var. " << sysWeight.name().c_str()); }
       }
       // set back to nominal
-      if (m_susytools_handle->applySystematicVariation(systInfo.systset) != CP::SystematicCode::Ok) { 
-	ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << systInfo.systset.name().c_str()); 
+      if (m_susytools_handle->applySystematicVariation(systInfo.systset) != CP::SystematicCode::Ok) {
+	ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << systInfo.systset.name().c_str());
 	return EL::StatusCode::FAILURE;}
     }
 
@@ -1696,7 +1696,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
     if(muon->auxdata<float>("ptvarcone20")/muon->pt()<0.30)
       ++cand.evt.n_mu_baseline;
   }
-  
+
   //-----------------------------------------------------------------------
   // Selected electrons
   //-----------------------------------------------------------------------
@@ -1716,7 +1716,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
     }
     for (auto muon : content.contMuons) {
       cand.mu["contmu"].add(*muon);
-    }    
+    }
   }
 
    /////////////////////////////
@@ -1878,7 +1878,7 @@ void VBFInv::GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthPart
   for (auto el : *content.electrons) {
     if(fabs(el->caloCluster()->eta()) >= 2.47) continue;
     if(el->pt() <4.5e3) continue;
-    
+
     // match truth
     bool matchEleTruth=false;
     for (const auto& part : *truthElectrons) {
@@ -1887,9 +1887,9 @@ void VBFInv::GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthPart
       if(part->p4().DeltaR(el->p4())<0.3){ matchEleTruth=true; break; }
     }
     if(!matchEleTruth) continue;
-    
+
     // compute SF's
-    if (acc_baseline(*el) == 1) {  
+    if (acc_baseline(*el) == 1) {
       Float_t tmp_ptvarcone20;
       el->isolationValue(tmp_ptvarcone20, xAOD::Iso::IsolationType::ptvarcone20);
       if(tmp_ptvarcone20/el->pt()>0.30){
