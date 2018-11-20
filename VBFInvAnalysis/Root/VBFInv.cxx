@@ -1458,7 +1458,7 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     cand.evt.eleANTISF = 1.0;
     GetAntiIDSF(content, truthElectrons, cand.evt.eleANTISF);
 
-    if(content.isNominal){ // only run for the nominal
+    if(content.isNominal && doSystematics ){ // only run for the nominal
       ANA_CHECK(m_elecEfficiencySFTool_anti_id->applySystematicVariation(systInfo.systset));
       const CP::SystematicSet& syst_anti_id_set = m_elecEfficiencySFTool_anti_id->recommendedSystematics();
       CP::SystematicSet systset;	
