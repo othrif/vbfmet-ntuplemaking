@@ -1,0 +1,10 @@
+data18_13TeV.periodD.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3553_p3583
+data18_13TeV.periodE.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3583
+data18_13TeV.periodF.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3583
+data18_13TeV.periodG.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3583
+data18_13TeV.periodH.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3583
+data18_13TeV.periodI.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3583
+data18_13TeV.periodJ.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3583
+data18_13TeV.periodL.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3583
+data18_13TeV.periodM.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3583
+data18_13TeV.periodO.physics_Main.PhysCont.DAOD_EXOT5.grp18_v01_p3583
