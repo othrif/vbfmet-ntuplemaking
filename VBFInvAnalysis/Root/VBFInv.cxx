@@ -835,7 +835,7 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
     content.baselineTaus.clear(SG::VIEW_ELEMENTS);
 
    //-- Overlap removal --
-    m_susytools_handle->OverlapRemoval(content.electrons, content.muons, content.jets, content.photons);
+    ANA_CHECK(m_susytools_handle->OverlapRemoval(content.electrons, content.muons, content.jets, content.photons));
 
   //-- JETS --
     if(debug){
@@ -1451,7 +1451,7 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     GetAntiIDSF(content, truthElectrons, cand.evt.eleANTISF);
 
     if(content.isNominal){ // only run for the nominal
-      m_elecEfficiencySFTool_anti_id->applySystematicVariation(systInfo.systset);
+      ANA_CHECK(m_elecEfficiencySFTool_anti_id->applySystematicVariation(systInfo.systset));
       const CP::SystematicSet& syst_anti_id_set = m_elecEfficiencySFTool_anti_id->recommendedSystematics();
       CP::SystematicSet systset;	
       for (const auto& systE : syst_anti_id_set) {
@@ -1462,7 +1462,7 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     	float &sysEleAntiSF = cand.evt.GetSystVar("eleANTISF", thisSyst, m_tree[""]);
     	GetAntiIDSF(content, truthElectrons, sysEleAntiSF);
       }
-      m_elecEfficiencySFTool_anti_id->applySystematicVariation(systInfo.systset);
+      ANA_CHECK(m_elecEfficiencySFTool_anti_id->applySystematicVariation(systInfo.systset));
       const CP::SystematicSet& syst_anti_iso_set = m_elecEfficiencySFTool_anti_iso->recommendedSystematics();
       for (const auto& systE : syst_anti_iso_set) {
     	systset.clear(); systset.insert(systE);
@@ -1472,7 +1472,7 @@ cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteracti
     	float &sysEleAntiSF = cand.evt.GetSystVar("eleANTISF", thisSyst, m_tree[""]);
     	GetAntiIDSF(content, truthElectrons, sysEleAntiSF);
       }
-      m_elecEfficiencySFTool_anti_iso->applySystematicVariation(systInfo.systset);
+      ANA_CHECK(m_elecEfficiencySFTool_anti_iso->applySystematicVariation(systInfo.systset));
     }
 
     // Lepton Scale Factors
