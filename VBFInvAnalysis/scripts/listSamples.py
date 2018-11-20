@@ -50,13 +50,14 @@ truthMC = OrderedDict([
     ('Znunu',     range(364142,364155 + 1)),
     ])
 
-mcCampaign = {"mc16a":"r9364", "mc16c":"r9781", "mc16d":"r10201"}
+mcCampaign = {"mc16a":"r9364", "mc16c":"r9781", "mc16d":"r10201", "mc16e":"r10724"}
 
 # Modified by user:
 #####################
 pTagDict = { "data15_13TeV"                  : "p3576",
              "data16_13TeV"                  : "p3576",
-             "mc16_13TeV"                    : "p3596"} # skimmed or unskimmed here
+             #"mc16_13TeV"                    : "p3596"} # skimmed or unskimmed here
+             "mc16_13TeV"                    : "p3627"} # skimmed or unskimmed here. for mc16e
 #"mc16_13TeV"                    : "p3575"} # skimmed or unskimmed here
 #myMC = mainMCTest
 myMC = mainMC
@@ -68,7 +69,7 @@ def get_args():
   import argparse
   parser = argparse.ArgumentParser( description = "For MC, Use DSIDs to get EVNT, AOD, and DAOD sample lists. For data, Use data year to get AOD and DAOD sample lists", add_help=True)
   parser.add_argument("-t", "--scope", dest="scope", type=str, default="mc16_13TeV,data15_13TeV,data16_13TeV", help="MC Project tag (default: %default)")
-  parser.add_argument("-c", "--campaigns", dest="campaigns", type=str, default="mc16a,mc16d", help="Project campaign tag (default: %default)")
+  parser.add_argument("-c", "--campaigns", dest="campaigns", type=str, default="mc16a,mc16d,mc16e", help="Project campaign tag (default: %default)")
   parser.add_argument("-d", "--derivation", dest="derivation", type=str, default="DAOD_EXOT5", help="Derivation (default: %default)")
   parser.add_argument("-v", "--version", dest="version", type=str, default="vXX", help="tag name for output file (default: %default)")
   parser.add_argument("-s", "--save", dest='save', action='store_true', default=False, help='Save to output file (default: %default)')

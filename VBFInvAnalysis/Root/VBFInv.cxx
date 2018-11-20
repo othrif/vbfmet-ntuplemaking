@@ -235,7 +235,8 @@ EL::StatusCode VBFInv::initialize() {
  std::vector<std::string> vecStringGRL;
  vecStringGRL.push_back(PathResolverFindCalibFile("GoodRunsLists/data15_13TeV/20170619/physics_25ns_21.0.19.xml"));// 2015 GRL, R21 (3219.56 pb-1)
  vecStringGRL.push_back(PathResolverFindCalibFile("GoodRunsLists/data16_13TeV/20180129/physics_25ns_21.0.19.xml"));// 2016 GRL, R21 (32988.1 pb-1)
- vecStringGRL.push_back(PathResolverFindCalibFile("GoodRunsLists/data17_13TeV/20180309/physics_25ns_Triggerno17e33prim.xml")); // 2017 GRL, R21 (43593.8 pb-1)
+ vecStringGRL.push_back(PathResolverFindCalibFile("GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.xml")); // 2017 GRL, R21 (44307.4 pb-1)
+ vecStringGRL.push_back(PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL, R21 (59937.2 pb-1)
  ANA_CHECK(m_grl.setProperty( "GoodRunsListVec", vecStringGRL));
  ANA_CHECK(m_grl.setProperty("PassThrough", false)); // if true (default) will ignore result of GRL and will just pass all events
  ANA_CHECK(m_grl.initialize());
@@ -300,6 +301,7 @@ EL::StatusCode VBFInv::initialize() {
  std::string mc_campaign;
  std::string simType = (m_isAFII ? "AFII" : "FS");
  uint32_t runNum = eventInfo->runNumber();
+
  switch(runNum) {
   case 284500 :
   mc_campaign="mc16a";
@@ -311,10 +313,18 @@ EL::StatusCode VBFInv::initialize() {
           mc_campaign = "mc16d";
         else
           mc_campaign = "mc16c";
-        prw_lumicalc.push_back(PathResolverFindCalibFile("GoodRunsLists/data17_13TeV/20180309/physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
-        prw_conf.push_back(PathResolverFindCalibFile("GoodRunsLists/data17_13TeV/20180309/physics_25ns_Triggerno17e33prim.actualMu.OflLumi-13TeV-010.root")); // 2017 ActualMu
+        prw_lumicalc.push_back(PathResolverFindCalibFile("GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
+        prw_conf.push_back(PathResolverFindCalibFile("GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.actualMu.OflLumi-13TeV-010.root")); // 2017 ActualMu
         break;
-      }
+ case 310000:
+   if( amiTag.find("r10724")!=std::string::npos) // did not seem to find the right info in mc16e
+     mc_campaign = "mc16e";
+   else{ mc_campaign = "mc16f"; }
+
+   prw_lumicalc.push_back(PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/ilumicalc_histograms_None_348885-364292_OflLumi-13TeV-001.root")); // 2018 LumiCalc
+   prw_conf.push_back(PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
+   break;
+ }
       std::string prwConfigFile = "dev/SUSYTools/PRW_AUTOCONFIG_SIM/files/pileup_" + mc_campaign + "_dsid" + std::to_string(eventInfo->mcChannelNumber()) + "_" + simType + ".root";
       prwConfigFile = PathResolverFindCalibFile(prwConfigFile);
       if(prwConfigFile.empty()) {
@@ -912,24 +922,24 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
           nullptr, // invisible particles
           myMET_tst,
 	myMETsig_tst,
-          0);
+	0,content.eventInfo->averageInteractionsPerCrossing());
  content.metsig_tst = myMETsig_tst;
 
  TLorentzVector myMET_Tight_tst;
  double myMETsig_Tight_tst;
  getMET(content.met_tight_tst,
 	content.met_tight_tstAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tight_tst,myMETsig_Tight_tst,1);
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tight_tst,myMETsig_Tight_tst,1,content.eventInfo->averageInteractionsPerCrossing());
  TLorentzVector myMET_Tighter_tst;
  double myMETsig_Tighter_tst;
  getMET(content.met_tighter_tst,
 	content.met_tighter_tstAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tighter_tst,myMETsig_Tighter_tst,2);
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tighter_tst,myMETsig_Tighter_tst,2,content.eventInfo->averageInteractionsPerCrossing());
  TLorentzVector myMET_Tenacious_tst;
  double myMETsig_Tenacious_tst;
  getMET(content.met_tenacious_tst,
 	content.met_tenacious_tstAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tenacious_tst,myMETsig_Tenacious_tst,3);
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tenacious_tst,myMETsig_Tenacious_tst,3,content.eventInfo->averageInteractionsPerCrossing());
 
  double met_tst_j1_dphi=-1., met_tst_j2_dphi=-1.;
  HelperFunctions::computeMETj(myMET_tst, content.goodJets, met_tst_j1_dphi, met_tst_j2_dphi);
@@ -965,24 +975,24 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
           nullptr, // invisible particles
           myMET_tst_nolep,
 	myMETsig_tst_nolep,
-          0);
+	0,content.eventInfo->averageInteractionsPerCrossing());
  content.metsig_tst_nolep = myMETsig_tst_nolep;
 
  TLorentzVector myMET_Tight_tst_nolep;
  double myMETsig_Tight_tst_nolep;
  getMET(content.met_tight_tst_nolep,
 	content.met_tight_tst_nolepAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tight_tst_nolep,myMETsig_Tight_tst_nolep,1);
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tight_tst_nolep,myMETsig_Tight_tst_nolep,1,content.eventInfo->averageInteractionsPerCrossing());
  TLorentzVector myMET_Tighter_tst_nolep;
  double myMETsig_Tighter_tst_nolep;
  getMET(content.met_tighter_tst_nolep,
 	content.met_tighter_tst_nolepAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tighter_tst_nolep,myMETsig_Tighter_tst_nolep,2);
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tighter_tst_nolep,myMETsig_Tighter_tst_nolep,2,content.eventInfo->averageInteractionsPerCrossing());
  TLorentzVector myMET_Tenacious_tst_nolep;
  double myMETsig_Tenacious_tst_nolep;
  getMET(content.met_tenacious_tst_nolep,
 	content.met_tenacious_tst_nolepAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tenacious_tst_nolep,myMETsig_Tenacious_tst_nolep,3);
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tenacious_tst_nolep,myMETsig_Tenacious_tst_nolep,3,content.eventInfo->averageInteractionsPerCrossing());
  //std::cout << "tight: " << myMET_Tight_tst.Pt() << " Loose: " << myMET_tst.Pt() << " Tighter: " << myMET_Tighter_tst.Pt() << " Tenacious: " << myMET_Tenacious_tst.Pt() << std::endl;
     // create sum of muon and electron pts
  {
@@ -1024,7 +1034,7 @@ getMET(content.met_cst,
 	kFALSE, // do JVT
 	nullptr, // invisible particles
 	myMET_cst,
-  myMETsig_cst
+       myMETsig_cst,0,content.eventInfo->averageInteractionsPerCrossing()
   );
 
 double met_cst_jet = -1.;
@@ -1762,7 +1772,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   return EL::StatusCode::SUCCESS;
 }
 
-EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer * jet, xAOD::ElectronContainer * el, xAOD::MuonContainer * mu, xAOD::PhotonContainer * /*ph*/, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer * invis, TLorentzVector &myMET, double &myMETsig, int METType)
+EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer * jet, xAOD::ElectronContainer * el, xAOD::MuonContainer * mu, xAOD::PhotonContainer * /*ph*/, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer * invis, TLorentzVector &myMET, double &myMETsig, int METType, float avgMu)
 {
  myMETsig = 0;
  met = std::make_shared<xAOD::MissingETContainer>();
@@ -1783,7 +1793,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
    ANA_CHECK(m_susytools_handle->GetMETSig(*met,
 					   myMETsig,
 					   doTST,
-					   doJVT
+					   doJVT,avgMu
 					   ));
  }else if(METType==1){
    ANA_CHECK(m_susytools_Tight_handle->GetMET(*met,
@@ -1799,7 +1809,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
    ANA_CHECK(m_susytools_Tight_handle->GetMETSig(*met,
 					   myMETsig,
 					   doTST,
-					   doJVT
+						 doJVT,avgMu
 					   ));
  }else if(METType==2){
    ANA_CHECK(m_susytools_Tighter_handle->GetMET(*met,
@@ -1815,7 +1825,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
    ANA_CHECK(m_susytools_Tighter_handle->GetMETSig(*met,
 					   myMETsig,
 					   doTST,
-					   doJVT
+						   doJVT,avgMu
 					   ));
  }else if(METType==3){
    ANA_CHECK(m_susytools_Tenacious_handle->GetMET(*met,
@@ -1831,7 +1841,8 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
    ANA_CHECK(m_susytools_Tenacious_handle->GetMETSig(*met,
 					   myMETsig,
 					   doTST,
-					   doJVT
+						     doJVT,
+						     avgMu
 					   ));
    }
 
