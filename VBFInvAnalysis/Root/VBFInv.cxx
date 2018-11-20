@@ -179,8 +179,6 @@ if (allEventsCBK) {
 
 
  if(m_event->getEntries()){
-  const xAOD::EventInfo *eventInfo = nullptr;
-  ANA_CHECK (evtStore()->retrieve (eventInfo, "EventInfo"));
   m_NumberEvents->Fill(0., nEventsProcessed);
   m_NumberEvents->Fill(1., sumOfWeights);
   m_NumberEvents->Fill(2., sumOfWeightsSquared);
@@ -408,7 +406,7 @@ EL::StatusCode VBFInv::initialize() {
   //
   // Histograms
   //
-    if(m_event->getEntries() && wk()->metaData()->castDouble("isData") != 1){
+    if(m_event->getEntries()){
       m_NumberEventsinNtuple = m_NumberEvents;
       m_NumberEvents->SetDirectory(outputFileHist);
       m_NumberEventsinNtuple->SetDirectory(outputFile);
