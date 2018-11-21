@@ -24,7 +24,15 @@ mainMC = OrderedDict([
     ('Zmumu',     range(364100, 364113 +1)),
     ('Ztautau',   range(364128,364141 + 1)),
     ('Znunu',     range(364142,364155 + 1)),
+    ('ZnunuMG',   range(361515, 361519 + 1)),
+    ('ZtautauMG', range(361510, 361514 + 1)),
+    ('ZmumuMG',   range(363123, 363146 + 1)),
+    ('ZeeMG',     range(363147, 363170 + 1)),
+    ('WmunuMG',   range(363624, 363647 + 1)),
+    ('WenuMG',    range(363600, 363623 + 1)),
+    ('WtaunuMG',  range(363648, 363671 + 1)),
     ('QCDw',      range(361020,361032 + 1)),
+    ('QCDpl',      range(310502,310502 + 1)),
     ('top',       [410470,410472,410011,410012,410013,410014,410025,410026])
     ])
 
@@ -50,14 +58,19 @@ truthMC = OrderedDict([
     ('Znunu',     range(364142,364155 + 1)),
     ])
 
-mcCampaign = {"mc16a":"r9364", "mc16c":"r9781", "mc16d":"r10201"}
+mcCampaign = {"mc16a":"r9364", "mc16c":"r9781", "mc16d":"r10201", "mc16e":"r10724"}
 
 # Modified by user:
 #####################
 pTagDict = { "data15_13TeV"                  : "p3576",
              "data16_13TeV"                  : "p3576",
-             "mc16_13TeV"                    : "p3596"} # skimmed or unskimmed here
-#"mc16_13TeV"                    : "p3575"} # skimmed or unskimmed here
+             "data17_13TeV"                  : "p3481",
+             #"data18_13TeV"                  : "p3679", # misses jet variables
+             "data18_13TeV"                  : "p3583",
+             #"mc16_13TeV"                    : "p3596"} # skimmed or unskimmed here
+             #"mc16_13TeV"                    : "p3627"} # skimmed or unskimmed here. for mc16e
+#"mc16_13TeV"                    : "p3575"} # skimmed or unskimmed here mc16d
+"mc16_13TeV"                    : "p3480"} # skimmed or unskimmed here mc16d
 #myMC = mainMCTest
 myMC = mainMC
 myMC.update(altMC)
@@ -67,8 +80,8 @@ myMC.update(altMC)
 def get_args():
   import argparse
   parser = argparse.ArgumentParser( description = "For MC, Use DSIDs to get EVNT, AOD, and DAOD sample lists. For data, Use data year to get AOD and DAOD sample lists", add_help=True)
-  parser.add_argument("-t", "--scope", dest="scope", type=str, default="mc16_13TeV,data15_13TeV,data16_13TeV", help="MC Project tag (default: %default)")
-  parser.add_argument("-c", "--campaigns", dest="campaigns", type=str, default="mc16a,mc16d", help="Project campaign tag (default: %default)")
+  parser.add_argument("-t", "--scope", dest="scope", type=str, default="mc16_13TeV,data15_13TeV,data16_13TeV,data17_13TeV,data18_13TeV", help="MC Project tag (default: %default)")
+  parser.add_argument("-c", "--campaigns", dest="campaigns", type=str, default="mc16a,mc16d,mc16e", help="Project campaign tag (default: %default)")
   parser.add_argument("-d", "--derivation", dest="derivation", type=str, default="DAOD_EXOT5", help="Derivation (default: %default)")
   parser.add_argument("-v", "--version", dest="version", type=str, default="vXX", help="tag name for output file (default: %default)")
   parser.add_argument("-s", "--save", dest='save', action='store_true', default=False, help='Save to output file (default: %default)')
@@ -137,7 +150,7 @@ def main(argv=None):
         for groupname, runs in myMC.items():
           if save:
             outFile[campaign].write("### %s ######\n" % groupname)
-          print 'searching ',groupname, ' datasets'
+          print '#searching ',groupname, ' datasets'
           for dsid in runs:
             name = proj + "." + str(dsid) + ".*."+daod+".*"+mcCampaign[campaign]+"*"+pTagDict[proj]
             dids = {'name': name}

@@ -63,8 +63,6 @@ void Analysis::outJet::attachToTree(TTree *tree)
    tree->Branch(prefix + "jvt", &jvt);
    tree->Branch(prefix + "fjvt", &fjvt);
    tree->Branch(prefix + "isbjet", &isbjet);
-   tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
-   tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
 
    if (!doTrim()) {
      tree->Branch(prefix + "raw_pt", &raw_pt);
@@ -82,6 +80,8 @@ void Analysis::outJet::attachToTree(TTree *tree)
      tree->Branch(prefix + "EMFrac", &EMFrac);
      tree->Branch(prefix + "FracSamplingMax", &FracSamplingMax);
      tree->Branch(prefix + "fch", &fch);
+     tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
+     tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
    }
    return;
 }

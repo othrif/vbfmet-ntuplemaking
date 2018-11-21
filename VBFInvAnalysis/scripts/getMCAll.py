@@ -234,7 +234,7 @@ def run(dsid, campaigns, summary, output, ratio, aod, evnt, verbose, argv=None, 
       campaign='MC16e'
     else:
       campaign='mc16_13TeV'
-    if 'p3575' not in container:
+    if ('p3575' not in container) and ('p3627' not in container ):
       continue;
     if campaign=='MC16a' and  'r9364_p3575' not in container:
       continue;
