@@ -28,7 +28,7 @@ before_script:
 .job_template: &build_job
   tags:
     - docker
-  image: atlas/analysisbase:21.2.51
+  image: atlas/analysisbase:21.2.55
 
 # Setup for configuring the build of the code in the repository.
 config:
