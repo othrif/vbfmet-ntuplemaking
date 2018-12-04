@@ -922,24 +922,24 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
           nullptr, // invisible particles
           myMET_tst,
 	myMETsig_tst,
-	0,content.eventInfo->averageInteractionsPerCrossing());
+	0);
  content.metsig_tst = myMETsig_tst;
 
  TLorentzVector myMET_Tight_tst;
  double myMETsig_Tight_tst;
  getMET(content.met_tight_tst,
 	content.met_tight_tstAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tight_tst,myMETsig_Tight_tst,1,content.eventInfo->averageInteractionsPerCrossing());
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tight_tst,myMETsig_Tight_tst,1);
  TLorentzVector myMET_Tighter_tst;
  double myMETsig_Tighter_tst;
  getMET(content.met_tighter_tst,
 	content.met_tighter_tstAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tighter_tst,myMETsig_Tighter_tst,2,content.eventInfo->averageInteractionsPerCrossing());
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tighter_tst,myMETsig_Tighter_tst,2);
  TLorentzVector myMET_Tenacious_tst;
  double myMETsig_Tenacious_tst;
  getMET(content.met_tenacious_tst,
 	content.met_tenacious_tstAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tenacious_tst,myMETsig_Tenacious_tst,3,content.eventInfo->averageInteractionsPerCrossing());
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, nullptr,myMET_Tenacious_tst,myMETsig_Tenacious_tst,3);
 
  double met_tst_j1_dphi=-1., met_tst_j2_dphi=-1.;
  HelperFunctions::computeMETj(myMET_tst, content.goodJets, met_tst_j1_dphi, met_tst_j2_dphi);
@@ -975,24 +975,24 @@ EL::StatusCode VBFInv :: analyzeEvent(Analysis::ContentHolder &content, const ST
           nullptr, // invisible particles
           myMET_tst_nolep,
 	myMETsig_tst_nolep,
-	0,content.eventInfo->averageInteractionsPerCrossing());
+	0);
  content.metsig_tst_nolep = myMETsig_tst_nolep;
 
  TLorentzVector myMET_Tight_tst_nolep;
  double myMETsig_Tight_tst_nolep;
  getMET(content.met_tight_tst_nolep,
 	content.met_tight_tst_nolepAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tight_tst_nolep,myMETsig_Tight_tst_nolep,1,content.eventInfo->averageInteractionsPerCrossing());
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tight_tst_nolep,myMETsig_Tight_tst_nolep,1);
  TLorentzVector myMET_Tighter_tst_nolep;
  double myMETsig_Tighter_tst_nolep;
  getMET(content.met_tighter_tst_nolep,
 	content.met_tighter_tst_nolepAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tighter_tst_nolep,myMETsig_Tighter_tst_nolep,2,content.eventInfo->averageInteractionsPerCrossing());
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tighter_tst_nolep,myMETsig_Tighter_tst_nolep,2);
  TLorentzVector myMET_Tenacious_tst_nolep;
  double myMETsig_Tenacious_tst_nolep;
  getMET(content.met_tenacious_tst_nolep,
 	content.met_tenacious_tst_nolepAux,
-	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tenacious_tst_nolep,myMETsig_Tenacious_tst_nolep,3,content.eventInfo->averageInteractionsPerCrossing());
+	content.jets, content.electrons,content.muons,content.photons,kTRUE,kTRUE, &invis,myMET_Tenacious_tst_nolep,myMETsig_Tenacious_tst_nolep,3);
  //std::cout << "tight: " << myMET_Tight_tst.Pt() << " Loose: " << myMET_tst.Pt() << " Tighter: " << myMET_Tighter_tst.Pt() << " Tenacious: " << myMET_Tenacious_tst.Pt() << std::endl;
     // create sum of muon and electron pts
  {
@@ -1034,7 +1034,7 @@ getMET(content.met_cst,
 	kFALSE, // do JVT
 	nullptr, // invisible particles
 	myMET_cst,
-       myMETsig_cst,0,content.eventInfo->averageInteractionsPerCrossing()
+       myMETsig_cst,0
   );
 
 double met_cst_jet = -1.;
@@ -1046,83 +1046,6 @@ if(debug) {
   print("MHT without jVT", mht*1e-3);
 }
 
-/*
-// MET, with invisble muons
- TLorentzVector myMET_tst_nomuon;
- double myMETsig_tst_nomuon;
- getMET(content.met_tst_nomuon,
-  content.met_tst_nomuonAux,
-          content.jets, // use all objects (before OR and after corrections) for MET utility
-          content.electrons,
-          content.muons,
-          content.photons,
-          kTRUE, // do TST
-          kTRUE, // do JVT
-          nullptr, // invisible particles
-          myMET_tst_nomuon,
-          myMETsig_tst_nomuon
-          );
-    // create sum of muon pts
- {
-  Float_t px = 0;
-  Float_t py = 0;
-  for (auto muon : content.goodMuons) {
-   px += muon->pt() * TMath::Cos(muon->phi());
-   py += muon->pt() * TMath::Sin(muon->phi());
- }
- const Float_t mpx = (*content.met_tst_nomuon)["Final"]->mpx();
- const Float_t mpy = (*content.met_tst_nomuon)["Final"]->mpy();
- (*content.met_tst_nomuon)["Final"]->setMpx(mpx + px);
- (*content.met_tst_nomuon)["Final"]->setMpy(mpy + py);
-}
-
- double met_tst_nomuon_j1_dphi=-1., met_tst_nomuon_j2_dphi=-1.;
- HelperFunctions::computeMETj(myMET_tst_nomuon, content.goodJets, met_tst_nomuon_j1_dphi, met_tst_nomuon_j2_dphi);
- if (debug){
-   print("met_tst_nomuon_j1_dphi: ", met_tst_nomuon_j1_dphi);
-   print("met_tst_nomuon_j2_dphi: ", met_tst_nomuon_j2_dphi);
- }
- content.met_tst_nomuon_j1_dphi = met_tst_nomuon_j1_dphi;
- content.met_tst_nomuon_j2_dphi = met_tst_nomuon_j2_dphi;
-
-// MET, with invisble electrons
-TLorentzVector myMET_tst_noelectron;
-double myMETsig_tst_noelectron;
-getMET(content.met_tst_noelectron,
-  content.met_tst_noelectronAux,
-          content.jets, // use all objects (before OR and after corrections) for MET utility
-          content.electrons,
-          content.muons,
-          content.photons,
-          kTRUE, // do TST
-          kTRUE, // do JVT
-          nullptr, // invisible particles
-          myMET_tst_noelectron,
-          myMETsig_tst_noelectron
-          );
-   // create sum of of electron pts
-{
-  Float_t px = 0;
-  Float_t py = 0;
-  for (auto electron : content.goodElectrons) {
-   px += electron->pt() * TMath::Cos(electron->phi());
-   py += electron->pt() * TMath::Sin(electron->phi());
- }
- const Float_t mpx = (*content.met_tst_noelectron)["Final"]->mpx();
- const Float_t mpy = (*content.met_tst_noelectron)["Final"]->mpy();
- (*content.met_tst_noelectron)["Final"]->setMpx(mpx + px);
- (*content.met_tst_noelectron)["Final"]->setMpy(mpy + py);
-}
-
- double met_tst_noelectron_j1_dphi=-1., met_tst_noelectron_j2_dphi=-1.;
- HelperFunctions::computeMETj(myMET_tst_noelectron, content.goodJets, met_tst_noelectron_j1_dphi, met_tst_noelectron_j2_dphi);
- if (debug){
-   print("met_tst_noelectron_j1_dphi: ", met_tst_noelectron_j1_dphi);
-   print("met_tst_noelectron_j2_dphi: ", met_tst_noelectron_j2_dphi);
- }
- content.met_tst_noelectron_j1_dphi = met_tst_noelectron_j1_dphi;
- content.met_tst_noelectron_j2_dphi = met_tst_noelectron_j2_dphi;
-*/
 // track MET
 getTrackMET(content.met_track,
  content.met_trackAux,
@@ -1772,7 +1695,7 @@ const TString mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
   return EL::StatusCode::SUCCESS;
 }
 
-EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer * jet, xAOD::ElectronContainer * el, xAOD::MuonContainer * mu, xAOD::PhotonContainer * /*ph*/, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer * invis, TLorentzVector &myMET, double &myMETsig, int METType, float avgMu)
+EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer * jet, xAOD::ElectronContainer * el, xAOD::MuonContainer * mu, xAOD::PhotonContainer * /*ph*/, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer * invis, TLorentzVector &myMET, double &myMETsig, int METType)
 {
  myMETsig = 0;
  met = std::make_shared<xAOD::MissingETContainer>();
@@ -1793,7 +1716,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
    ANA_CHECK(m_susytools_handle->GetMETSig(*met,
 					   myMETsig,
 					   doTST,
-					   doJVT,avgMu
+					   doJVT
 					   ));
  }else if(METType==1){
    ANA_CHECK(m_susytools_Tight_handle->GetMET(*met,
@@ -1809,7 +1732,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
    ANA_CHECK(m_susytools_Tight_handle->GetMETSig(*met,
 					   myMETsig,
 					   doTST,
-						 doJVT,avgMu
+						 doJVT
 					   ));
  }else if(METType==2){
    ANA_CHECK(m_susytools_Tighter_handle->GetMET(*met,
@@ -1825,7 +1748,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
    ANA_CHECK(m_susytools_Tighter_handle->GetMETSig(*met,
 					   myMETsig,
 					   doTST,
-						   doJVT,avgMu
+						   doJVT
 					   ));
  }else if(METType==3){
    ANA_CHECK(m_susytools_Tenacious_handle->GetMET(*met,
@@ -1841,8 +1764,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &met, st
    ANA_CHECK(m_susytools_Tenacious_handle->GetMETSig(*met,
 					   myMETsig,
 					   doTST,
-						     doJVT,
-						     avgMu
+						     doJVT
 					   ));
    }
 

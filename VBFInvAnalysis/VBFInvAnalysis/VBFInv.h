@@ -49,7 +49,7 @@ public:
  std::vector<std::string> getTokens(TString line, TString delim);
  virtual EL::StatusCode analyzeEvent(Analysis::ContentHolder &content, const ST::SystInfo &systInfo, Analysis::outHolder &cand);
  virtual EL::StatusCode fillTree(Analysis::ContentHolder &content, Analysis::outHolder &cand, const ST::SystInfo &systInfo);
- virtual EL::StatusCode getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet, xAOD::ElectronContainer *el, xAOD::MuonContainer *mu, xAOD::PhotonContainer *ph, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer *invis, TLorentzVector &myMET, double &myMETSig, int METType=0, float avgMu=0.0);
+ virtual EL::StatusCode getMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet, xAOD::ElectronContainer *el, xAOD::MuonContainer *mu, xAOD::PhotonContainer *ph, Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer *invis, TLorentzVector &myMET, double &myMETSig, int METType=0);
  virtual EL::StatusCode getTrackMET(std::shared_ptr<xAOD::MissingETContainer> &met, std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet, xAOD::ElectronContainer *el, xAOD::MuonContainer *mu);
  void GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthParticleContainer *truthElectrons, float &antiIdSF);
  void printObjects(xAOD::IParticleContainer obj, TString label);
