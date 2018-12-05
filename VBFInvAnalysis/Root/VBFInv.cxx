@@ -913,7 +913,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst;
    getMET(content.met_tst, content.met_tstAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-          &content.baselineElectrons, &content.baselineMuons, &content.goodPhotons,
+	  content.electrons, content.muons, content.photons, //note baseline is applied inside SUSYTools
           kTRUE,   // do TST
           kTRUE,   // do JVT
           nullptr, // invisible particles
@@ -922,15 +922,15 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    TLorentzVector myMET_Tight_tst;
    double         myMETsig_Tight_tst;
-   getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, &content.baselineElectrons, &content.baselineMuons, &content.goodPhotons,
+   getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kTRUE, kTRUE, nullptr, myMET_Tight_tst, myMETsig_Tight_tst, 1);
    TLorentzVector myMET_Tighter_tst;
    double         myMETsig_Tighter_tst;
-   getMET(content.met_tighter_tst, content.met_tighter_tstAux, content.jets, &content.baselineElectrons, &content.baselineMuons, &content.goodPhotons,
+   getMET(content.met_tighter_tst, content.met_tighter_tstAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kTRUE, kTRUE, nullptr, myMET_Tighter_tst, myMETsig_Tighter_tst, 2);
    TLorentzVector myMET_Tenacious_tst;
    double         myMETsig_Tenacious_tst;
-   getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, &content.baselineElectrons, &content.baselineMuons, &content.goodPhotons,
+   getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kTRUE, kTRUE, nullptr, myMET_Tenacious_tst, myMETsig_Tenacious_tst, 3);
 
    double met_tst_j1_dphi = -1., met_tst_j2_dphi = -1.;
@@ -955,7 +955,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst_nolep;
    getMET(content.met_tst_nolep, content.met_tst_nolepAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-	  &content.baselineElectrons, &content.baselineMuons, &content.goodPhotons,
+	  content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kTRUE,   // do TST
           kTRUE,   // do JVT
           nullptr, // invisible particles - using the old style of object removal here
@@ -964,15 +964,15 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    TLorentzVector myMET_Tight_tst_nolep;
    double         myMETsig_Tight_tst_nolep;
-   getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets,  &content.baselineElectrons, &content.baselineMuons, &content.goodPhotons,
+   getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kTRUE, kTRUE, &invis, myMET_Tight_tst_nolep, myMETsig_Tight_tst_nolep, 1);
    TLorentzVector myMET_Tighter_tst_nolep;
    double         myMETsig_Tighter_tst_nolep;
-   getMET(content.met_tighter_tst_nolep, content.met_tighter_tst_nolepAux, content.jets,  &content.baselineElectrons, &content.baselineMuons, &content.goodPhotons,
+   getMET(content.met_tighter_tst_nolep, content.met_tighter_tst_nolepAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kTRUE, kTRUE, &invis, myMET_Tighter_tst_nolep, myMETsig_Tighter_tst_nolep, 2);
    TLorentzVector myMET_Tenacious_tst_nolep;
    double         myMETsig_Tenacious_tst_nolep;
-   getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets,  &content.baselineElectrons, &content.baselineMuons, &content.goodPhotons,
+   getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kTRUE, kTRUE, &invis, myMET_Tenacious_tst_nolep, myMETsig_Tenacious_tst_nolep,
           3);
    // create sum of muon and electron pts
@@ -1007,7 +1007,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_cst;
    getMET(content.met_cst, content.met_cstAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-	  &content.baselineElectrons, &content.baselineMuons, &content.goodPhotons,
+	  content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kFALSE,  // do TST
           kFALSE,  // do JVT
           nullptr, // invisible particles
