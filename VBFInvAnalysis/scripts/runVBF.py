@@ -92,7 +92,7 @@ if args.input:
     if len(sampleName)==1:
         sampleName = '.'.join(args.input.split('/')[-2].split('.'))
     else:
-        sampleName = '.'.join(args.input.split('/')[-2].split('.')[:-3])        
+        sampleName = '.'.join(args.input.split('/')[-2].split('.')[:-3])
     print 'sampleName: ',sampleName
     print args.input.split('/')[-2]
     print args.input.split('/')[-2].split('.')
@@ -237,6 +237,20 @@ elif (args.driver == 'prun'):
     if args.replicationSite != None:
         driver.options().setString('nc_destSE', args.replicationSite)
     driver.submitOnly(job, args.submitDir )
+elif (args.driver == 'condor'):
+    driver = ROOT.EL.CondorDriver()
+    condor_options="+MyProject = \"af-atlas\"" + "\n"
+    condor_options+="+RequestRuntime = 50000" + "\n"
+    condor_options+="RequestMemory = 2G" + "\n"
+    condor_options+="RequestDisk = 500M" + "\n"
+    condor_options+="notify_user = othmane.rifki@desy.de" + "\n"
+    condor_options+="notification = Error" + "\n"
+    condor_options+="should_transfer_files = NO" + "\n"
+    condor_options+="Requirements = (OpSysAndVer == \"CentOS7\" || OpSysAndVer == \"SL6\")" + "\n"
+    #    condor_options+="" + "\n"
+    driver.options().setString (ROOT.EL.Job.optCondorConf, condor_options);
+    driver.shellInit = "export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase && source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh";
+    driver.submitOnly (job, args.submitDir);
 else:
     raise RuntimeError('Unrecognized driver option {opt}'.format(opt=args.driver))
 
