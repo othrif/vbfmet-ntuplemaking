@@ -12,6 +12,7 @@ mainMCTest = OrderedDict([
   ])
 
 mainMC = OrderedDict([
+    ('MoreVjets', range(364216, 364229 + 1)),
     ('signal',    [308276,308567,308284]),
     ('signalAlt', [308275] + range(308277,308283 + 1)),
     ('VH',        [308071,308072]),
@@ -22,8 +23,8 @@ mainMC = OrderedDict([
     ('Wtaunu',    range(364184,364197 + 1)),
     ('Zee',       range(364114, 364127 + 1)),
     ('Zmumu',     range(364100, 364113 +1)),
-    ('Ztautau',   range(364128,364141 + 1)),
-    ('Znunu',     range(364142,364155 + 1)),
+    ('Ztautau',   range(364128, 364141 + 1)),
+    ('Znunu',     range(364142, 364155 + 1)),
     ('ZnunuMG',   range(361515, 361519 + 1)),
     ('ZtautauMG', range(361510, 361514 + 1)),
     ('ZmumuMG',   range(363123, 363146 + 1)),
@@ -32,7 +33,7 @@ mainMC = OrderedDict([
     ('WenuMG',    range(363600, 363623 + 1)),
     ('WtaunuMG',  range(363648, 363671 + 1)),
     ('QCDw',      range(361020,361032 + 1)),
-    ('QCDpl',      range(310502,310502 + 1)),
+    ('QCDpl',     range(310502,310502 + 1)),
     ('top',       [410470,410472,410011,410012,410013,410014,410025,410026])
     ])
 
@@ -69,8 +70,8 @@ pTagDict = { "data15_13TeV"                  : "p3576",
              "data18_13TeV"                  : "p3583",
              #"mc16_13TeV"                    : "p3596"} # skimmed or unskimmed here
              #"mc16_13TeV"                    : "p3627"} # skimmed or unskimmed here. for mc16e
-#"mc16_13TeV"                    : "p3575"} # skimmed or unskimmed here mc16d
-"mc16_13TeV"                    : "p3480"} # skimmed or unskimmed here mc16d
+             #"mc16_13TeV"                    : "p3500"}
+             "mc16_13TeV"                    : "p3575"}
 #myMC = mainMCTest
 myMC = mainMC
 myMC.update(altMC)
@@ -162,7 +163,9 @@ def main(argv=None):
             for dsn in List:
               pattern = re.compile(r'e\d\d\d\d_s\d\d\d\d_r\d*_p\d*')
               if not pattern.search(dsn):
-                continue
+                pattern_AFII = re.compile(r'e\d\d\d\d_a\d*_r\d*_p\d*')
+                if not pattern_AFII.search(dsn):
+                  continue
               if debug or not save:
                 print dsn
               if save: outFile[campaign].write("%s\n" %dsn)
