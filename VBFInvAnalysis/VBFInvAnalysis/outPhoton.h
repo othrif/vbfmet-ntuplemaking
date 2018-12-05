@@ -9,23 +9,21 @@
 
 namespace Analysis {
 
-   class outPhoton : public outObject {
+class outPhoton : public outObject {
 
-   private:
+private:
+   std::vector<Float_t> pt;
+   std::vector<Float_t> eta;
+   std::vector<Float_t> phi;
 
-      std::vector<Float_t> pt;
-      std::vector<Float_t> eta;
-      std::vector<Float_t> phi;
+public:
+   outPhoton(TString name = "", Bool_t doTrim = false);
+   ~outPhoton(){};
 
-   public:
-
-      outPhoton(TString name = "", Bool_t doTrim = false);
-      ~outPhoton() {};
-
-      void reset();
-      void attachToTree(TTree *tree);
-      void add(const xAOD::Photon &input);
-   };
-}
+   void reset();
+   void attachToTree(TTree *tree);
+   void add(const xAOD::Photon &input);
+};
+} // namespace Analysis
 
 #endif // __Analysis_outPhoton__

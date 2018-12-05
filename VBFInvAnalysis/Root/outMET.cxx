@@ -7,9 +7,7 @@ Analysis::outMET::outMET(TString name, Bool_t doTrim) : Analysis::outObject::out
    reset();
 }
 
-Analysis::outMET::~outMET()
-{
-}
+Analysis::outMET::~outMET() {}
 
 void Analysis::outMET::reset()
 {
@@ -33,8 +31,7 @@ void Analysis::outMET::attachToTree(TTree *tree)
 
 void Analysis::outMET::add(const xAOD::MissingET &input)
 {
-   et = input.met();
-   phi = input.phi();
+   et    = input.met();
+   phi   = input.phi();
    sumet = input.sumet();
-
 }

@@ -9,23 +9,21 @@
 
 namespace Analysis {
 
-   class outTau : public outObject {
+class outTau : public outObject {
 
-   private:
+private:
+   std::vector<Float_t> pt;
+   std::vector<Float_t> eta;
+   std::vector<Float_t> phi;
 
-      std::vector<Float_t> pt;
-      std::vector<Float_t> eta;
-      std::vector<Float_t> phi;
+public:
+   outTau(TString name = "", Bool_t doTrim = false);
+   ~outTau(){};
 
-   public:
-
-      outTau(TString name = "", Bool_t doTrim = false);
-      ~outTau() {};
-
-      void reset();
-      void attachToTree(TTree *tree);
-      void add(const xAOD::TauJet &input);
-   };
-}
+   void reset();
+   void attachToTree(TTree *tree);
+   void add(const xAOD::TauJet &input);
+};
+} // namespace Analysis
 
 #endif // __Analysis_outTau__

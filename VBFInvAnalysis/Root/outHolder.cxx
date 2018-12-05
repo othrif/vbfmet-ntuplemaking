@@ -8,9 +8,7 @@ Analysis::outHolder::outHolder() : m_attachedTree(nullptr)
    reset();
 }
 
-Analysis::outHolder::~outHolder()
-{
-}
+Analysis::outHolder::~outHolder() {}
 
 void Analysis::outHolder::reset()
 {
@@ -38,10 +36,10 @@ void Analysis::outHolder::attachToTree(TTree *tree)
       evt.attachToTree(tree);
       rns.attachToTree(tree);
       for (auto &kv : met) kv.second.attachToTree(tree);
-      for (auto &kv : mu)  kv.second.attachToTree(tree);
-      for (auto &kv : el)  kv.second.attachToTree(tree);
+      for (auto &kv : mu) kv.second.attachToTree(tree);
+      for (auto &kv : el) kv.second.attachToTree(tree);
       for (auto &kv : jet) kv.second.attachToTree(tree);
-      for (auto &kv : ph)  kv.second.attachToTree(tree);
+      for (auto &kv : ph) kv.second.attachToTree(tree);
       for (auto &kv : tau) kv.second.attachToTree(tree);
    }
 }
