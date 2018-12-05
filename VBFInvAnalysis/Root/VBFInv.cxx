@@ -845,8 +845,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    content.goodTaus.clear(SG::VIEW_ELEMENTS);
    content.baselineTaus.clear(SG::VIEW_ELEMENTS);
 
-   //-- Overlap removal -- applies baseline selection before overlap removal!
-   ANA_CHECK(m_susytools_handle->OverlapRemoval(&content.allElectrons, &content.allMuons, content.jets, &content.allPhotons));
+   //-- Overlap removal -- applies baseline selection before overlap removal using the acc_selected labelling!
+   ANA_CHECK(m_susytools_handle->OverlapRemoval(content.electrons, content.muons, content.jets, content.photons));
 
    //-- JETS -- done after the overlap removal
    if (debug) {
