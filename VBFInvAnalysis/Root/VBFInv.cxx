@@ -396,7 +396,6 @@ EL::StatusCode VBFInv::initialize()
    // define the output TTree
    //
    m_tree.clear();
-   // m_cand.clear();
 
    //
    // TTree
@@ -751,24 +750,29 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       content.muons    = nullptr;
       content.muonsAux = nullptr;
       content.allMuons.clear(SG::VIEW_ELEMENTS);
+      content.contMuons.clear(SG::VIEW_ELEMENTS);
+
       ANA_CHECK(m_susytools_handle->GetMuons(content.muons, content.muonsAux, kTRUE));
       for (auto mu : *content.muons) {
-         // if (acc_baseline(*mu) == 1) {
-         // calculate d0 and z0
-         const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
-         const Float_t       primary_vertex_z = pv ? pv->z() : 0;
-         // content.vtx_sumpt2 = sumPt2(*pv);
-         dec_new_d0(*mu)    = HelperFunctions::getD0(mu);
-         dec_new_d0sig(*mu) = HelperFunctions::getD0sig(mu, content.eventInfo);
-         dec_new_z0(*mu)    = HelperFunctions::getZ0(mu, primary_vertex_z);
-         dec_new_z0sig(*mu) = HelperFunctions::getZ0sig(mu);
-         if (debug)
-            ANA_MSG_INFO("d0  >>  " << HelperFunctions::getD0sig(mu, content.eventInfo) << ", z0 >> "
-                                    << HelperFunctions::getZ0(mu, primary_vertex_z));
-         content.allMuons.push_back(mu);
-         //}
+	if (acc_baseline(*mu) == 1  && acc_cosmic(*mu) == 0 && acc_bad(*mu) == 0) {
+	   // calculate d0 and z0
+	   const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
+	   const Float_t       primary_vertex_z = pv ? pv->z() : 0;
+	   // content.vtx_sumpt2 = sumPt2(*pv);
+	   dec_new_d0(*mu)    = HelperFunctions::getD0(mu);
+	   dec_new_d0sig(*mu) = HelperFunctions::getD0sig(mu, content.eventInfo);
+	   dec_new_z0(*mu)    = HelperFunctions::getZ0(mu, primary_vertex_z);
+	   dec_new_z0sig(*mu) = HelperFunctions::getZ0sig(mu);
+	   if (debug)
+	     ANA_MSG_INFO("d0  >>  " << HelperFunctions::getD0sig(mu, content.eventInfo) << ", z0 >> "
+			  << HelperFunctions::getZ0(mu, primary_vertex_z));
+         }
+         if (acc_cosmic(*mu) == 0 && acc_bad(*mu) == 0) {
+	   content.contMuons.push_back(mu);
+	 }
       }
       content.allMuons.sort(&HelperFunctions::comparePt);
+      content.contMuons.sort(&HelperFunctions::comparePt);
    } // done with muons
 
    //-- ELECTRONS --
@@ -776,22 +780,24 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       content.electrons    = nullptr;
       content.electronsAux = nullptr;
       content.allElectrons.clear(SG::VIEW_ELEMENTS);
+      content.contElectrons.clear(SG::VIEW_ELEMENTS);
       ANA_CHECK(m_susytools_handle->GetElectrons(content.electrons, content.electronsAux, kTRUE));
 
       for (auto el : *content.electrons) {
-         // static SG::AuxElement::Accessor<char> acc_baseline("baseline");
-         // if (acc_baseline(*el) == 1) {
-         // impact parameters
-         const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
-         const Float_t       primary_vertex_z = pv ? pv->z() : 0;
-         dec_new_d0(*el)                      = HelperFunctions::getD0(el);
-         dec_new_d0sig(*el)                   = HelperFunctions::getD0sig(el, content.eventInfo);
-         dec_new_z0(*el)                      = HelperFunctions::getZ0(el, primary_vertex_z);
-         dec_new_z0sig(*el)                   = HelperFunctions::getZ0sig(el);
-         content.allElectrons.push_back(el);
-         //}
+	if (acc_baseline(*el) == 1) {
+	  // impact parameters
+	  const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
+	  const Float_t       primary_vertex_z = pv ? pv->z() : 0;
+	  dec_new_d0(*el)                      = HelperFunctions::getD0(el);
+	  dec_new_d0sig(*el)                   = HelperFunctions::getD0sig(el, content.eventInfo);
+	  dec_new_z0(*el)                      = HelperFunctions::getZ0(el, primary_vertex_z);
+	  dec_new_z0sig(*el)                   = HelperFunctions::getZ0sig(el);
+	  content.allElectrons.push_back(el);
+         }
+	 content.contElectrons.push_back(el); // Container electrons      
       }
       content.allElectrons.sort(&HelperFunctions::comparePt);
+      content.contElectrons.sort(&HelperFunctions::comparePt);
    } // done with electrons
 
    //-- PHOTONS --
@@ -801,10 +807,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       content.allPhotons.clear(SG::VIEW_ELEMENTS);
       ANA_CHECK(m_susytools_handle->GetPhotons(content.photons, content.photonsAux, kTRUE));
       for (auto ph : *content.photons) {
-         // static SG::AuxElement::Accessor<char> acc_baseline("baseline");
-         // if (acc_baseline(*ph) == 1) {
-         content.allPhotons.push_back(ph);
-         //}
+         if (acc_baseline(*ph) == 1) {
+	   content.allPhotons.push_back(ph);
+         }
       }
       content.allPhotons.sort(&HelperFunctions::comparePt);
    }
@@ -815,14 +820,12 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       content.taus    = nullptr;
       content.tausAux = nullptr;
       content.allTaus.clear(SG::VIEW_ELEMENTS);
-      // ANA_CHECK(m_susytools_handle->);
       ANA_CHECK(m_susytools_handle->GetTaus(content.taus, content.tausAux, kTRUE));
       for (auto tau : *content.taus) {
          static SG::AuxElement::Accessor<char> acc_baseline("baseline");
-         // ANA_MSG_INFO ("tau pt=" << tau->pt()*0.001 );
-         // if (acc_baseline(*tau) == 1) {
-         content.allTaus.push_back(tau);
-         //}
+	 if (acc_baseline(*tau) == 1) {
+	   content.allTaus.push_back(tau);
+         }
       }
       content.allTaus.sort(&HelperFunctions::comparePt);
    }
@@ -833,9 +836,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    // Good objects containers clear
    content.goodMuons.clear(SG::VIEW_ELEMENTS);
-   content.contMuons.clear(SG::VIEW_ELEMENTS);
    content.baselineMuons.clear(SG::VIEW_ELEMENTS);
-   content.contElectrons.clear(SG::VIEW_ELEMENTS);
    content.goodElectrons.clear(SG::VIEW_ELEMENTS);
    content.baselineElectrons.clear(SG::VIEW_ELEMENTS);
    content.goodJets.clear(SG::VIEW_ELEMENTS);
@@ -844,10 +845,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    content.goodTaus.clear(SG::VIEW_ELEMENTS);
    content.baselineTaus.clear(SG::VIEW_ELEMENTS);
 
-   //-- Overlap removal --
+   //-- Overlap removal -- applies baseline selection before overlap removal using the acc_selected labelling!
    ANA_CHECK(m_susytools_handle->OverlapRemoval(content.electrons, content.muons, content.jets, content.photons));
 
-   //-- JETS --
+   //-- JETS -- done after the overlap removal
    if (debug) {
       for (auto jet : *content.jets) {
          ANA_MSG_INFO("jet pt=" << jet->pt() * 0.001 << ", eta=" << jet->eta() << ", phi=" << jet->phi()
@@ -873,31 +874,27 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    //-- MUONS --
    for (auto muon : content.allMuons)
-      if (acc_baseline(*muon) == 1 && acc_passOR(*muon) == 1 && acc_cosmic(*muon) == 0 && acc_bad(*muon) == 0) {
+     if (acc_baseline(*muon) == 1 && acc_passOR(*muon) == 1){ // cosmic, baseline, bad muon already applied
          content.baselineMuons.push_back(muon);
          if (acc_signal(*muon) == 1) {
             content.goodMuons.push_back(muon); // CR muons
-         }
-         if (acc_cosmic(*muon) == 0 && acc_bad(*muon) == 0) {
-            content.contMuons.push_back(muon); // Container muons
          }
       }
 
    //-- ELECTRONS --
    for (auto electron : content.allElectrons) {
-      if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) {
+     if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) {//baseline is already applied
          content.baselineElectrons.push_back(electron);
          if (acc_signal(*electron) == 1) content.goodElectrons.push_back(electron); // CR electrons
       }
-      content.contElectrons.push_back(electron); // Container electrons
    }
 
    //-- PHOTONS --
    for (auto photon : content.allPhotons) {
-      if (acc_baseline(*photon) == 1) { // && acc_passOR(*photon) == 1)  // overlap removal is not run on photons
-         content.baselinePhotons.push_back(photon);
-         if (acc_signal(*photon) == 1) content.goodPhotons.push_back(photon);
-      }
+     if (acc_baseline(*photon) == 1 && acc_passOR(*photon) == 1) { // baseline already applied
+       content.baselinePhotons.push_back(photon);
+       if (acc_signal(*photon) == 1 && acc_passOR(*photon) == 1) content.goodPhotons.push_back(photon);
+     }
    }
 
    //-- TAUS --
@@ -916,7 +913,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst;
    getMET(content.met_tst, content.met_tstAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-          content.electrons, content.muons, content.photons,
+	  content.electrons, content.muons, content.photons, //note baseline is applied inside SUSYTools
           kTRUE,   // do TST
           kTRUE,   // do JVT
           nullptr, // invisible particles
@@ -925,16 +922,16 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    TLorentzVector myMET_Tight_tst;
    double         myMETsig_Tight_tst;
-   getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, content.electrons, content.muons,
-          content.photons, kTRUE, kTRUE, nullptr, myMET_Tight_tst, myMETsig_Tight_tst, 1);
+   getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+          kTRUE, kTRUE, nullptr, myMET_Tight_tst, myMETsig_Tight_tst, 1);
    TLorentzVector myMET_Tighter_tst;
    double         myMETsig_Tighter_tst;
-   getMET(content.met_tighter_tst, content.met_tighter_tstAux, content.jets, content.electrons, content.muons,
-          content.photons, kTRUE, kTRUE, nullptr, myMET_Tighter_tst, myMETsig_Tighter_tst, 2);
+   getMET(content.met_tighter_tst, content.met_tighter_tstAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+          kTRUE, kTRUE, nullptr, myMET_Tighter_tst, myMETsig_Tighter_tst, 2);
    TLorentzVector myMET_Tenacious_tst;
    double         myMETsig_Tenacious_tst;
-   getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, content.electrons, content.muons,
-          content.photons, kTRUE, kTRUE, nullptr, myMET_Tenacious_tst, myMETsig_Tenacious_tst, 3);
+   getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+          kTRUE, kTRUE, nullptr, myMET_Tenacious_tst, myMETsig_Tenacious_tst, 3);
 
    double met_tst_j1_dphi = -1., met_tst_j2_dphi = -1.;
    HelperFunctions::computeMETj(myMET_tst, content.goodJets, met_tst_j1_dphi, met_tst_j2_dphi);
@@ -945,15 +942,12 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    content.met_tst_j1_dphi = met_tst_j1_dphi;
    content.met_tst_j2_dphi = met_tst_j2_dphi;
 
-   // invisible particles
-   // DataVector<const xAOD::IParticle *> invis;
+   // invisible particles - just removing all of the baseline objects for study of looser lepton definition
    xAOD::IParticleContainer invis(SG::VIEW_ELEMENTS);
-   for (auto muon : content.goodMuons) {
-      // invis.push_back((const xAOD::IParticle*) muon);
+   for (auto muon : content.baselineMuons) {
       invis.push_back(muon);
    }
-   for (auto electron : content.goodElectrons) {
-      // invis.push_back((const xAOD::IParticle*) electron);
+   for (auto electron : content.baselineElectrons) {
       invis.push_back(electron);
    }
    // MET, with invisble leptons
@@ -961,28 +955,26 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst_nolep;
    getMET(content.met_tst_nolep, content.met_tst_nolepAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-          content.electrons, content.muons, content.photons,
+	  content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kTRUE,   // do TST
           kTRUE,   // do JVT
-          nullptr, // invisible particles
+          nullptr, // invisible particles - using the old style of object removal here
           myMET_tst_nolep, myMETsig_tst_nolep, 0);
    content.metsig_tst_nolep = myMETsig_tst_nolep;
 
    TLorentzVector myMET_Tight_tst_nolep;
    double         myMETsig_Tight_tst_nolep;
-   getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets, content.electrons, content.muons,
-          content.photons, kTRUE, kTRUE, &invis, myMET_Tight_tst_nolep, myMETsig_Tight_tst_nolep, 1);
+   getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+          kTRUE, kTRUE, &invis, myMET_Tight_tst_nolep, myMETsig_Tight_tst_nolep, 1);
    TLorentzVector myMET_Tighter_tst_nolep;
    double         myMETsig_Tighter_tst_nolep;
-   getMET(content.met_tighter_tst_nolep, content.met_tighter_tst_nolepAux, content.jets, content.electrons,
-          content.muons, content.photons, kTRUE, kTRUE, &invis, myMET_Tighter_tst_nolep, myMETsig_Tighter_tst_nolep, 2);
+   getMET(content.met_tighter_tst_nolep, content.met_tighter_tst_nolepAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+          kTRUE, kTRUE, &invis, myMET_Tighter_tst_nolep, myMETsig_Tighter_tst_nolep, 2);
    TLorentzVector myMET_Tenacious_tst_nolep;
    double         myMETsig_Tenacious_tst_nolep;
-   getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets, content.electrons,
-          content.muons, content.photons, kTRUE, kTRUE, &invis, myMET_Tenacious_tst_nolep, myMETsig_Tenacious_tst_nolep,
+   getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+          kTRUE, kTRUE, &invis, myMET_Tenacious_tst_nolep, myMETsig_Tenacious_tst_nolep,
           3);
-   // std::cout << "tight: " << myMET_Tight_tst.Pt() << " Loose: " << myMET_tst.Pt() << " Tighter: " <<
-   // myMET_Tighter_tst.Pt() << " Tenacious: " << myMET_Tenacious_tst.Pt() << std::endl;
    // create sum of muon and electron pts
    {
       Float_t px = 0;
@@ -1015,7 +1007,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_cst;
    getMET(content.met_cst, content.met_cstAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-          content.electrons, content.muons, content.photons,
+	  content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
           kFALSE,  // do TST
           kFALSE,  // do JVT
           nullptr, // invisible particles
@@ -1637,7 +1629,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    }
    for (auto muon : content.baselineMuons) {
       if (doMuonDetail) cand.mu["basemu"].add(*muon);
-      if (muon->auxdata<float>("ptvarcone20") / muon->pt() < 0.30) ++cand.evt.n_mu_baseline;
+      ++cand.evt.n_mu_baseline;
    }
 
    //-----------------------------------------------------------------------
@@ -1649,7 +1641,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    }
    for (auto electron : content.baselineElectrons) {
       if (doElectronDetail) cand.el["baseel"].add(*electron);
-      if (electron->auxdata<float>("ptvarcone20") / electron->pt() < 0.30) ++cand.evt.n_el_baseline;
+      ++cand.evt.n_el_baseline;
    }
    // add the container leptons for lepton veto studies
    if (doContLepDetail) {
@@ -1818,6 +1810,7 @@ void VBFInv::GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthPart
 
       // compute SF's
       if (acc_baseline(*el) == 1) {
+	/* NOT applying isolation, so removing this code!
          Float_t tmp_ptvarcone20;
          el->isolationValue(tmp_ptvarcone20, xAOD::Iso::IsolationType::ptvarcone20);
          if (tmp_ptvarcone20 / el->pt() > 0.30) {
@@ -1832,6 +1825,7 @@ void VBFInv::GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthPart
             default: ATH_MSG_WARNING("Don't know what to do for signal electron reco SF");
             }
          }
+	*/
       } else {
          double             el_pid_sf = 1.0;
          CP::CorrectionCode result    = m_elecEfficiencySFTool_anti_id->getEfficiencyScaleFactor(*el, el_pid_sf);
