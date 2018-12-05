@@ -15,11 +15,10 @@ namespace VBFInvAnalysis {
 // - key: "TruthParticles"
 // in case of DxAOD:
 // - keys: "TruthParticles", "TruthElectrons", "TruthMuons", "TruthPhotons"
-   TLorentzVector getTruthBosonP4(const xAOD::TruthParticleContainer *truthParticles,
-                                  const xAOD::TruthParticleContainer *truthElectrons,
-                                  const xAOD::TruthParticleContainer *truthMuons,
-                                  const xAOD::TruthParticleContainer *truthPhotons,
-				  Bool_t doDressing = kTRUE);
-}
+TLorentzVector getTruthBosonP4(const xAOD::TruthParticleContainer *truthParticles,
+                               const xAOD::TruthParticleContainer *truthElectrons,
+                               const xAOD::TruthParticleContainer *truthMuons,
+                               const xAOD::TruthParticleContainer *truthPhotons, Bool_t doDressing = kTRUE);
+} // namespace VBFInvAnalysis
 
 #endif

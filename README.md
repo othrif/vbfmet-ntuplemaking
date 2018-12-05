@@ -16,7 +16,7 @@ VBF Higgs to Invisible Full Run 2 Analysis
       * [Make lists for all DAOD_EXOT5 samples](#make-lists-for-all-daod_exot5-samples)
   * [Code Development](#code-development)
       * [Check out latest version code](#check-out-latest-version-code)
-        * [Working with a branch](#working-with-a-branch)
+      * [Working with a branch](#working-with-a-branch)
       * [How to commit](#how-to-commit)
       * [Format code](#format-code)
       * [Tag master code git](#tag-master-code-git)
@@ -106,7 +106,7 @@ cd STAnalysisCode
 git fetch origin
 ```
 
-###Working with a branch ##
+## Working with a branch ##
 Create a topic branch with a meaningful name (here we used `master-my-topic` but consider using a meaningful name)
 ```bash
 git checkout -b master-my-topic

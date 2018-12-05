@@ -14,30 +14,29 @@
 #include <map>
 
 namespace Analysis {
-   class outHolder {
-   private:
-      TTree *m_attachedTree;
-      Bool_t m_doTrim;
+class outHolder {
+private:
+   TTree *m_attachedTree;
+   Bool_t m_doTrim;
 
-   public:
-      outEvent evt;
-      outRnSmear rns;
-      std::map<TString, outMET> met;
-      std::map<TString, outMuon> mu;
-      std::map<TString, outElectron> el;
-      std::map<TString, outJet> jet;
-      std::map<TString, outPhoton> ph;
-      std::map<TString, outTau> tau;
+public:
+   outEvent                       evt;
+   outRnSmear                     rns;
+   std::map<TString, outMET>      met;
+   std::map<TString, outMuon>     mu;
+   std::map<TString, outElectron> el;
+   std::map<TString, outJet>      jet;
+   std::map<TString, outPhoton>   ph;
+   std::map<TString, outTau>      tau;
 
-
-   public:
-      outHolder();
-      ~outHolder();
-      void reset();
-      void setDoTrim(Bool_t val);
-      void attachToTree(TTree *tree);
-      void save();
-   };
-}
+public:
+   outHolder();
+   ~outHolder();
+   void reset();
+   void setDoTrim(Bool_t val);
+   void attachToTree(TTree *tree);
+   void save();
+};
+} // namespace Analysis
 
 #endif
