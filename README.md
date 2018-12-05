@@ -95,7 +95,7 @@ git fetch origin
 ### Working with a branch ###
 Create a topic branch with a meaningful name (here we used `master-my-topic` but consider using a meaningful name)
 ```bash
-git checkout -b master-my-topic upstream/master --no-track
+git checkout -b master-my-topic
 ```
 
 ### How to commit ###
