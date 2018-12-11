@@ -1238,6 +1238,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.trigger["HLT_mu24_iloose"] || cand.evt.trigger["HLT_mu24_ivarloose"] || cand.evt.trigger["HLT_mu40"] ||
       cand.evt.trigger["HLT_mu50"] || cand.evt.trigger["HLT_mu24_ivarmedium"] || cand.evt.trigger["HLT_mu24_imedium"] ||
       cand.evt.trigger["HLT_mu26_ivarmedium"] || cand.evt.trigger["HLT_mu26_imedium"];
+   bool diMuon = cand.evt.trigger["HLT_mu20_mu8noL1"] || cand.evt.trigger["HLT_2mu10"]  || cand.evt.trigger["HLT_mu22_mu8noL1"]  || cand.evt.trigger["HLT_2mu14"] ;
+   bool diEle = cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"] || cand.evt.trigger["HLT_2e15_lhvloose_nod0_L12EM13VH"]
+     || cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"] || cand.evt.trigger["HLT_2e24_lhvloose_nod0"];
+   if(diMuon) cand.evt.trigger_lep += 0x10;
+   if(diEle) cand.evt.trigger_lep += 0x100;
 
    // raw event info
    cand.evt.runNumber            = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
