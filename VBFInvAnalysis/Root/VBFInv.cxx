@@ -766,6 +766,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	   if (debug)
 	     ANA_MSG_INFO("d0  >>  " << HelperFunctions::getD0sig(mu, content.eventInfo) << ", z0 >> "
 			  << HelperFunctions::getZ0(mu, primary_vertex_z));
+	   content.allMuons.push_back(mu);
          }
          if (acc_cosmic(*mu) == 0 && acc_bad(*mu) == 0) {
 	   content.contMuons.push_back(mu);
@@ -873,13 +874,14 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double mht = sqrt(mhtx * mhtx + mhty * mhty);
 
    //-- MUONS --
-   for (auto muon : content.allMuons)
+   for (auto muon : content.allMuons){
      if (acc_baseline(*muon) == 1 && acc_passOR(*muon) == 1){ // cosmic, baseline, bad muon already applied
-         content.baselineMuons.push_back(muon);
-         if (acc_signal(*muon) == 1) {
-            content.goodMuons.push_back(muon); // CR muons
-         }
-      }
+       content.baselineMuons.push_back(muon);
+       if (acc_signal(*muon) == 1) {
+	 content.goodMuons.push_back(muon); // CR muons
+       }
+     }
+   }
 
    //-- ELECTRONS --
    for (auto electron : content.allElectrons) {
