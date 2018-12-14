@@ -196,6 +196,13 @@ EL::StatusCode VBFInv::initialize()
    // Event counter
    m_eventCounter = 0;
 
+   // Cross section
+  if(m_isMC){
+    std::string xSecFilePath = "dev/PMGTools/PMGxsecDB_mc15.txt";
+    xSecFilePath = PathResolverFindCalibFile(xSecFilePath);
+    my_XsecDB = new SUSY::CrossSectionDB(xSecFilePath);
+  }
+
    // GRL
    std::vector<std::string> vecStringGRL;
    vecStringGRL.push_back(PathResolverFindCalibFile(
@@ -795,7 +802,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	  dec_new_z0sig(*el)                   = HelperFunctions::getZ0sig(el);
 	  content.allElectrons.push_back(el);
          }
-	 content.contElectrons.push_back(el); // Container electrons      
+	 content.contElectrons.push_back(el); // Container electrons
       }
       content.allElectrons.sort(&HelperFunctions::comparePt);
       content.contElectrons.sort(&HelperFunctions::comparePt);
@@ -1329,6 +1336,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
       // Record all weights
       cand.evt.mcEventWeight  = content.eventInfo->mcEventWeight();
+      cand.evt.mcEventWeightXsec  = content.eventInfo->mcEventWeight()*my_XsecDB->xsectTimesEff(cand.evt.runNumber);
       cand.evt.mcEventWeights = content.eventInfo->mcEventWeights();
       cand.evt.puWeight       = m_susytools_handle->GetPileupWeight();
       cand.evt.btagSFWeight   = m_susytools_handle->BtagSF(&content.goodJets);

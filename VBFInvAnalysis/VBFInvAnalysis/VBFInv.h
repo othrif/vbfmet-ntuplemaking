@@ -12,6 +12,7 @@
 #include <SUSYTools/ISUSYObjDef_xAODTool.h>
 #include <JetInterface/IJetModifier.h>
 #include <EgammaAnalysisInterfaces/IAsgElectronEfficiencyCorrectionTool.h>
+#include <SUSYTools/SUSYCrossSection.h>
 
 // ROOT include(s):
 #include <TROOT.h>
@@ -130,6 +131,8 @@ private:
    asg::AnaToolHandle<IJetModifier>                         m_jetFwdJvtTool;                 //!
    asg::AnaToolHandle<IAsgElectronEfficiencyCorrectionTool> m_elecEfficiencySFTool_anti_id;  //!
    asg::AnaToolHandle<IAsgElectronEfficiencyCorrectionTool> m_elecEfficiencySFTool_anti_iso; //!
+
+   SUSY::CrossSectionDB *my_XsecDB; //!
 
    xAOD::TEvent *m_event; //!
    xAOD::TStore *m_store; //!

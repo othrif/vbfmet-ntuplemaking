@@ -24,6 +24,7 @@ public:
    Float_t   vtx_sumpt2;
 
    Float_t              mcEventWeight;
+   Float_t              mcEventWeightXsec;
    std::vector<Float_t> mcEventWeights;
    Float_t              puWeight;
    Float_t              elSFWeight;
