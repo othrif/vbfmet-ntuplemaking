@@ -28,6 +28,7 @@ void Analysis::outEvent::reset()
 
    // Weights
    mcEventWeight = 1.0;
+   mcEventWeightXsec = 1.0;
    mcEventWeights.clear();
    puWeight       = 1.0;
    btagSFWeight   = 1.0;
@@ -138,6 +139,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "corAverageIntPerXing", &corAverageIntPerXing);
    tree->Branch(prefix + "vtx_sumpt2", &vtx_sumpt2);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
+   tree->Branch(prefix + "mcEventWeightXsec", &mcEventWeightXsec);
    if (!doTrim()) tree->Branch(prefix + "mcEventWeights", &mcEventWeights);
 
    tree->Branch(prefix + "puWeight", &puWeight);
