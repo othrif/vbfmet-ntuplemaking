@@ -18,7 +18,7 @@ echo '#!/bin/bash' >> 'setup.sh'
 echo "" >> "setup.sh"
 echo "cd build" >> "setup.sh"
 echo "lsetup \"asetup AnalysisBase,${RELEASE_21},here\" " >> "setup.sh"
-echo "source */setup.sh" >> "setup.sh"
+#echo "source */setup.sh" >> "setup.sh"
 echo "cd ../" >> "setup.sh"
 echo "alias cbuild=\"cd \$TestArea/ && cmake \$TestArea/../STAnalysisCode && make && source \$TestArea/*/setup.sh && cd \$TestArea/../run\"" >> "setup.sh"
 echo "alias build=\"cd \$TestArea/ && make && source \$TestArea/*/setup.sh && cd \$TestArea/.. && cd \$TestArea/../run\"" >> "setup.sh"
