@@ -475,7 +475,7 @@ EL::StatusCode VBFInv::initialize()
       if (doElectronDetail)
          m_cand[thisSyst].el["baseel"] = Analysis::outElectron("baseel", (trim && !doElectronDetail));
       if (doContLepDetail) m_cand[thisSyst].el["contel"] = Analysis::outElectron("contel", (trim && !doContLepDetail));
-      m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail));
+      m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail && !doRnS));
       if (doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
       if (doPhotonDetail) m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim);
 
