@@ -51,6 +51,18 @@ public:
    std::vector<Float_t> truth_jet_eta;
    std::vector<Float_t> truth_jet_phi;
    std::vector<Float_t> truth_jet_m;
+   std::vector<Float_t> truth_jet_label;
+
+   std::vector<Float_t> truth_jetmu_pt;
+   std::vector<Float_t> truth_jetmu_eta;
+   std::vector<Float_t> truth_jetmu_phi;
+   std::vector<Float_t> truth_jetmu_m;
+
+   std::vector<Float_t> truth_jetmunu_pt;
+   std::vector<Float_t> truth_jetmunu_eta;
+   std::vector<Float_t> truth_jetmunu_phi;
+   std::vector<Float_t> truth_jetmunu_m;
+
 
    /*     Float_t truth_V_bare_pt;
         Float_t truth_V_bare_eta;

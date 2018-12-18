@@ -480,7 +480,7 @@ EL::StatusCode VBFInv::initialize()
       if (doPhotonDetail) m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim);
 
       // Set trimming option for remaning outHolder objects
-      m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail));
+      m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail && !doRnS));
       m_cand[thisSyst].rns.setDoTrim((trim && !doRnS));
       // m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
@@ -1534,10 +1534,36 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
             cand.evt.n_jet_truth = nTruthJets;
             for (const auto &part : *truthJets) {
                if (part->pt() < 7.0e3) continue;
+               //// Now loop over all truth muons and neutrinos and add them vectorically to truth jet if dR < 0.4
+               TLorentzVector nuActivity(0., 0., 0., 0.);
+               TLorentzVector muActivity(0., 0., 0., 0.);
+               for (const auto &truthP_itr : *truthP) {
+                  if ( truthP_itr->status() == 1 && (abs(truthP_itr->pdgId()) == 12 || abs(truthP_itr->pdgId()) == 14 || abs(truthP_itr->pdgId()) == 16 ) ) {
+                     for (const auto &part : *truthJets) {
+                        double dR = truthP_itr->p4().DeltaR(part->p4());
+                        if (dR < 0.4) nuActivity += truthP_itr->p4();
+                     }
+                  }
+                  if ( truthP_itr->status() == 1 && abs(truthP_itr->pdgId()) == 13 ) {
+                     for (const auto &part : *truthJets) {
+                        double dR = truthP_itr->p4().DeltaR(part->p4());
+                        if (dR < 0.4) muActivity += truthP_itr->p4();
+                     }
+                  }
+               }
                cand.evt.truth_jet_pt.push_back(part->pt());
                cand.evt.truth_jet_eta.push_back(part->eta());
                cand.evt.truth_jet_phi.push_back(part->phi());
                cand.evt.truth_jet_m.push_back(part->m());
+               cand.evt.truth_jet_label.push_back(part->auxdata<int>("PartonTruthLabelID"));
+               cand.evt.truth_jetmu_pt.push_back((part->p4()+muActivity).Pt());
+               cand.evt.truth_jetmu_eta.push_back((part->p4()+muActivity).Eta());
+               cand.evt.truth_jetmu_phi.push_back((part->p4()+muActivity).Phi());
+               cand.evt.truth_jetmunu_m.push_back((part->p4()+muActivity).M());
+               cand.evt.truth_jetmunu_pt.push_back((part->p4()+muActivity+nuActivity).Pt());
+               cand.evt.truth_jetmunu_eta.push_back((part->p4()+muActivity+nuActivity).Eta());
+               cand.evt.truth_jetmunu_phi.push_back((part->p4()+muActivity+nuActivity).Phi());
+               cand.evt.truth_jetmunu_m.push_back((part->p4()+muActivity+nuActivity).M());
             }
          }
       }
