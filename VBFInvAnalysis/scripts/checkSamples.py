@@ -5,12 +5,13 @@ import pyAMI.atlas.api as AtlasAPI
 import glob
 import ROOT
 from optparse import OptionParser
-
+import re
+import sys
 
 
 def getNumberEvents(dirName, bini=4):
     nEvents=0
-    rfiles=glob.glob(dirName+"/*.root") # NOTE important for recognizing all root files inside the directories. make sure each ends with ".root"
+    rfiles=glob.glob(dirName+"/*.root*")
     for rf in rfiles:
         tmpRfile=ROOT.TFile(rf)
         NEhist=tmpRfile.Get("NumberEvents")
@@ -42,10 +43,13 @@ def main(fileList, samples):
     AtlasAPI.init()
 
     dirDict=getDirNames(samples)
-    
+
     listInput=open(fileList)
     inputDatasets=listInput.readlines()
+    listToCheck=[]
     for ds in inputDatasets:
+        if "#" in ds:
+            continue
         dsid=ds.split(".")[1]
         ds=ds.strip("\n")
         tmp=AtlasAPI.list_datasets(client, patterns = [ds], fields = ['events'])
@@ -65,10 +69,16 @@ def main(fileList, samples):
         frac=float(processedEvents)/float(inputEvents)
         diff=inputEvents-processedEvents
         if diff>0:
+            listToCheck += [dsid]
             missing_sample_line = '  ----> Event numbers do NOT match (%s/%s). Please check your download for %s. Fraction of Events downloaded %0.4f. Difference in events: %s' %(processedEvents,inputEvents,dsid,frac,diff)
             print missing_sample_line
-
-
+    print "\nThe following list of samples is incomplete/missing:", ' '.join(map(str, listToCheck))
+    print "============================================================================================================"
+    for sp in listToCheck:
+        for line in inputDatasets:
+            if re.search(sp, line):
+                print line,
+    print "============================================================================================================"
 if __name__ == "__main__":
     p = OptionParser()
     p.add_option('-l', '--list', type='string', default="TEST_EXOT5.txt", help='list of DAOD files')
@@ -77,7 +87,7 @@ if __name__ == "__main__":
     for option in p.option_list:
         if option.default != ("NO", "DEFAULT"):
             option.help += (" " if option.help else "") + "[default: %default]"
-    (options, args) = p.parse_args() 
+    (options, args) = p.parse_args()
 
     main(options.list, options.input)
 
