@@ -24,6 +24,12 @@ VBF Higgs to Invisible Full Run 2 Analysis
 # Developer #
 Othmane Rifki (othmane.rifki@cern.ch) - DESY
 
+## Contributors ##
+Ben Rosser
+Christian Sander
+Doug Schaefer
+Rui Zou
+
 # Notes #
 - Code runs on DAOD_EXOT5 using the `VBFInv` algorithm
 - Code runs on DAOD_TRUTH3 using `VBFInvTruth` algorithm
@@ -73,10 +79,12 @@ runVBF.py -h
 ```
 
 ## Check downloaded samples##
-To check that you have downloaded all of the samples. you'll need the input file from the postprocessing code
+To check that you have downloaded all of the samples. Run
 ``` bash
-python VBFInvAnalysis/scripts/checkMC.py -i /home/schae/testarea/HInvProd50/STAnalysisCode/fout_v15raw.root
+checkSample.py -l data_MC_EXOT5.txt -i local_List.txt
 ```
+`data_MC_EXOT5.txt` is the list of DAOD's submitted for processing with STAnalysisCode.
+`local_List.txt` is the list of directories containing the output of STAnalysisCode (`ls -d path/*`)
 
 ## Test SUSYTools ##
 ``` bash
