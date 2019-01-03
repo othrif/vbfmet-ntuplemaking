@@ -871,10 +871,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    Float_t mhtx = 0;
    Float_t mhty = 0;
    for (auto jet : content.allJets) {
+      if ( ( acc_signal(*jet) == 1 && acc_passOR(*jet) == 1 && acc_bad(*jet) == 0) || doRnS) content.goodJets.push_back(jet);
       if (acc_passOR(*jet) == 1 && acc_bad(*jet) == 0) {
          mhtx += jet->pt() * TMath::Cos(jet->phi());
          mhty += jet->pt() * TMath::Sin(jet->phi());
-         if (acc_signal(*jet) == 1) content.goodJets.push_back(jet);
       }
    }
    // Calculated MHT by hand
@@ -1115,8 +1115,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    // Tight cleaning for EMTopo
    static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
-   if (acc_jetCleanTight.isAvailable(*content.eventInfo)) {
-      for (auto jet : content.goodJets) {
+   for (auto jet : content.goodJets) {
+      if (acc_jetCleanTight.isAvailable(*jet)) {
          if (debug) print("jetClean_TightBad", (bool)acc_jetCleanTight(*jet));
          if (acc_jetCleanTight(*jet) == 0) {
             passesJetCleanTight = false;

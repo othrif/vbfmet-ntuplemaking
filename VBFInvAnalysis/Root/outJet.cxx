@@ -30,6 +30,8 @@ void Analysis::outJet::reset()
    fjvt.clear();
    passOR.clear();
    passJvt.clear();
+   passJetLoose.clear();
+   passJetTight.clear();
 
    PartonTruthLabelID.clear();
    ConeTruthLabelID.clear();
@@ -73,8 +75,10 @@ void Analysis::outJet::attachToTree(TTree *tree)
       tree->Branch(prefix + "raw_eta", &raw_eta);
       tree->Branch(prefix + "raw_phi", &raw_phi);
       tree->Branch(prefix + "raw_m", &raw_m);
-      tree->Branch(prefix + "passJvt", &passJvt); // not needed with signal jets
-      tree->Branch(prefix + "passOR", &passOR);   // not needed with signal jets
+      tree->Branch(prefix + "passJvt", &passJvt);   // not needed with signal jets
+      tree->Branch(prefix + "passOR", &passOR);     // not needed with signal jets
+      tree->Branch(prefix + "passJetLoose", &passJetLoose); // not needed with signal jets
+      tree->Branch(prefix + "passJetTight", &passJetTight); // not needed with signal jets
       tree->Branch(prefix + "btag_weight", &btag_weight);
       tree->Branch(prefix + "NTracks", &NTracks);
       tree->Branch(prefix + "SumPtTracks", &SumPtTracks);
@@ -117,6 +121,9 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    static SG::AuxElement::Accessor<char>       acc_passJvt("passJvt");
    static SG::AuxElement::ConstAccessor<float> acc_jvt("Jvt");
    static SG::AuxElement::ConstAccessor<float> acc_fjvt("fJvt");
+   //static SG::AuxElement::Accessor<char>       acc_bad("bad");
+   static SG::AuxElement::Accessor<char>       acc_jetCleanLoose("DFCommonJets_jetClean_LooseBad");
+   static SG::AuxElement::Accessor<char>       acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
 
    if (acc_passOR.isAvailable(input)) {
       passOR.push_back(acc_passOR(input));
@@ -137,6 +144,16 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       fjvt.push_back(acc_fjvt(input));
    } else {
       fjvt.push_back(-9999);
+   }
+   if (acc_jetCleanTight.isAvailable(input)) {
+	   passJetTight.push_back(acc_jetCleanTight(input));
+   } else {
+	   passJetTight.push_back(true);
+   }
+   if (acc_jetCleanLoose.isAvailable(input)) {
+	   passJetLoose.push_back(acc_jetCleanLoose(input));
+   } else {
+	   passJetLoose.push_back(true);
    }
 
    if (!doTrim()) {
