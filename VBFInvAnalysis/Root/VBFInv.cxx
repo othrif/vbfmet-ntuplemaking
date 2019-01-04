@@ -1555,7 +1555,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                cand.evt.truth_jet_eta.push_back(part->eta());
                cand.evt.truth_jet_phi.push_back(part->phi());
                cand.evt.truth_jet_m.push_back(part->m());
-               cand.evt.truth_jet_label.push_back(part->auxdata<int>("PartonTruthLabelID"));
+               cand.evt.truth_jet_label.push_back(part->getAttribute<int>("PartonTruthLabelID"));
                cand.evt.truth_jetmu_pt.push_back((part->p4()+muActivity).Pt());
                cand.evt.truth_jetmu_eta.push_back((part->p4()+muActivity).Eta());
                cand.evt.truth_jetmu_phi.push_back((part->p4()+muActivity).Phi());
