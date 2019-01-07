@@ -24,6 +24,8 @@ public:
    std::vector<Float_t> fjvt;
    std::vector<Bool_t>  passJvt;
    std::vector<Bool_t>  passOR;
+   std::vector<Bool_t>  passJetLoose;
+   std::vector<Bool_t>  passJetTight;
    std::vector<Int_t>   PartonTruthLabelID;
    std::vector<Int_t>   ConeTruthLabelID;
 
