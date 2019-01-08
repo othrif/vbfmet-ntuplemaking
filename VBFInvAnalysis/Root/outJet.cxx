@@ -181,7 +181,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 
       // which vertex
       int   vtx      = -1;
-      float maxSumPt = -1;
+      float maxSumPt = 0;
       for (unsigned int i = 0; i < tmp_sumpttrk_vec.size(); ++i) {
          tmp_sumpttrk.push_back(tmp_sumpttrk_vec.at(i));
          tmp_numtrk.push_back(tmp_numtrk_vec.at(i));

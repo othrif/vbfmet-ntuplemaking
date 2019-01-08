@@ -219,7 +219,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "truth_jet_eta", &truth_jet_eta);
       tree->Branch(prefix + "truth_jet_phi", &truth_jet_phi);
       tree->Branch(prefix + "truth_jet_m", &truth_jet_m);
-      tree->Branch(prefix + "truth_jet_label", &truth_jet_m);
+      tree->Branch(prefix + "truth_jet_label", &truth_jet_label);
       tree->Branch(prefix + "truth_jetmu_pt", &truth_jetmu_pt);
       tree->Branch(prefix + "truth_jetmu_eta", &truth_jetmu_eta);
       tree->Branch(prefix + "truth_jetmu_phi", &truth_jetmu_phi);

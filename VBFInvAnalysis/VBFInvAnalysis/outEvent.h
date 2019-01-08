@@ -51,7 +51,7 @@ public:
    std::vector<Float_t> truth_jet_eta;
    std::vector<Float_t> truth_jet_phi;
    std::vector<Float_t> truth_jet_m;
-   std::vector<Float_t> truth_jet_label;
+   std::vector<Int_t> truth_jet_label;
 
    std::vector<Float_t> truth_jetmu_pt;
    std::vector<Float_t> truth_jetmu_eta;
