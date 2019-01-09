@@ -25,10 +25,7 @@ VBF Higgs to Invisible Full Run 2 Analysis
 Othmane Rifki (othmane.rifki@cern.ch) - DESY
 
 ## Contributors ##
-Ben Rosser
-Christian Sander
-Doug Schaefer
-Rui Zou
+Doug Schaefer, Ben Rosser, Christian Sander, Rui Zou
 
 # Notes #
 - Code runs on DAOD_EXOT5 using the `VBFInv` algorithm
