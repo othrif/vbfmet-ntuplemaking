@@ -981,11 +981,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    {
       Float_t px = 0;
       Float_t py = 0;
-      for (auto muon : content.goodMuons) {
+      //for (auto muon : content.goodMuons) {
+      for (auto muon : content.baselineMuons) {
          px += muon->pt() * TMath::Cos(muon->phi());
          py += muon->pt() * TMath::Sin(muon->phi());
       }
-      for (auto electron : content.goodElectrons) {
+      //for (auto electron : content.goodElectrons) {
+      for (auto electron : content.baselineElectrons) {
          px += electron->pt() * TMath::Cos(electron->phi());
          py += electron->pt() * TMath::Sin(electron->phi());
       }
@@ -1243,8 +1245,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    bool diMuon = cand.evt.trigger["HLT_mu20_mu8noL1"] || cand.evt.trigger["HLT_2mu10"]  || cand.evt.trigger["HLT_mu22_mu8noL1"]  || cand.evt.trigger["HLT_2mu14"] ;
    bool diEle = cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"] || cand.evt.trigger["HLT_2e15_lhvloose_nod0_L12EM13VH"]
      || cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"] || cand.evt.trigger["HLT_2e24_lhvloose_nod0"];
-   if(diMuon) cand.evt.trigger_lep += 0x10;
-   if(diEle) cand.evt.trigger_lep += 0x100;
+   if(diMuon) cand.evt.trigger_lep += 0x2;
+   if(diEle) cand.evt.trigger_lep += 0x4;
 
    // raw event info
    cand.evt.runNumber            = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();

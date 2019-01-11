@@ -12,7 +12,7 @@ Outputs:
 Produce just AOD's: python checkMC.py -i fout_v15.root
 """
 
-# Command line arguments
+# Command line argument
 def commandline():
   import argparse
   # Take some arguments from the command line:
@@ -28,6 +28,12 @@ def main(argv=None):
     campaigns, inputFileName = commandline();
     fin = ROOT.TFile.Open(inputFileName,'READ')
 
+    from rucio.client import DIDClient
+    client = DIDClient()
+    dataFileIn = open('STAnalysisCode/VBFInvAnalysis/data/samples/v19_data15_16_EXOT5.txt','r')
+    dataFileInList=[]
+    for d in dataFileIn:
+	dataFileInList+=[d]
     if not fin:
         print 'Could not find file: ',inputFileName
         return;
@@ -42,6 +48,22 @@ def main(argv=None):
         raw_input_events = inputHist.GetBinContent(i)
         dsid = inputHist.GetXaxis().GetBinLabel(i)
         summary=True
+	if len(dsid)>0 and dsid[0]=='0':
+	    print dsid
+	    #raw_input_events = inputHist.GetBinContent(4)
+            for d in dataFileInList:
+		if d.count(dsid):
+		    nEvt=0
+		    print 'Checking: ',d
+                    dsnInfo  = DIDClient.list_files(client,d.split('.')[0],d.strip('\n'))
+		    for data in dsnInfo:
+                        if data['events'] is not None:
+                             nEvt+= data['events']
+		    print nEvt,' in AOD and local: ',raw_input_events
+		    if raw_input_events!=nEvt:
+	   	        print 'ERROR events do not match: ',d
+		    break;
+	    continue
         aod_mc_map,evnt_mc_map,deriv_mc_map = getMCAll.run(dsid, campaigns, summary, False, False, True, False, False)
         for c in campaigns:
           if c not in aod_mc_map:
