@@ -1532,6 +1532,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                }
             }
             cand.evt.n_jet_truth = nTruthJets;
+            std::vector<int> usedBC;
             for (const auto &part : *truthJets) {
                if (part->pt() < 7.0e3) continue;
                //// Now loop over all truth muons and neutrinos and add them vectorically to truth jet if dR < 0.4
@@ -1541,13 +1542,23 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                   if ( truthP_itr->status() == 1 && (abs(truthP_itr->pdgId()) == 12 || abs(truthP_itr->pdgId()) == 14 || abs(truthP_itr->pdgId()) == 16 ) ) {
                      for (const auto &part : *truthJets) {
                         double dR = truthP_itr->p4().DeltaR(part->p4());
-                        if (dR < 0.4) nuActivity += truthP_itr->p4();
+                        if (dR < 0.4) {
+                           if ( std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode() ) == usedBC.end() ) {
+                              usedBC.push_back(truthP_itr->barcode());
+                              nuActivity += truthP_itr->p4();
+                           }
+                        }
                      }
                   }
                   if ( truthP_itr->status() == 1 && abs(truthP_itr->pdgId()) == 13 ) {
                      for (const auto &part : *truthJets) {
                         double dR = truthP_itr->p4().DeltaR(part->p4());
-                        if (dR < 0.4) muActivity += truthP_itr->p4();
+                        if (dR < 0.4) {
+                           if ( std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode() ) == usedBC.end() ) {
+                              usedBC.push_back(truthP_itr->barcode());
+                              muActivity += truthP_itr->p4();
+                           }
+                        }
                      }
                   }
                }
