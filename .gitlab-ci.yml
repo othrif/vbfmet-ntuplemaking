@@ -12,6 +12,7 @@ stages:
   - build
   - install
   - docker
+  - test
 
 # Set the behaviour of the CI build.
 variables:
@@ -92,3 +93,15 @@ docker:
   tags:
     - docker-image-build
   script: echo
+
+# Setup for a test
+test:
+  <<: *build_job
+  stage: test
+  dependencies:
+    - build
+  script:
+     - runVBF.py -f /share/t3data2/schae/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.deriv.DAOD_EXOT5.e6126_s3126_r9364_p3575/DAOD_EXOT5.14490426._000001.pool.root.1      --doMuonDetail --doElectronDetail  --doEventDetail --doSkim -n 5000
+     - commitCutFlowCheck.py
+     #- python tests/test.py -p ${PROCESS}
+
