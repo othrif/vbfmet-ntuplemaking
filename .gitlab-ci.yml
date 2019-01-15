@@ -105,7 +105,8 @@ test:
      - cd "${BUILD_DIR}"
      - source "${AnalysisBase_PLATFORM}/setup.sh"
      - cd ../
-     - runVBF.py -u schae -f /eos/atlas/atlascerngroupdisk/phys-exotics/jdm/vbfinv/Test/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.deriv.DAOD_EXOT5.e6126_s3126_r9364_p3575/DAOD_EXOT5.14490426._000001.pool.root.1 --doMuonDetail --doElectronDetail  --doEventDetail --doSkim -n 1000
+     - export USER=schae
+     - runVBF.py -f /eos/atlas/atlascerngroupdisk/phys-exotics/jdm/vbfinv/Test/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.deriv.DAOD_EXOT5.e6126_s3126_r9364_p3575/DAOD_EXOT5.14490426._000001.pool.root.1 --doMuonDetail --doElectronDetail  --doEventDetail --doSkim -n 1000
      - commitCutFlowCheck.py
   artifacts:
     paths:
