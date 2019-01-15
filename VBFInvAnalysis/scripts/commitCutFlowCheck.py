@@ -37,8 +37,8 @@ def Compare(raw_old,raw_new):
             sys.exit(0)
 
 
-fold = ROOT.TFile.Open('root://fax.mwt2.org:1094//pnfs/uchicago.edu/atlaslocalgroupdisk/rucio/user/schae/b0/84/user.schae.15625195._000001.MiniNtuple.root')
-fnew = ROOT.TFile.Open('root://fax.mwt2.org:1094//pnfs/uchicago.edu/atlaslocalgroupdisk/rucio/user/schae/4d/e4/user.schae.16569393._000001.MiniNtuple.root')
+fold = ROOT.TFile.Open('/eos/atlas/atlascerngroupdisk/phys-exotics/jdm/vbfinv/Test/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.deriv.DAOD_EXOT5.e6126_s3126_r9364_p3575/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.root')
+fnew = ROOT.TFile.Open('submitDir/data-MiniNtuple/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.root')
 
 if not fold or not fnew:
     print 'Could not load files: ',fold,' new: ',fnew
