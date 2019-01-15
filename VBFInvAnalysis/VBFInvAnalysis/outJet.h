@@ -30,14 +30,14 @@ public:
    std::vector<Int_t>   ConeTruthLabelID;
 
    std::vector<std::vector<UShort_t>> NTracks;
-   std::vector<std::vector<Float_t>> SumPtTracks;
-   std::vector<Float_t>  TrackWidth;
-   std::vector<Int_t>    HighestJVFVtx;
-   std::vector<Float_t>  FracSamplingMax;
-   std::vector<Float_t>  HECFrac;
-   std::vector<Float_t>  EMFrac;
-   std::vector<Float_t>  fch;
-   std::vector<Float_t>  Width;
+   std::vector<std::vector<Float_t>>  SumPtTracks;
+   std::vector<Float_t>               TrackWidth;
+   std::vector<Int_t>                 HighestJVFVtx;
+   std::vector<Float_t>               FracSamplingMax;
+   std::vector<Float_t>               HECFrac;
+   std::vector<Float_t>               EMFrac;
+   std::vector<Float_t>               fch;
+   std::vector<Float_t>               Width;
 
 public:
    outJet(TString name = "", Bool_t doTrim = kFALSE);

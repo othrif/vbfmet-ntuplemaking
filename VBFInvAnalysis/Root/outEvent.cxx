@@ -27,7 +27,7 @@ void Analysis::outEvent::reset()
    vtx_sumpt2           = -9999;
 
    // Weights
-   mcEventWeight = 1.0;
+   mcEventWeight     = 1.0;
    mcEventWeightXsec = 1.0;
    mcEventWeights.clear();
    puWeight       = 1.0;
@@ -66,6 +66,11 @@ void Analysis::outEvent::reset()
    truth_jetmunu_eta.clear();
    truth_jetmunu_phi.clear();
    truth_jetmunu_m.clear();
+   n_fatjet_truth = -9999;
+   truth_fatjet_pt.clear();
+   truth_fatjet_eta.clear();
+   truth_fatjet_phi.clear();
+   truth_fatjet_m.clear();
    /* truth_V_bare_pt = -9999;
     truth_V_bare_eta = -9999;
     truth_V_bare_phi = -9999;
@@ -166,7 +171,12 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       if (
          // MET 2015-2016
          trigName == "HLT_xe70_mht" || trigName == "HLT_xe90_mht_L1XE50" || trigName == "HLT_xe100_mht_L1XE50" ||
-         trigName == "HLT_xe110_mht_L1XE50" || trigName == "HLT_noalg_L1J400"
+         trigName == "HLT_xe110_mht_L1XE50" || trigName == "HLT_noalg_L1J400" ||
+         trigName == "HLT_2j35_btight_2j35_L13J25.0ETA23" ||
+         trigName == "HLT_2j35_bmv2c2060_split_2j35_L14J15.0ETA25" ||
+         trigName == "HLT_2j15_gsc35_bmv2c1040_split_2j15_gsc35_boffperf_split_L14J15.0ETA25" ||
+         trigName == "HLT_2j35_bmv2c1060_split_2j35_L14J15.0ETA25"
+
          //      || trigName == "HLT_j70_j50_0eta490_invm1100j70_dphi20_deta40_L1MJJ-500-NFF"
          //      || trigName == "HLT_j70_j50_0eta490_invm1000j50_dphi24_xe90_pufit_xe50_L1MJJ-500-NFF"
          /*
@@ -228,6 +238,11 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "truth_jetmunu_eta", &truth_jetmunu_eta);
       tree->Branch(prefix + "truth_jetmunu_phi", &truth_jetmunu_phi);
       tree->Branch(prefix + "truth_jetmunu_m", &truth_jetmunu_m);
+      tree->Branch(prefix + "n_fatjet_truth", &n_fatjet_truth);
+      tree->Branch(prefix + "truth_fatjet_pt", &truth_fatjet_pt);
+      tree->Branch(prefix + "truth_fatjet_eta", &truth_fatjet_eta);
+      tree->Branch(prefix + "truth_fatjet_phi", &truth_fatjet_phi);
+      tree->Branch(prefix + "truth_fatjet_m", &truth_fatjet_m);
       tree->Branch(prefix + "n_mu_truth", &n_mu_truth);
       tree->Branch(prefix + "truth_mu_pt", &truth_mu_pt);
       tree->Branch(prefix + "truth_mu_eta", &truth_mu_eta);
