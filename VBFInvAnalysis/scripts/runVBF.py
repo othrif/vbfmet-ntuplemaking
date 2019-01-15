@@ -56,6 +56,8 @@ parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true"
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
+parser.add_argument("--doFatJetDetail", dest="doFatJetDetail", action="store_true", default=False, help="store detailed branches for FatJet")
+parser.add_argument("--doTrackJetDetail", dest="doTrackJetDetail", action="store_true", default=False, help="store detailed branches for TrackJets")
 
 # Configure arguments for Sherpa algorithm in a group.
 group = parser.add_argument_group('sherpa', description="Options for the Sherpa Truth algorithm.")
@@ -173,6 +175,8 @@ if( args.algoName == "VBFInv" ):
   alg.doEventDetail = args.doEventDetail
   alg.doContLepDetail = args.doContLepDetail
   alg.doRnS = args.doRnS
+  alg.doFatJetDetail = args.doFatJetDetail
+  alg.doTrackJetDetail = args.doTrackJetDetail
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight

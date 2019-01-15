@@ -13,6 +13,7 @@
 #include <JetInterface/IJetModifier.h>
 #include <EgammaAnalysisInterfaces/IAsgElectronEfficiencyCorrectionTool.h>
 #include <SUSYTools/SUSYCrossSection.h>
+#include "BoostedJetTaggers/JSSWTopTaggerDNN.h"
 
 // ROOT include(s):
 #include <TROOT.h>
@@ -68,7 +69,7 @@ public:
    void print(TString label, float val);
 
    /// Name of the outputs
-   std::string outputName = "HADAHA";
+   std::string outputName     = "HADAHA";
    std::string outputNameHist = "hist"; // saves cutbookkeeper info to seperate file
 
    // config file
@@ -98,6 +99,8 @@ public:
    Bool_t   doSkim;
    Bool_t   doTrim;
    Bool_t   doRnS;
+   Bool_t   doFatJetDetail;
+   Bool_t   doTrackJetDetail;
    Bool_t   doElectronDetail;
    Bool_t   doMuonDetail;
    Bool_t   doJetDetail;
@@ -131,6 +134,8 @@ private:
    asg::AnaToolHandle<IJetModifier>                         m_jetFwdJvtTool;                 //!
    asg::AnaToolHandle<IAsgElectronEfficiencyCorrectionTool> m_elecEfficiencySFTool_anti_id;  //!
    asg::AnaToolHandle<IAsgElectronEfficiencyCorrectionTool> m_elecEfficiencySFTool_anti_iso; //!
+   asg::AnaToolHandle<IJetSelectorTool>                     m_DNNTop80; //! 
+   asg::AnaToolHandle<IJetSelectorTool>                     m_DNNW50; //! 
 
    SUSY::CrossSectionDB *my_XsecDB; //!
 

@@ -75,8 +75,8 @@ void Analysis::outJet::attachToTree(TTree *tree)
       tree->Branch(prefix + "raw_eta", &raw_eta);
       tree->Branch(prefix + "raw_phi", &raw_phi);
       tree->Branch(prefix + "raw_m", &raw_m);
-      tree->Branch(prefix + "passJvt", &passJvt);   // not needed with signal jets
-      tree->Branch(prefix + "passOR", &passOR);     // not needed with signal jets
+      tree->Branch(prefix + "passJvt", &passJvt);           // not needed with signal jets
+      tree->Branch(prefix + "passOR", &passOR);             // not needed with signal jets
       tree->Branch(prefix + "passJetLoose", &passJetLoose); // not needed with signal jets
       tree->Branch(prefix + "passJetTight", &passJetTight); // not needed with signal jets
       tree->Branch(prefix + "btag_weight", &btag_weight);
@@ -109,7 +109,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    // momentum fraction carried by charged tracks
    std::vector<float> tmp_sumpttrk_vec;
    input.getAttribute("SumPtTrkPt500", tmp_sumpttrk_vec);
-   
+
    Float_t tmp_fch = (tmp_sumpttrk_vec.size() > 0) ? tmp_sumpttrk_vec[0] / input.pt() : 0;
    fch.push_back(tmp_fch);
 
@@ -121,9 +121,9 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    static SG::AuxElement::Accessor<char>       acc_passJvt("passJvt");
    static SG::AuxElement::ConstAccessor<float> acc_jvt("Jvt");
    static SG::AuxElement::ConstAccessor<float> acc_fjvt("fJvt");
-   //static SG::AuxElement::Accessor<char>       acc_bad("bad");
-   static SG::AuxElement::Accessor<char>       acc_jetCleanLoose("DFCommonJets_jetClean_LooseBad");
-   static SG::AuxElement::Accessor<char>       acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
+   // static SG::AuxElement::Accessor<char>       acc_bad("bad");
+   static SG::AuxElement::Accessor<char> acc_jetCleanLoose("DFCommonJets_jetClean_LooseBad");
+   static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
 
    if (acc_passOR.isAvailable(input)) {
       passOR.push_back(acc_passOR(input));
@@ -146,14 +146,14 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       fjvt.push_back(-9999);
    }
    if (acc_jetCleanTight.isAvailable(input)) {
-	   passJetTight.push_back(acc_jetCleanTight(input));
+      passJetTight.push_back(acc_jetCleanTight(input));
    } else {
-	   passJetTight.push_back(true);
+      passJetTight.push_back(true);
    }
    if (acc_jetCleanLoose.isAvailable(input)) {
-	   passJetLoose.push_back(acc_jetCleanLoose(input));
+      passJetLoose.push_back(acc_jetCleanLoose(input));
    } else {
-	   passJetLoose.push_back(true);
+      passJetLoose.push_back(true);
    }
 
    if (!doTrim()) {
@@ -176,7 +176,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       std::vector<float> tmp_trkwidth_vec;
       input.getAttribute("TrackWidthPt1000", tmp_trkwidth_vec);
 
-      std::vector<float> tmp_sumpttrk;
+      std::vector<float>              tmp_sumpttrk;
       std::vector<short unsigned int> tmp_numtrk;
 
       // which vertex
@@ -190,7 +190,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
             vtx      = i;
          }
       }
-      
+
       float tmp_trkwidth;
       if (tmp_sumpttrk_vec.size() > 0 /*&& susytools_handle->GetPrimVtx()*/) {
          tmp_trkwidth = tmp_trkwidth_vec[vtx];

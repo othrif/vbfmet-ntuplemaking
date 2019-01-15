@@ -18,6 +18,8 @@ void Analysis::outHolder::reset()
    for (auto &kv : mu) kv.second.reset();
    for (auto &kv : el) kv.second.reset();
    for (auto &kv : jet) kv.second.reset();
+   for (auto &kv : fatjet) kv.second.reset();
+   for (auto &kv : trackjet) kv.second.reset();
    for (auto &kv : ph) kv.second.reset();
    for (auto &kv : tau) kv.second.reset();
 }
@@ -39,6 +41,8 @@ void Analysis::outHolder::attachToTree(TTree *tree)
       for (auto &kv : mu) kv.second.attachToTree(tree);
       for (auto &kv : el) kv.second.attachToTree(tree);
       for (auto &kv : jet) kv.second.attachToTree(tree);
+      for (auto &kv : fatjet) kv.second.attachToTree(tree);
+      for (auto &kv : trackjet) kv.second.attachToTree(tree);
       for (auto &kv : ph) kv.second.attachToTree(tree);
       for (auto &kv : tau) kv.second.attachToTree(tree);
    }
