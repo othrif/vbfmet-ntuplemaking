@@ -30,18 +30,29 @@ void Analysis::outJet::reset()
    fjvt.clear();
    passOR.clear();
    passJvt.clear();
+   passJetLoose.clear();
+   passJetTight.clear();
 
    PartonTruthLabelID.clear();
    ConeTruthLabelID.clear();
 
+   for (auto it : NTracks) {
+      it.clear();
+   }
    NTracks.clear();
+
+   for (auto it : SumPtTracks) {
+      it.clear();
+   }
    SumPtTracks.clear();
+
    TrackWidth.clear();
    HighestJVFVtx.clear();
    FracSamplingMax.clear();
    HECFrac.clear();
    EMFrac.clear();
    fch.clear();
+   Width.clear();
 
    return;
 }
@@ -64,8 +75,10 @@ void Analysis::outJet::attachToTree(TTree *tree)
       tree->Branch(prefix + "raw_eta", &raw_eta);
       tree->Branch(prefix + "raw_phi", &raw_phi);
       tree->Branch(prefix + "raw_m", &raw_m);
-      tree->Branch(prefix + "passJvt", &passJvt); // not needed with signal jets
-      tree->Branch(prefix + "passOR", &passOR);   // not needed with signal jets
+      tree->Branch(prefix + "passJvt", &passJvt);           // not needed with signal jets
+      tree->Branch(prefix + "passOR", &passOR);             // not needed with signal jets
+      tree->Branch(prefix + "passJetLoose", &passJetLoose); // not needed with signal jets
+      tree->Branch(prefix + "passJetTight", &passJetTight); // not needed with signal jets
       tree->Branch(prefix + "btag_weight", &btag_weight);
       tree->Branch(prefix + "NTracks", &NTracks);
       tree->Branch(prefix + "SumPtTracks", &SumPtTracks);
@@ -75,6 +88,7 @@ void Analysis::outJet::attachToTree(TTree *tree)
       tree->Branch(prefix + "EMFrac", &EMFrac);
       tree->Branch(prefix + "FracSamplingMax", &FracSamplingMax);
       tree->Branch(prefix + "fch", &fch);
+      tree->Branch(prefix + "Width", &Width);
       tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
       tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
    }
@@ -95,6 +109,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    // momentum fraction carried by charged tracks
    std::vector<float> tmp_sumpttrk_vec;
    input.getAttribute("SumPtTrkPt500", tmp_sumpttrk_vec);
+
    Float_t tmp_fch = (tmp_sumpttrk_vec.size() > 0) ? tmp_sumpttrk_vec[0] / input.pt() : 0;
    fch.push_back(tmp_fch);
 
@@ -106,6 +121,9 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    static SG::AuxElement::Accessor<char>       acc_passJvt("passJvt");
    static SG::AuxElement::ConstAccessor<float> acc_jvt("Jvt");
    static SG::AuxElement::ConstAccessor<float> acc_fjvt("fJvt");
+   // static SG::AuxElement::Accessor<char>       acc_bad("bad");
+   static SG::AuxElement::Accessor<char> acc_jetCleanLoose("DFCommonJets_jetClean_LooseBad");
+   static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
 
    if (acc_passOR.isAvailable(input)) {
       passOR.push_back(acc_passOR(input));
@@ -126,6 +144,16 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       fjvt.push_back(acc_fjvt(input));
    } else {
       fjvt.push_back(-9999);
+   }
+   if (acc_jetCleanTight.isAvailable(input)) {
+      passJetTight.push_back(acc_jetCleanTight(input));
+   } else {
+      passJetTight.push_back(true);
+   }
+   if (acc_jetCleanLoose.isAvailable(input)) {
+      passJetLoose.push_back(acc_jetCleanLoose(input));
+   } else {
+      passJetLoose.push_back(true);
    }
 
    if (!doTrim()) {
@@ -148,30 +176,29 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       std::vector<float> tmp_trkwidth_vec;
       input.getAttribute("TrackWidthPt1000", tmp_trkwidth_vec);
 
+      std::vector<float>              tmp_sumpttrk;
+      std::vector<short unsigned int> tmp_numtrk;
+
       // which vertex
-      int   vtx      = 0;
-      float maxSumPt = -1;
+      int   vtx      = -1;
+      float maxSumPt = 0;
       for (unsigned int i = 0; i < tmp_sumpttrk_vec.size(); ++i) {
+         tmp_sumpttrk.push_back(tmp_sumpttrk_vec.at(i));
+         tmp_numtrk.push_back(tmp_numtrk_vec.at(i));
          if (tmp_sumpttrk_vec.at(i) > maxSumPt) {
             maxSumPt = tmp_sumpttrk_vec.at(i);
             vtx      = i;
          }
       }
 
-      float tmp_sumpttrk;
       float tmp_trkwidth;
-      int   tmp_numtrk;
       if (tmp_sumpttrk_vec.size() > 0 /*&& susytools_handle->GetPrimVtx()*/) {
-         tmp_sumpttrk = tmp_sumpttrk_vec[vtx];
-         tmp_numtrk   = tmp_numtrk_vec[vtx];
          tmp_trkwidth = tmp_trkwidth_vec[vtx];
       } else {
-         tmp_sumpttrk = 0;
-         tmp_numtrk   = 0;
          tmp_trkwidth = 0.;
       }
 
-      HighestJVFVtx.push_back(tmp_sumpttrk);
+      HighestJVFVtx.push_back(vtx);
       SumPtTracks.push_back(tmp_sumpttrk);
       NTracks.push_back(tmp_numtrk);
       TrackWidth.push_back(tmp_trkwidth);
@@ -183,6 +210,10 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       double tmp_EMFrac(-9999.);
       input.getAttribute("EMFrac", tmp_EMFrac);
       EMFrac.push_back(tmp_EMFrac);
+
+      double tmp_Width(-9999.);
+      input.getAttribute("Width", tmp_Width);
+      Width.push_back(tmp_Width);
 
       // decorations from SUSYTools
       // FwdJVT is applied in passJvt given that FwdJet.doJVT: true in ST config

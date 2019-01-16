@@ -49,10 +49,11 @@ ClassImp(VBFInv)
      MC_campaign(""), skip_syst(""), trigger_list(""), pt1Skim(0), pt1SkimForSyst(0), pt2Skim(0), pt2SkimForSyst(0),
      metSkim(0), metSkimForSyst(0), mjjSkim(0), mjjSkimForSyst(0), detajjSkim(0), detajjSkimForSyst(0),
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doRnS(false),
-     doElectronDetail(false), doMuonDetail(false), doJetDetail(false), doTauDetail(false), doPhotonDetail(false),
-     doMETDetail(false), doEventDetail(false), doContLepDetail(false), m_isMC(false), m_isAFII(false),
-     m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false), m_grl("GoodRunsListSelectionTool/grl", this),
-     m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this), m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
+     doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false), doJetDetail(false),
+     doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false), doContLepDetail(false),
+     m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false),
+     m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
+     m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
      m_susytools_Tenacious_handle("ST::SUSYObjDef_xAOD/STTenacious", this),
      m_jetFwdJvtTool("JetForwardJvtTool/JetForwardJvtTool_VBF", this),
@@ -195,6 +196,13 @@ EL::StatusCode VBFInv::initialize()
 
    // Event counter
    m_eventCounter = 0;
+
+   // Cross section
+   if (m_isMC) {
+      std::string xSecFilePath = "dev/PMGTools/PMGxsecDB_mc15.txt";
+      xSecFilePath             = PathResolverFindCalibFile(xSecFilePath);
+      my_XsecDB                = new SUSY::CrossSectionDB(xSecFilePath);
+   }
 
    // GRL
    std::vector<std::string> vecStringGRL;
@@ -349,6 +357,20 @@ EL::StatusCode VBFInv::initialize()
    ANA_CHECK(m_susytools_Tighter_handle.initialize());
    ANA_CHECK(m_susytools_Tenacious_handle.initialize());
 
+   ASG_SET_ANA_TOOL_TYPE(m_DNNTop80, JSSWTopTaggerDNN);
+   m_DNNTop80.setName("DNNTopTagger80");
+   ANA_CHECK(m_DNNTop80.setProperty(
+      "ConfigFile",
+      "JSSWTopTaggerDNN/JSSDNNTagger_AntiKt10LCTopoTrimmed_TopQuarkContained_MC15c_20170824_BOOSTSetup80Eff.dat"));
+   ANA_CHECK(m_DNNTop80.retrieve());
+
+   ASG_SET_ANA_TOOL_TYPE(m_DNNW50, JSSWTopTaggerDNN);
+   m_DNNW50.setName("DNNWTagger50");
+   ANA_CHECK(m_DNNW50.setProperty(
+      "ConfigFile",
+      "JSSWTopTaggerDNN/JSSDNNTagger_AntiKt10LCTopoTrimmed_WBosonContained_MC15c_20170824_BOOSTSetup50Eff.dat"));
+   ANA_CHECK(m_DNNW50.retrieve());
+
    //
    // list of systematics to process
    //
@@ -468,12 +490,15 @@ EL::StatusCode VBFInv::initialize()
       if (doElectronDetail)
          m_cand[thisSyst].el["baseel"] = Analysis::outElectron("baseel", (trim && !doElectronDetail));
       if (doContLepDetail) m_cand[thisSyst].el["contel"] = Analysis::outElectron("contel", (trim && !doContLepDetail));
-      m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail));
+      m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail && !doRnS));
+      if (doFatJetDetail) m_cand[thisSyst].fatjet["fatjet"] = Analysis::outFatJet("fatjet", (trim && !doFatJetDetail));
+      if (doTrackJetDetail)
+         m_cand[thisSyst].trackjet["trackjet"] = Analysis::outTrackJet("trackjet", (trim && !doTrackJetDetail));
       if (doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
       if (doPhotonDetail) m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim);
 
       // Set trimming option for remaning outHolder objects
-      m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail));
+      m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail && !doRnS));
       m_cand[thisSyst].rns.setDoTrim((trim && !doRnS));
       // m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
@@ -611,6 +636,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    const Bool_t syst_affectsElectrons = ST::testAffectsObject(xAOD::Type::Electron, systInfo.affectsType);
    const Bool_t syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon, systInfo.affectsType);
    const Bool_t syst_affectsJets      = ST::testAffectsObject(xAOD::Type::Jet, systInfo.affectsType);
+   const Bool_t syst_affectsFatJets   = ST::testAffectsObject(xAOD::Type::Jet, systInfo.affectsType);
+   const Bool_t syst_affectsTrackJets = ST::testAffectsObject(xAOD::Type::Jet, systInfo.affectsType);
    const Bool_t syst_affectsPhotons   = ST::testAffectsObject(xAOD::Type::Photon, systInfo.affectsType);
    const Bool_t syst_affectsTaus      = ST::testAffectsObject(xAOD::Type::Tau, systInfo.affectsType);
 
@@ -625,6 +652,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    content.doElectrons      = (syst_affectsElectrons || content.isNominal);
    content.doMuons          = (syst_affectsMuons || content.isNominal);
    content.doJets           = (syst_affectsJets || content.isNominal);
+   content.doFatJets        = (syst_affectsFatJets || content.isNominal);
+   content.doTrackJets      = (syst_affectsTrackJets || content.isNominal);
    content.doPhotons        = (syst_affectsPhotons || content.isNominal); // needed for overlap removal
    content.doTaus           = (syst_affectsTaus || content.isNominal);
    content.doMET            = kTRUE;
@@ -745,6 +774,34 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       content.allJets.sort(&HelperFunctions::comparePt); // sort by Pt
    }                                                     // done with jets
 
+   //-- FatJETS --
+   if (content.doFatJets) {
+      content.fatjets    = nullptr;
+      content.fatjetsAux = nullptr;
+      content.allFatJets.clear(SG::VIEW_ELEMENTS);
+      ANA_CHECK(m_susytools_handle->GetFatJets(content.fatjets, content.fatjetsAux, kTRUE));
+      for (auto fatjet : *content.fatjets) {
+         if (fatjet->pt() > 200e3 && fabs(fatjet->eta()) < 2.0 && fatjet->m() > 40e3 &&
+             (fatjet->m() / fatjet->pt()) < 1.)
+            content.allFatJets.push_back(fatjet);
+      }
+      content.allFatJets.sort(&HelperFunctions::comparePt); // sort by Pt
+   }                                                        // done with fatjets
+
+   //-- TrackJETS --
+   if (content.doTrackJets) {
+      content.trackjets    = nullptr;
+      content.trackjetsAux = nullptr;
+      content.allTrackJets.clear(SG::VIEW_ELEMENTS);
+      ANA_CHECK(m_susytools_handle->GetTrackJets(content.trackjets, content.trackjetsAux, kTRUE));
+      for (auto trackjet : *content.trackjets) {
+         if (acc_baseline(*trackjet) == 1) {
+            content.allTrackJets.push_back(trackjet);
+         }
+      }
+      content.allTrackJets.sort(&HelperFunctions::comparePt); // sort by Pt
+   }                                                          // done with trackjets
+
    //-- MUONS --
    if (content.doMuons) {
       content.muons    = nullptr;
@@ -754,23 +811,23 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
       ANA_CHECK(m_susytools_handle->GetMuons(content.muons, content.muonsAux, kTRUE));
       for (auto mu : *content.muons) {
-	if (acc_baseline(*mu) == 1  && acc_cosmic(*mu) == 0 && acc_bad(*mu) == 0) {
-	   // calculate d0 and z0
-	   const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
-	   const Float_t       primary_vertex_z = pv ? pv->z() : 0;
-	   // content.vtx_sumpt2 = sumPt2(*pv);
-	   dec_new_d0(*mu)    = HelperFunctions::getD0(mu);
-	   dec_new_d0sig(*mu) = HelperFunctions::getD0sig(mu, content.eventInfo);
-	   dec_new_z0(*mu)    = HelperFunctions::getZ0(mu, primary_vertex_z);
-	   dec_new_z0sig(*mu) = HelperFunctions::getZ0sig(mu);
-	   if (debug)
-	     ANA_MSG_INFO("d0  >>  " << HelperFunctions::getD0sig(mu, content.eventInfo) << ", z0 >> "
-			  << HelperFunctions::getZ0(mu, primary_vertex_z));
-	   content.allMuons.push_back(mu);
+         if (acc_baseline(*mu) == 1 && acc_cosmic(*mu) == 0 && acc_bad(*mu) == 0) {
+            // calculate d0 and z0
+            const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
+            const Float_t       primary_vertex_z = pv ? pv->z() : 0;
+            // content.vtx_sumpt2 = sumPt2(*pv);
+            dec_new_d0(*mu)    = HelperFunctions::getD0(mu);
+            dec_new_d0sig(*mu) = HelperFunctions::getD0sig(mu, content.eventInfo);
+            dec_new_z0(*mu)    = HelperFunctions::getZ0(mu, primary_vertex_z);
+            dec_new_z0sig(*mu) = HelperFunctions::getZ0sig(mu);
+            if (debug)
+               ANA_MSG_INFO("d0  >>  " << HelperFunctions::getD0sig(mu, content.eventInfo) << ", z0 >> "
+                                       << HelperFunctions::getZ0(mu, primary_vertex_z));
+            content.allMuons.push_back(mu);
          }
          if (acc_cosmic(*mu) == 0 && acc_bad(*mu) == 0) {
-	   content.contMuons.push_back(mu);
-	 }
+            content.contMuons.push_back(mu);
+         }
       }
       content.allMuons.sort(&HelperFunctions::comparePt);
       content.contMuons.sort(&HelperFunctions::comparePt);
@@ -785,17 +842,17 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       ANA_CHECK(m_susytools_handle->GetElectrons(content.electrons, content.electronsAux, kTRUE));
 
       for (auto el : *content.electrons) {
-	if (acc_baseline(*el) == 1) {
-	  // impact parameters
-	  const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
-	  const Float_t       primary_vertex_z = pv ? pv->z() : 0;
-	  dec_new_d0(*el)                      = HelperFunctions::getD0(el);
-	  dec_new_d0sig(*el)                   = HelperFunctions::getD0sig(el, content.eventInfo);
-	  dec_new_z0(*el)                      = HelperFunctions::getZ0(el, primary_vertex_z);
-	  dec_new_z0sig(*el)                   = HelperFunctions::getZ0sig(el);
-	  content.allElectrons.push_back(el);
+         if (acc_baseline(*el) == 1) {
+            // impact parameters
+            const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
+            const Float_t       primary_vertex_z = pv ? pv->z() : 0;
+            dec_new_d0(*el)                      = HelperFunctions::getD0(el);
+            dec_new_d0sig(*el)                   = HelperFunctions::getD0sig(el, content.eventInfo);
+            dec_new_z0(*el)                      = HelperFunctions::getZ0(el, primary_vertex_z);
+            dec_new_z0sig(*el)                   = HelperFunctions::getZ0sig(el);
+            content.allElectrons.push_back(el);
          }
-	 content.contElectrons.push_back(el); // Container electrons      
+         content.contElectrons.push_back(el); // Container electrons
       }
       content.allElectrons.sort(&HelperFunctions::comparePt);
       content.contElectrons.sort(&HelperFunctions::comparePt);
@@ -809,7 +866,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       ANA_CHECK(m_susytools_handle->GetPhotons(content.photons, content.photonsAux, kTRUE));
       for (auto ph : *content.photons) {
          if (acc_baseline(*ph) == 1) {
-	   content.allPhotons.push_back(ph);
+            content.allPhotons.push_back(ph);
          }
       }
       content.allPhotons.sort(&HelperFunctions::comparePt);
@@ -824,8 +881,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       ANA_CHECK(m_susytools_handle->GetTaus(content.taus, content.tausAux, kTRUE));
       for (auto tau : *content.taus) {
          static SG::AuxElement::Accessor<char> acc_baseline("baseline");
-	 if (acc_baseline(*tau) == 1) {
-	   content.allTaus.push_back(tau);
+         if (acc_baseline(*tau) == 1) {
+            content.allTaus.push_back(tau);
          }
       }
       content.allTaus.sort(&HelperFunctions::comparePt);
@@ -864,28 +921,29 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    Float_t mhtx = 0;
    Float_t mhty = 0;
    for (auto jet : content.allJets) {
+      if ((acc_signal(*jet) == 1 && acc_passOR(*jet) == 1 && acc_bad(*jet) == 0) || doRnS)
+         content.goodJets.push_back(jet);
       if (acc_passOR(*jet) == 1 && acc_bad(*jet) == 0) {
          mhtx += jet->pt() * TMath::Cos(jet->phi());
          mhty += jet->pt() * TMath::Sin(jet->phi());
-         if (acc_signal(*jet) == 1) content.goodJets.push_back(jet);
       }
    }
    // Calculated MHT by hand
    double mht = sqrt(mhtx * mhtx + mhty * mhty);
 
    //-- MUONS --
-   for (auto muon : content.allMuons){
-     if (acc_baseline(*muon) == 1 && acc_passOR(*muon) == 1){ // cosmic, baseline, bad muon already applied
-       content.baselineMuons.push_back(muon);
-       if (acc_signal(*muon) == 1) {
-	 content.goodMuons.push_back(muon); // CR muons
-       }
-     }
+   for (auto muon : content.allMuons) {
+      if (acc_baseline(*muon) == 1 && acc_passOR(*muon) == 1) { // cosmic, baseline, bad muon already applied
+         content.baselineMuons.push_back(muon);
+         if (acc_signal(*muon) == 1) {
+            content.goodMuons.push_back(muon); // CR muons
+         }
+      }
    }
 
    //-- ELECTRONS --
    for (auto electron : content.allElectrons) {
-     if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) {//baseline is already applied
+      if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) { // baseline is already applied
          content.baselineElectrons.push_back(electron);
          if (acc_signal(*electron) == 1) content.goodElectrons.push_back(electron); // CR electrons
       }
@@ -893,10 +951,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    //-- PHOTONS --
    for (auto photon : content.allPhotons) {
-     if (acc_baseline(*photon) == 1 && acc_passOR(*photon) == 1) { // baseline already applied
-       content.baselinePhotons.push_back(photon);
-       if (acc_signal(*photon) == 1 && acc_passOR(*photon) == 1) content.goodPhotons.push_back(photon);
-     }
+      if (acc_baseline(*photon) == 1 && acc_passOR(*photon) == 1) { // baseline already applied
+         content.baselinePhotons.push_back(photon);
+         if (acc_signal(*photon) == 1 && acc_passOR(*photon) == 1) content.goodPhotons.push_back(photon);
+      }
    }
 
    //-- TAUS --
@@ -915,24 +973,27 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst;
    getMET(content.met_tst, content.met_tstAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-	  content.electrons, content.muons, content.photons, //note baseline is applied inside SUSYTools
-          kTRUE,   // do TST
-          kTRUE,   // do JVT
-          nullptr, // invisible particles
+          content.electrons, content.muons, content.photons, // note baseline is applied inside SUSYTools
+          kTRUE,                                             // do TST
+          kTRUE,                                             // do JVT
+          nullptr,                                           // invisible particles
           myMET_tst, myMETsig_tst, 0);
    content.metsig_tst = myMETsig_tst;
 
    TLorentzVector myMET_Tight_tst;
    double         myMETsig_Tight_tst;
-   getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+   getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, content.electrons, content.muons,
+          content.photons, // note baseline is applied inside SUSYTools
           kTRUE, kTRUE, nullptr, myMET_Tight_tst, myMETsig_Tight_tst, 1);
    TLorentzVector myMET_Tighter_tst;
    double         myMETsig_Tighter_tst;
-   getMET(content.met_tighter_tst, content.met_tighter_tstAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+   getMET(content.met_tighter_tst, content.met_tighter_tstAux, content.jets, content.electrons, content.muons,
+          content.photons, // note baseline is applied inside SUSYTools
           kTRUE, kTRUE, nullptr, myMET_Tighter_tst, myMETsig_Tighter_tst, 2);
    TLorentzVector myMET_Tenacious_tst;
    double         myMETsig_Tenacious_tst;
-   getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+   getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, content.electrons, content.muons,
+          content.photons, // note baseline is applied inside SUSYTools
           kTRUE, kTRUE, nullptr, myMET_Tenacious_tst, myMETsig_Tenacious_tst, 3);
 
    double met_tst_j1_dphi = -1., met_tst_j2_dphi = -1.;
@@ -957,26 +1018,28 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst_nolep;
    getMET(content.met_tst_nolep, content.met_tst_nolepAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-	  content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
-          kTRUE,   // do TST
-          kTRUE,   // do JVT
+          content.electrons, content.muons, content.photons, // note baseline is applied inside SUSYTools
+          kTRUE,                                             // do TST
+          kTRUE,                                             // do JVT
           nullptr, // invisible particles - using the old style of object removal here
           myMET_tst_nolep, myMETsig_tst_nolep, 0);
    content.metsig_tst_nolep = myMETsig_tst_nolep;
 
    TLorentzVector myMET_Tight_tst_nolep;
    double         myMETsig_Tight_tst_nolep;
-   getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+   getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets, content.electrons, content.muons,
+          content.photons, // note baseline is applied inside SUSYTools
           kTRUE, kTRUE, &invis, myMET_Tight_tst_nolep, myMETsig_Tight_tst_nolep, 1);
    TLorentzVector myMET_Tighter_tst_nolep;
    double         myMETsig_Tighter_tst_nolep;
-   getMET(content.met_tighter_tst_nolep, content.met_tighter_tst_nolepAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
+   getMET(content.met_tighter_tst_nolep, content.met_tighter_tst_nolepAux, content.jets, content.electrons,
+          content.muons, content.photons, // note baseline is applied inside SUSYTools
           kTRUE, kTRUE, &invis, myMET_Tighter_tst_nolep, myMETsig_Tighter_tst_nolep, 2);
    TLorentzVector myMET_Tenacious_tst_nolep;
    double         myMETsig_Tenacious_tst_nolep;
-   getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets, content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
-          kTRUE, kTRUE, &invis, myMET_Tenacious_tst_nolep, myMETsig_Tenacious_tst_nolep,
-          3);
+   getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets, content.electrons,
+          content.muons, content.photons, // note baseline is applied inside SUSYTools
+          kTRUE, kTRUE, &invis, myMET_Tenacious_tst_nolep, myMETsig_Tenacious_tst_nolep, 3);
    // create sum of muon and electron pts
    {
       Float_t px = 0;
@@ -1011,10 +1074,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_cst;
    getMET(content.met_cst, content.met_cstAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-	  content.electrons, content.muons, content.photons,  //note baseline is applied inside SUSYTools
-          kFALSE,  // do TST
-          kFALSE,  // do JVT
-          nullptr, // invisible particles
+          content.electrons, content.muons, content.photons, // note baseline is applied inside SUSYTools
+          kFALSE,                                            // do TST
+          kFALSE,                                            // do JVT
+          nullptr,                                           // invisible particles
           myMET_cst, myMETsig_cst, 0);
 
    double met_cst_jet  = -1.;
@@ -1110,8 +1173,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    // Tight cleaning for EMTopo
    static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
-   if (acc_jetCleanTight.isAvailable(*content.eventInfo)) {
-      for (auto jet : content.goodJets) {
+   for (auto jet : content.goodJets) {
+      if (acc_jetCleanTight.isAvailable(*jet)) {
          if (debug) print("jetClean_TightBad", (bool)acc_jetCleanTight(*jet));
          if (acc_jetCleanTight(*jet) == 0) {
             passesJetCleanTight = false;
@@ -1242,11 +1305,13 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.trigger["HLT_mu24_iloose"] || cand.evt.trigger["HLT_mu24_ivarloose"] || cand.evt.trigger["HLT_mu40"] ||
       cand.evt.trigger["HLT_mu50"] || cand.evt.trigger["HLT_mu24_ivarmedium"] || cand.evt.trigger["HLT_mu24_imedium"] ||
       cand.evt.trigger["HLT_mu26_ivarmedium"] || cand.evt.trigger["HLT_mu26_imedium"];
-   bool diMuon = cand.evt.trigger["HLT_mu20_mu8noL1"] || cand.evt.trigger["HLT_2mu10"]  || cand.evt.trigger["HLT_mu22_mu8noL1"]  || cand.evt.trigger["HLT_2mu14"] ;
-   bool diEle = cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"] || cand.evt.trigger["HLT_2e15_lhvloose_nod0_L12EM13VH"]
-     || cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"] || cand.evt.trigger["HLT_2e24_lhvloose_nod0"];
-   if(diMuon) cand.evt.trigger_lep += 0x2;
-   if(diEle) cand.evt.trigger_lep += 0x4;
+   bool diMuon = cand.evt.trigger["HLT_mu20_mu8noL1"] || cand.evt.trigger["HLT_2mu10"] ||
+                 cand.evt.trigger["HLT_mu22_mu8noL1"] || cand.evt.trigger["HLT_2mu14"];
+   bool diEle = cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"] ||
+                cand.evt.trigger["HLT_2e15_lhvloose_nod0_L12EM13VH"] ||
+                cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"] || cand.evt.trigger["HLT_2e24_lhvloose_nod0"];
+   if (diMuon) cand.evt.trigger_lep += 0x10;
+   if (diEle) cand.evt.trigger_lep += 0x100;
 
    // raw event info
    cand.evt.runNumber            = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
@@ -1330,10 +1395,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if (m_isMC) {
 
       // Record all weights
-      cand.evt.mcEventWeight  = content.eventInfo->mcEventWeight();
-      cand.evt.mcEventWeights = content.eventInfo->mcEventWeights();
-      cand.evt.puWeight       = m_susytools_handle->GetPileupWeight();
-      cand.evt.btagSFWeight   = m_susytools_handle->BtagSF(&content.goodJets);
+      cand.evt.mcEventWeight     = content.eventInfo->mcEventWeight();
+      cand.evt.mcEventWeightXsec = content.eventInfo->mcEventWeight() * my_XsecDB->xsectTimesEff(cand.evt.runNumber);
+      cand.evt.mcEventWeights    = content.eventInfo->mcEventWeights();
+      cand.evt.puWeight          = m_susytools_handle->GetPileupWeight();
+      cand.evt.btagSFWeight      = m_susytools_handle->BtagSF(&content.goodJets);
 
       // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
       cand.evt.jvtSFWeight  = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
@@ -1526,12 +1592,73 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                }
             }
             cand.evt.n_jet_truth = nTruthJets;
+            std::vector<int> usedBC;
             for (const auto &part : *truthJets) {
                if (part->pt() < 7.0e3) continue;
+               //// Now loop over all truth muons and neutrinos and add them vectorically to truth jet if dR < 0.4
+               TLorentzVector nuActivity(0., 0., 0., 0.);
+               TLorentzVector muActivity(0., 0., 0., 0.);
+               for (const auto &truthP_itr : *truthP) {
+                  if (truthP_itr->status() == 1 && (abs(truthP_itr->pdgId()) == 12 || abs(truthP_itr->pdgId()) == 14 ||
+                                                    abs(truthP_itr->pdgId()) == 16)) {
+                     for (const auto &part : *truthJets) {
+                        double dR = truthP_itr->p4().DeltaR(part->p4());
+                        if (dR < 0.4) {
+                           if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
+                              usedBC.push_back(truthP_itr->barcode());
+                              nuActivity += truthP_itr->p4();
+                           }
+                        }
+                     }
+                  }
+                  if (truthP_itr->status() == 1 && abs(truthP_itr->pdgId()) == 13) {
+                     for (const auto &part : *truthJets) {
+                        double dR = truthP_itr->p4().DeltaR(part->p4());
+                        if (dR < 0.4) {
+                           if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
+                              usedBC.push_back(truthP_itr->barcode());
+                              muActivity += truthP_itr->p4();
+                           }
+                        }
+                     }
+                  }
+               }
                cand.evt.truth_jet_pt.push_back(part->pt());
                cand.evt.truth_jet_eta.push_back(part->eta());
                cand.evt.truth_jet_phi.push_back(part->phi());
                cand.evt.truth_jet_m.push_back(part->m());
+               cand.evt.truth_jet_label.push_back(part->getAttribute<int>("PartonTruthLabelID"));
+               cand.evt.truth_jetmu_pt.push_back((part->p4() + muActivity).Pt());
+               cand.evt.truth_jetmu_eta.push_back((part->p4() + muActivity).Eta());
+               cand.evt.truth_jetmu_phi.push_back((part->p4() + muActivity).Phi());
+               cand.evt.truth_jetmunu_m.push_back((part->p4() + muActivity).M());
+               cand.evt.truth_jetmunu_pt.push_back((part->p4() + muActivity + nuActivity).Pt());
+               cand.evt.truth_jetmunu_eta.push_back((part->p4() + muActivity + nuActivity).Eta());
+               cand.evt.truth_jetmunu_phi.push_back((part->p4() + muActivity + nuActivity).Phi());
+               cand.evt.truth_jetmunu_m.push_back((part->p4() + muActivity + nuActivity).M());
+            }
+         }
+      }
+
+      //-- FATJETS --
+      const xAOD::JetContainer *truthFatJets(nullptr);
+      if (!failedLookingFor) {
+         if (!event->retrieve(truthFatJets, "AntiKt10TruthTrimmedPtFrac5SmallR20Jets").isSuccess()) {
+            ANA_MSG_ERROR("VBFInv::analyzeEvent : Failed to access Truth FatJets container; not attempting again, "
+                          "truth_fatjet* variables will be empty");
+            failedLookingFor = kTRUE;
+         } else {
+            // number of truth fatjets
+            Int_t nTruthFatJets(0);
+            for (const auto &truthJ_itr : *truthFatJets) {
+               nTruthFatJets++;
+            }
+            cand.evt.n_fatjet_truth = nTruthFatJets;
+            for (const auto &part : *truthFatJets) {
+               cand.evt.truth_fatjet_pt.push_back(part->pt());
+               cand.evt.truth_fatjet_eta.push_back(part->eta());
+               cand.evt.truth_fatjet_phi.push_back(part->phi());
+               cand.evt.truth_fatjet_m.push_back(part->m());
             }
          }
       }
@@ -1596,10 +1723,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.truth_V_dressed_m   = truth_V_dressed.M();
       // Bare
       /*
-     const TLorentzVector truth_V_bare = VBFInvAnalysis::getTruthBosonP4(truthParticles, truthElectrons, truthMuons,
-     truthParticles, kFALSE); cand.evt.truth_V_bare_pt = truth_V_bare.Pt(); cand.evt.truth_V_bare_eta =
-     truth_V_bare.Eta(); cand.evt.truth_V_bare_phi = truth_V_bare.Phi(); cand.evt.truth_V_bare_m = truth_V_bare.M();
-     */
+      const TLorentzVector truth_V_bare = VBFInvAnalysis::getTruthBosonP4(truthParticles, truthElectrons, truthMuons,
+      truthParticles, kFALSE); cand.evt.truth_V_bare_pt = truth_V_bare.Pt(); cand.evt.truth_V_bare_eta =
+      truth_V_bare.Eta(); cand.evt.truth_V_bare_phi = truth_V_bare.Phi(); cand.evt.truth_V_bare_m = truth_V_bare.M();
+      */
 
    } // done with MC only
 
@@ -1614,6 +1741,29 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (acc_bjet(*jet)) tmpNBJet++;
    }
    cand.evt.n_bjet = tmpNBJet;
+
+   //-----------------------------------------------------------------------
+   // Fat jets
+   //-----------------------------------------------------------------------
+   for (auto fatjet : content.allFatJets) {
+      bool dnntop80 = false;
+      bool dnnw50   = false;
+      if (m_DNNTop80->tag(*fatjet)) {
+         dnntop80 = true;
+      }
+      if (m_DNNW50->tag(*fatjet)) {
+         dnnw50 = true;
+      }
+
+      cand.fatjet["fatjet"].add(*fatjet, dnntop80, dnnw50);
+   }
+
+   //-----------------------------------------------------------------------
+   // Track jets
+   //-----------------------------------------------------------------------
+   for (auto trackjet : content.allTrackJets) {
+      cand.trackjet["trackjet"].add(*trackjet);
+   }
 
    //-----------------------------------------------------------------------
    // Selected muons
@@ -1819,22 +1969,19 @@ void VBFInv::GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthPart
 
       // compute SF's
       if (acc_baseline(*el) == 1) {
-	/* NOT applying isolation, so removing this code!
-         Float_t tmp_ptvarcone20;
-         el->isolationValue(tmp_ptvarcone20, xAOD::Iso::IsolationType::ptvarcone20);
-         if (tmp_ptvarcone20 / el->pt() > 0.30) {
-            double             el_iso_sf = 1.0;
-            CP::CorrectionCode result    = m_elecEfficiencySFTool_anti_iso->getEfficiencyScaleFactor(*el, el_iso_sf);
-            switch (result) {
-            case CP::CorrectionCode::Ok: antiIdSF *= el_iso_sf; break;
-            case CP::CorrectionCode::Error: ATH_MSG_ERROR("Failed to retrieve signal electron reco SF"); break;
-            case CP::CorrectionCode::OutOfValidityRange:
-               ATH_MSG_VERBOSE("OutOfValidityRange found for signal electron reco SF");
-               break;
-            default: ATH_MSG_WARNING("Don't know what to do for signal electron reco SF");
-            }
-         }
-	*/
+         /* NOT applying isolation, so removing this code!
+               Float_t tmp_ptvarcone20;
+               el->isolationValue(tmp_ptvarcone20, xAOD::Iso::IsolationType::ptvarcone20);
+               if (tmp_ptvarcone20 / el->pt() > 0.30) {
+                  double             el_iso_sf = 1.0;
+                  CP::CorrectionCode result    = m_elecEfficiencySFTool_anti_iso->getEfficiencyScaleFactor(*el,
+            el_iso_sf); switch (result) { case CP::CorrectionCode::Ok: antiIdSF *= el_iso_sf; break; case
+            CP::CorrectionCode::Error: ATH_MSG_ERROR("Failed to retrieve signal electron reco SF"); break; case
+            CP::CorrectionCode::OutOfValidityRange: ATH_MSG_VERBOSE("OutOfValidityRange found for signal electron reco
+            SF"); break; default: ATH_MSG_WARNING("Don't know what to do for signal electron reco SF");
+                  }
+               }
+         */
       } else {
          double             el_pid_sf = 1.0;
          CP::CorrectionCode result    = m_elecEfficiencySFTool_anti_id->getEfficiencyScaleFactor(*el, el_pid_sf);

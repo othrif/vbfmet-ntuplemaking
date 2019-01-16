@@ -24,6 +24,8 @@ public:
    Bool_t doMuons;
    Bool_t doElectrons;
    Bool_t doJets;
+   Bool_t doFatJets;
+   Bool_t doTrackJets;
    Bool_t doPhotons;
    Bool_t doTaus;
    Bool_t doOverlapRemoval;
@@ -50,7 +52,7 @@ public:
    //
    // objects we do NOT own
    //
-   const xAOD::EventInfo *      eventInfo; //!
+   const xAOD::EventInfo       *eventInfo; //!
    const xAOD::VertexContainer *vertices;  //!
 
    // MET
@@ -87,15 +89,19 @@ public:
    //
 
    // before selection criteria
-   xAOD::MuonContainer *      muons;        //!
+   xAOD::MuonContainer       *muons;        //!
    xAOD::ShallowAuxContainer *muonsAux;     //!
-   xAOD::ElectronContainer *  electrons;    //!
+   xAOD::ElectronContainer   *electrons;    //!
    xAOD::ShallowAuxContainer *electronsAux; //!
-   xAOD::JetContainer *       jets;         //!
+   xAOD::JetContainer        *jets;         //!
    xAOD::ShallowAuxContainer *jetsAux;      //!
-   xAOD::PhotonContainer *    photons;      //!
+   xAOD::JetContainer        *fatjets;      //!
+   xAOD::ShallowAuxContainer *fatjetsAux;   //!
+   xAOD::JetContainer        *trackjets;    //!
+   xAOD::ShallowAuxContainer *trackjetsAux; //!
+   xAOD::PhotonContainer     *photons;      //!
    xAOD::ShallowAuxContainer *photonsAux;   //!
-   xAOD::TauJetContainer *    taus;         //!
+   xAOD::TauJetContainer     *taus;         //!
    xAOD::ShallowAuxContainer *tausAux;      //!
 
    // after selection criteria
@@ -109,6 +115,10 @@ public:
    xAOD::ElectronContainer goodElectrons;     //!
    xAOD::JetContainer      allJets;           //!
    xAOD::JetContainer      goodJets;          //!
+   xAOD::JetContainer      allFatJets;        //!
+   xAOD::JetContainer      goodFatJets;       //!
+   xAOD::JetContainer      allTrackJets;      //!
+   xAOD::JetContainer      goodTrackJets;     //!
    xAOD::PhotonContainer   allPhotons;        //!
    xAOD::PhotonContainer   baselinePhotons;   //!
    xAOD::PhotonContainer   goodPhotons;       //!

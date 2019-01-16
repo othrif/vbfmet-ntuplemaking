@@ -24,6 +24,7 @@ public:
    Float_t   vtx_sumpt2;
 
    Float_t              mcEventWeight;
+   Float_t              mcEventWeightXsec;
    std::vector<Float_t> mcEventWeights;
    Float_t              puWeight;
    Float_t              elSFWeight;
@@ -50,6 +51,23 @@ public:
    std::vector<Float_t> truth_jet_eta;
    std::vector<Float_t> truth_jet_phi;
    std::vector<Float_t> truth_jet_m;
+   std::vector<Int_t>   truth_jet_label;
+
+   std::vector<Float_t> truth_jetmu_pt;
+   std::vector<Float_t> truth_jetmu_eta;
+   std::vector<Float_t> truth_jetmu_phi;
+   std::vector<Float_t> truth_jetmu_m;
+
+   std::vector<Float_t> truth_jetmunu_pt;
+   std::vector<Float_t> truth_jetmunu_eta;
+   std::vector<Float_t> truth_jetmunu_phi;
+   std::vector<Float_t> truth_jetmunu_m;
+
+   Int_t                n_fatjet_truth;
+   std::vector<Float_t> truth_fatjet_pt;
+   std::vector<Float_t> truth_fatjet_eta;
+   std::vector<Float_t> truth_fatjet_phi;
+   std::vector<Float_t> truth_fatjet_m;
 
    /*     Float_t truth_V_bare_pt;
         Float_t truth_V_bare_eta;

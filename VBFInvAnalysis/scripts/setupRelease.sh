@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Analysis base release
-RELEASE_21="21.2.56"
+RELEASE_21="21.2.58"
 
 echo 'Setting up VBF Ntuple Maker code in Release 21 ...'
 mkdir -p build run && cd build
@@ -18,7 +18,9 @@ echo '#!/bin/bash' >> 'setup.sh'
 echo "" >> "setup.sh"
 echo "cd build" >> "setup.sh"
 echo "lsetup \"asetup AnalysisBase,${RELEASE_21},here\" " >> "setup.sh"
-echo "source */setup.sh" >> "setup.sh"
+echo "if ls x86_64-*/setup.sh 1> /dev/null 2>&1; then" >> "setup.sh"
+echo "  source x86_64-*/setup.sh" >> "setup.sh"
+echo "fi" >> "setup.sh"
 echo "cd ../" >> "setup.sh"
 echo "alias cbuild=\"cd \$TestArea/ && cmake \$TestArea/../STAnalysisCode && make && source \$TestArea/*/setup.sh && cd \$TestArea/../run\"" >> "setup.sh"
 echo "alias build=\"cd \$TestArea/ && make && source \$TestArea/*/setup.sh && cd \$TestArea/.. && cd \$TestArea/../run\"" >> "setup.sh"

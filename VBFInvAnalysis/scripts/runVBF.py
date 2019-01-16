@@ -23,7 +23,7 @@ parser.add_argument( "-n", "--nevents", type = int, dest = 'nmax', help="Maximum
 parser.add_argument( "-k", "--nskip", type = int, dest = "nskip", help="Number of events to skip for all the datasets")
 parser.add_argument( "-r", "--replicationSite", type = str, dest = "replicationSite", default = "DESY-HH_LOCALGROUPDISK", help="Name of disk where to replicate output of grid jobs" )
 parser.add_argument( "-w", "--overwrite", dest = "overwrite", action = "store_false", default = True, help = "don't overwrite previous submitDir")
-parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "prun"], help = "driver to be used (local, prun)", metavar="driver")
+parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "prun","condor"], help = "driver to be used (local, prun, condor)", metavar="driver")
 parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth", "VBFInvSherpaTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
 parser.add_argument( "-u", "--user", type=str, dest="userName", default=os.environ["USER"], help="username for grid jobs", metavar="userName")
 
@@ -56,6 +56,8 @@ parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true"
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
+parser.add_argument("--doFatJetDetail", dest="doFatJetDetail", action="store_true", default=False, help="store detailed branches for FatJet")
+parser.add_argument("--doTrackJetDetail", dest="doTrackJetDetail", action="store_true", default=False, help="store detailed branches for TrackJets")
 
 # Configure arguments for Sherpa algorithm in a group.
 group = parser.add_argument_group('sherpa', description="Options for the Sherpa Truth algorithm.")
@@ -173,6 +175,8 @@ if( args.algoName == "VBFInv" ):
   alg.doEventDetail = args.doEventDetail
   alg.doContLepDetail = args.doContLepDetail
   alg.doRnS = args.doRnS
+  alg.doFatJetDetail = args.doFatJetDetail
+  alg.doTrackJetDetail = args.doTrackJetDetail
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
