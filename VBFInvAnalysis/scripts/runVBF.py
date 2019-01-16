@@ -55,6 +55,7 @@ parser.add_argument("--doContLepDetail", dest="doContLepDetail", action="store_t
 parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
+parser.add_argument("--noTruthBoson", dest="noTruthBoson",action='store_true', default=True, help="deactivate boson mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
 
 # Configure arguments for Sherpa algorithm in a group.
@@ -176,6 +177,7 @@ if( args.algoName == "VBFInv" ):
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
+  alg.noTruthBoson = args.noTruthBoson
 elif ( args.algoName == "VBFInvSherpaTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
