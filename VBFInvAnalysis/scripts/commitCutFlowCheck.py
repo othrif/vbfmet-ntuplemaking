@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+
 import ROOT
 import sys
 ROOT.gROOT.SetBatch(True)
@@ -13,8 +15,8 @@ def Diff(t_old, t_new, mvar='baseel_pt'):
     if a!=0.0:
         tdiff = (a-b)/a
     print 'Old: %s New: %s Ratio: %0.3f' %(a,b, tdiff)
-    if abs(tdiff)>0.5:
-        print 'Cutflow differs by more than 0.5\%. Exiting'
+    if abs(tdiff)>0.01:
+        print 'Cutflow differs by more than 1\%. Exiting'
         sys.exit(0)
 
 def Compare(raw_old,raw_new):
@@ -32,8 +34,8 @@ def Compare(raw_old,raw_new):
             sys.exit(0)
         print 'Cut: %s             %0.1f %0.1f            Diff:  %0.1f Ratio:  %0.3f' %(raw_old.GetXaxis().GetBinLabel(i), raw_old.GetBinContent(i), raw_new.GetBinContent(i), diff_ratio, ratio)
         #if abs(ratio)>0.005:
-        if abs(ratio)>0.5:
-            print 'Cutflow differs by more than 0.5\%. Exiting'
+        if abs(ratio)>0.01:
+            print 'Cutflow differs by more than 1\%. Exiting'
             sys.exit(0)
 
 
