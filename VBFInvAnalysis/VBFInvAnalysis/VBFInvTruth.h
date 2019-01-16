@@ -33,7 +33,7 @@ public:
    bool        debug;
    bool        skipCBK;
    bool        MultiWeight;
-
+   bool        noTruthBoson;
    // variables that don't get filled at submission time should be
    // protected from being send from the submission node to the worker
    // node (done by the //!)
