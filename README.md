@@ -159,3 +159,11 @@ ruby tableOfcontent.rb
 git tag -a vXX-AB21p2pYY -m "Tag version vXX"
 git push origin vXX-AB21p2pYY
 ```
+
+## Cutflow check
+This is run from my service account, and the password is set under settings+CI. A maintainer of the code can updated it.
+If you intentially changed the cutflow, then you can update the reference file. This is done by
+``` bash
+runVBF.py -f root://eosuser.cern.ch//eos/user/s/schae/HInv/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.deriv.DAOD_EXOT5.e6126_s3126_r9364_p3575/DAOD_EXOT5.14490426._000001.pool.root.1 --doMuonDetail --doElectronDetail  --doEventDetail --doSkim -n 5000
+cp submitDir/data-MiniNtuple/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.root /eos/user/s/schae/HInv/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.deriv.DAOD_EXOT5.e6126_s3126_r9364_p3575/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.root
+```

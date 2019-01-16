@@ -12,17 +12,22 @@ stages:
   - build
   - install
   - docker
+  - test
 
 # Set the behaviour of the CI build.
 variables:
   GIT_STRATEGY: fetch
   GIT_SUBMODULE_STRATEGY: recursive
+  BUILD_DIR: ci_build
 
 # Each job needs to start with setting up the release from the Docker image,
 # and making sure that all available CPU cores would be used for the build.
 before_script:
   - source /home/atlas/release_setup.sh
   - export MAKEFLAGS="-j`nproc` -l`nproc`"
+  - echo $KRB_PASSWORD | kinit $KRB_USERNAME
+  #- echo "${KRB_PASSWORD}" | kinit ${KRB_USERNAME}@CERN.CH
+  #- echo -e "Host svn.cern.ch lxplus.cern.ch\n\tUser ${KRB_USERNAME}\n\tStrictHostKeyChecking no\n\tGSSAPIAuthentication yes\n\tGSSAPIDelegateCredentials yes\n\tProtocol 2\n\tForwardX11 no\n\tIdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config   
 
 # Common configuration for all the "regular" jobs.
 .job_template: &build_job
@@ -35,12 +40,12 @@ config:
   <<: *build_job
   stage: config
   script:
-    - mkdir -p ci_build
-    - cd ci_build/
+    - mkdir -p ${BUILD_DIR}/
+    - cd ${BUILD_DIR}/
     - cmake -DCTEST_USE_LAUNCHERS:BOOL=TRUE ../
   artifacts:
     paths:
-      - ci_build/
+      - ${BUILD_DIR}/
     expire_in: 1 day
 
 # Setup for building the code in the repository.
@@ -50,10 +55,10 @@ build:
   dependencies:
     - config
   script:
-    - cmake --build ci_build/
+    - cmake --build ${BUILD_DIR}/
   artifacts:
     paths:
-      - ci_build/
+      - ${BUILD_DIR}/
     expire_in: 1 day
 
 # Setup for installing the built results of the repository's code.
@@ -64,7 +69,7 @@ install:
     - build
   script:
     - export DESTDIR=${PWD}/ci_install
-    - cmake --build ci_build/ --target install
+    - cmake --build ${BUILD_DIR}/ --target install
   artifacts:
     paths:
       - ci_install/
@@ -77,11 +82,11 @@ package:
   dependencies:
     - build
   script:
-    - cd ci_build/
+    - cd ${BUILD_DIR}/
     - cpack -G RPM
   artifacts:
     paths:
-      - ci_build/*.rpm
+      - ${BUILD_DIR}/*.rpm
     expire_in: 1 day
 
 # Setup for building a Docker image from the repository's compiled code.
@@ -92,3 +97,21 @@ docker:
   tags:
     - docker-image-build
   script: echo
+
+# Setup for a test
+test:
+  <<: *build_job
+  stage: test
+  dependencies:
+    - build
+  script:
+     - cd "${BUILD_DIR}"
+     - source "${AnalysisBase_PLATFORM}/setup.sh"
+     - cd ../
+     - export USER=schae
+     - runVBF.py -f root://eosuser.cern.ch//eos/user/s/schae/HInv/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.deriv.DAOD_EXOT5.e6126_s3126_r9364_p3575/DAOD_EXOT5.14490426._000001.pool.root.1 --doMuonDetail --doElectronDetail  --doEventDetail --doSkim -n 5000
+     - commitCutFlowCheck.py
+  artifacts:
+    paths:
+      - submitDir/data-MiniNtuple/*.root
+    expire_in: 1 day

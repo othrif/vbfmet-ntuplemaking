@@ -1044,11 +1044,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    {
       Float_t px = 0;
       Float_t py = 0;
-      for (auto muon : content.goodMuons) {
+      //for (auto muon : content.goodMuons) {
+      for (auto muon : content.baselineMuons) {
          px += muon->pt() * TMath::Cos(muon->phi());
          py += muon->pt() * TMath::Sin(muon->phi());
       }
-      for (auto electron : content.goodElectrons) {
+      //for (auto electron : content.goodElectrons) {
+      for (auto electron : content.baselineElectrons) {
          px += electron->pt() * TMath::Cos(electron->phi());
          py += electron->pt() * TMath::Sin(electron->phi());
       }
