@@ -652,8 +652,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    content.doElectrons      = (syst_affectsElectrons || content.isNominal);
    content.doMuons          = (syst_affectsMuons || content.isNominal);
    content.doJets           = (syst_affectsJets || content.isNominal);
-   content.doFatJets        = (syst_affectsFatJets || content.isNominal);
-   content.doTrackJets      = (syst_affectsTrackJets || content.isNominal);
+   content.doFatJets        = (syst_affectsFatJets || content.isNominal) && doFatJetDetail;
+   content.doTrackJets      = (syst_affectsTrackJets || content.isNominal) && doTrackJetDetail;
    content.doPhotons        = (syst_affectsPhotons || content.isNominal); // needed for overlap removal
    content.doTaus           = (syst_affectsTaus || content.isNominal);
    content.doMET            = kTRUE;
@@ -1640,23 +1640,25 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
       //-- FATJETS --
       const xAOD::JetContainer *truthFatJets(nullptr);
-      if (!failedLookingFor) {
-         if (!event->retrieve(truthFatJets, "AntiKt10TruthTrimmedPtFrac5SmallR20Jets").isSuccess()) {
-            ANA_MSG_ERROR("VBFInv::analyzeEvent : Failed to access Truth FatJets container; not attempting again, "
-                          "truth_fatjet* variables will be empty");
-            failedLookingFor = kTRUE;
-         } else {
-            // number of truth fatjets
-            Int_t nTruthFatJets(0);
-            for (const auto &truthJ_itr : *truthFatJets) {
-               nTruthFatJets++;
-            }
-            cand.evt.n_fatjet_truth = nTruthFatJets;
-            for (const auto &part : *truthFatJets) {
-               cand.evt.truth_fatjet_pt.push_back(part->pt());
-               cand.evt.truth_fatjet_eta.push_back(part->eta());
-               cand.evt.truth_fatjet_phi.push_back(part->phi());
-               cand.evt.truth_fatjet_m.push_back(part->m());
+      if (content.doFatJets) {
+         if (!failedLookingFor) {
+            if (!event->retrieve(truthFatJets, "AntiKt10TruthTrimmedPtFrac5SmallR20Jets").isSuccess()) {
+               ANA_MSG_ERROR("VBFInv::analyzeEvent : Failed to access Truth FatJets container; not attempting again, "
+                             "truth_fatjet* variables will be empty");
+               failedLookingFor = kTRUE;
+            } else {
+               // number of truth fatjets
+               Int_t nTruthFatJets(0);
+               for (const auto &truthJ_itr : *truthFatJets) {
+                  nTruthFatJets++;
+               }
+               cand.evt.n_fatjet_truth = nTruthFatJets;
+               for (const auto &part : *truthFatJets) {
+                  cand.evt.truth_fatjet_pt.push_back(part->pt());
+                  cand.evt.truth_fatjet_eta.push_back(part->eta());
+                  cand.evt.truth_fatjet_phi.push_back(part->phi());
+                  cand.evt.truth_fatjet_m.push_back(part->m());
+               }
             }
          }
       }
