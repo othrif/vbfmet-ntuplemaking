@@ -29,6 +29,7 @@
 #include <VBFInvAnalysis/VBFInv.h>
 #include <VBFInvAnalysis/HelperFunctions.h>
 #include <VBFInvAnalysis/GetTruthBosonP4.h>
+#include <VBFInvAnalysis/TruthFilter.h>
 
 // Utils
 #include <boost/algorithm/string.hpp>
@@ -51,6 +52,7 @@ ClassImp(VBFInv)
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doRnS(false),
      doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false), doJetDetail(false),
      doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false), doContLepDetail(false),
+     JetEtaFilter(5.0), JetpTFilter(20.0e3),MjjFilter(800.0e3),PhijjFilter(2.5),
      m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false),
      m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
      m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
@@ -188,7 +190,11 @@ EL::StatusCode VBFInv::initialize()
    ANA_MSG_INFO("  - pt2Skim = " << pt1Skim << " MeV ( " << pt2SkimForSyst << " MeV for systematics)");
    ANA_MSG_INFO("  - metSkim = " << metSkim << " MeV ( " << metSkimForSyst << " MeV for systematics)");
    ANA_MSG_INFO("  - mjjSkim = " << mjjSkim << " MeV ( " << mjjSkimForSyst << " MeV for systematics)");
-   ANA_MSG_INFO("  - detajjSkim = " << detajjSkim << " ( " << detajjSkimForSyst << " for systematics)");
+   ANA_MSG_INFO("  - detajjSkim = "   << detajjSkim << " ( " << detajjSkimForSyst << " for systematics)");
+   ANA_MSG_INFO("  - JetEtaFilter = " << JetEtaFilter );
+   ANA_MSG_INFO("  - JetpTFilter = "  << JetpTFilter  << " MeV ");
+   ANA_MSG_INFO("  - MjjFilter = "    << MjjFilter    << " MeV ");
+   ANA_MSG_INFO("  - PhijjFilter = " << PhijjFilter   );
    ANA_MSG_INFO("  - skip_syst = " << skip_syst);
    ANA_MSG_INFO("  - trigger_list = " << trigger_list);
    ANA_MSG_INFO("  - showerType = " << showerType);
@@ -1385,10 +1391,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    cand.evt.met_cst_jet           = content.met_cst_jet;
    cand.evt.metsig_tst            = content.metsig_tst;
    cand.evt.metsig_tst_nolep      = content.metsig_tst_nolep;
-   //   cand.evt.met_tst_nomuon_j1_dphi = content.met_tst_nomuon_j1_dphi;
-   //   cand.evt.met_tst_nomuon_j2_dphi = content.met_tst_nomuon_j2_dphi;
-   //   cand.evt.met_tst_noelectron_j1_dphi = content.met_tst_noelectron_j1_dphi;
-   //   cand.evt.met_tst_noelectron_j2_dphi = content.met_tst_noelectron_j2_dphi;
 
    // MC-only information
 
@@ -1637,6 +1639,12 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                cand.evt.truth_jetmunu_phi.push_back((part->p4() + muActivity + nuActivity).Phi());
                cand.evt.truth_jetmunu_m.push_back((part->p4() + muActivity + nuActivity).M());
             }
+            // Truth filter for V+jets Extension
+            double tmp_mjj, tmp_detajj, tmp_dphijj;
+            cand.evt.passVjetsFilter = VBFInvAnalysis::passTruthFilter(truthJets, JetEtaFilter, JetpTFilter,MjjFilter,PhijjFilter,tmp_mjj, tmp_detajj, tmp_dphijj);
+            cand.evt.truthF_jj_mass = tmp_mjj;
+            cand.evt.truthF_jj_deta = tmp_detajj;
+            cand.evt.truthF_jj_dphi = tmp_dphijj;
          }
       }
 

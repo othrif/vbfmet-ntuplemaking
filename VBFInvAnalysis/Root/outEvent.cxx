@@ -112,6 +112,8 @@ void Analysis::outEvent::reset()
    passJetCleanTight = -9999;
    passDetErr        = -9999;
 
+   passVjetsFilter = false;
+
    n_vx          = -9999;
    n_jet         = -9999;
    n_bjet        = -9999;
@@ -130,6 +132,10 @@ void Analysis::outEvent::reset()
    met_cst_jet           = -9999;
    metsig_tst            = -9999;
    metsig_tst_nolep      = -9999;
+
+   truthF_jj_mass               = -9999;
+   truthF_jj_deta               = -9999;
+   truthF_jj_dphi               = -9999;
 
    // clear the map
    for (std::map<TString, Float_t>::iterator it = syst_var_map.begin(); it != syst_var_map.end(); ++it) {
@@ -278,6 +284,8 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "passJetCleanTight", &passJetCleanTight);
    tree->Branch(prefix + "passDetErr", &passDetErr);
 
+   tree->Branch(prefix + "passVjetsFilter", &passVjetsFilter);
+
    tree->Branch(prefix + "n_vx", &n_vx);
    tree->Branch(prefix + "n_jet", &n_jet);
    tree->Branch(prefix + "n_bjet", &n_bjet);
@@ -296,6 +304,10 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "met_cst_jet", &met_cst_jet);
    tree->Branch(prefix + "metsig_tst", &metsig_tst);
    tree->Branch(prefix + "metsig_tst_nolep", &metsig_tst_nolep);
+
+   tree->Branch(prefix + "truthF_jj_mass", &truthF_jj_mass);
+   tree->Branch(prefix + "truthF_jj_deta", &truthF_jj_deta);
+   tree->Branch(prefix + "truthF_jj_dphi", &truthF_jj_dphi);
    return;
 }
 
