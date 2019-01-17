@@ -44,6 +44,10 @@ parser.add_argument("--mjjSkim", type=float, dest="mjjSkim", default=200000, hel
 parser.add_argument("--mjjSkimForSyst", type=float, dest="mjjSkimForSyst", default=200000, help="jet invariant mass skim (systematics), in MeV", metavar="cut")
 parser.add_argument("--detajjSkim", type=float, dest="detajjSkim", default=2.5, help="jet DEta skim (nominal tree)", metavar="cut")
 parser.add_argument("--detajjSkimForSyst", type=float, dest="detajjSkimForSyst", default=2.5, help="jet DEta skim (systematics)V", metavar="cut")
+parser.add_argument("--JetEtaFilter", type=float, dest="JetEtaFilter", default=5.0, help="Truth jet eta for di-jets of the VBF filter", metavar="cut")
+parser.add_argument("--JetpTFilter", type=float, dest="JetpTFilter", default=20000, help="Truth jet pt for di-jets of the VBF filter, in MeV", metavar="cut")
+parser.add_argument("--MjjFilter", type=float, dest="MjjFilter", default=800000, help="Truth jet invariant mass for di-jets of the VBF filter, in MeV", metavar="cut")
+parser.add_argument("--PhijjFilter", type=float, dest="PhijjFilter", default=2.5, help="Truth jet delta Phi for di-jets of the VBF filter", metavar="cut")
 parser.add_argument("--doTrim", dest="doTrim", action="store_true", default=False, help="Apply trimming, only to nominal as systematics is trimmed by default")
 parser.add_argument("--doElectronDetail", dest="doElectronDetail", action="store_true", default=False, help="add detailed branches for electrons")
 parser.add_argument("--doMuonDetail", dest="doMuonDetail", action="store_true", default=False, help="add detailed branches for muons")
@@ -166,6 +170,10 @@ if( args.algoName == "VBFInv" ):
   alg.mjjSkimForSyst = args.mjjSkimForSyst
   alg.detajjSkim = args.detajjSkim
   alg.detajjSkimForSyst = args.detajjSkimForSyst
+  alg.JetEtaFilter = args.JetEtaFilter
+  alg.JetpTFilter = args.JetpTFilter
+  alg.MjjFilter = args.MjjFilter
+  alg.PhijjFilter = args.PhijjFilter
   alg.doElectronDetail = args.doElectronDetail
   alg.doMuonDetail = args.doMuonDetail
   alg.doJetDetail = args.doJetDetail

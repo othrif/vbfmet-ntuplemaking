@@ -113,6 +113,8 @@ public:
    Int_t passJetCleanTight;
    Int_t passDetErr;
 
+   Bool_t passVjetsFilter;
+
    Int_t    n_vx;
    Int_t    n_jet;
    Double_t jj_mass;
@@ -129,6 +131,10 @@ public:
    //      Double_t met_tst_noelectron_j2_dphi;
    Double_t metsig_tst;
    Double_t metsig_tst_nolep;
+
+   Double_t truthF_jj_mass;
+   Double_t truthF_jj_deta;
+   Double_t truthF_jj_dphi;
 
    Int_t n_bjet;
    Int_t n_mu;
