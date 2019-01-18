@@ -25,6 +25,7 @@ void Analysis::outEvent::reset()
    averageIntPerXing    = -9999;
    corAverageIntPerXing = -9999;
    vtx_sumpt2           = -9999;
+   l1_met_trig_encoded  = 0;
 
    // Weights
    mcEventWeight = 1.0;
@@ -88,7 +89,6 @@ void Analysis::outEvent::reset()
    }
    trigger_lep        = -9999;
    trigger_met        = -9999;
-   custom_trigger_met = -9999;
 
    passGRL = -9999;
    // passTrigger = -9999;
@@ -139,6 +139,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "vtx_sumpt2", &vtx_sumpt2);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
    if (!doTrim()) tree->Branch(prefix + "mcEventWeights", &mcEventWeights);
+   if (!doTrim()) tree->Branch("l1_met_trig_encoded", &l1_met_trig_encoded);
 
    tree->Branch(prefix + "puWeight", &puWeight);
    tree->Branch(prefix + "btagSFWeight", &btagSFWeight);
@@ -152,6 +153,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
 
    for (auto &itrig : trigger) {
       const TString trigName = itrig.first;
+      //std::cout << "Trigger: " << itrig.first << std::endl;
       if (
          // MET 2015-2016
          trigName == "HLT_xe70_mht" || trigName == "HLT_xe90_mht_L1XE50" || trigName == "HLT_xe100_mht_L1XE50" ||
@@ -190,7 +192,6 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    }
    tree->Branch(prefix + "trigger_lep", &trigger_lep);
    tree->Branch(prefix + "trigger_met", &trigger_met);
-   tree->Branch(prefix + "custom_trigger_met", &custom_trigger_met);
 
    /*
        tree->Branch(prefix + "pdf_id1", &pdf_id1);
