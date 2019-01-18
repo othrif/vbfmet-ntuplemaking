@@ -1294,6 +1294,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    for (auto &kv : cand.evt.trigger) {
       kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
    }
+   // encoding the L1 trigger items
+   if(m_susytools_handle->IsTrigPassed("L1_XE50")) cand.evt.l1_met_trig_encoded+=0x1;
+   if(m_susytools_handle->IsTrigPassed("L1_XE55")) cand.evt.l1_met_trig_encoded+=0x1;
+   if(m_susytools_handle->IsTrigPassed("L1_XE60")) cand.evt.l1_met_trig_encoded+=0x1;
    // cand.evt.passTrigger = -1;
    cand.evt.trigger_lep =
       // el 2015

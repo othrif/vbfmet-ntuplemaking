@@ -22,6 +22,7 @@ public:
    Float_t   averageIntPerXing;
    Float_t   corAverageIntPerXing;
    Float_t   vtx_sumpt2;
+   Int_t     l1_met_trig_encoded;
 
    Float_t              mcEventWeight;
    Float_t              mcEventWeightXsec;
@@ -104,7 +105,6 @@ public:
    std::map<TString, Int_t>   trigger;
    Int_t                      trigger_lep;
    Int_t                      trigger_met;
-   Int_t                      custom_trigger_met;
 
    Int_t passGRL;
    //      Int_t passTrigger;

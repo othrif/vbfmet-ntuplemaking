@@ -436,7 +436,8 @@ EL::StatusCode VBFInvTruth ::execute()
 
    // Bosons
    const xAOD::TruthParticleContainer *bosons = nullptr;
-   ANA_CHECK(evtStore()->retrieve(bosons, "TruthBoson"));
+   if(!noTruthBoson)
+     ANA_CHECK(evtStore()->retrieve(bosons, "TruthBoson"));
 
    // Neutrinos
    const xAOD::TruthParticleContainer *neutrinos = nullptr;
@@ -614,8 +615,9 @@ m_ntaus = ntau5;
 
    //  Bosons
    int nbos10 = 0;
-   for (const auto &bos_itr : *bosons) {
-      if (bos_itr->pt() > 10000.) {
+   if(bosons){
+     for (const auto &bos_itr : *bosons) {
+       if (bos_itr->pt() > 10000.) {
          m_boson_e->push_back(bos_itr->e());
          m_boson_m->push_back(bos_itr->m());
          m_boson_pt->push_back(bos_itr->pt());
@@ -623,7 +625,8 @@ m_ntaus = ntau5;
          m_boson_phi->push_back(bos_itr->phi());
          m_boson_pdgid->push_back(bos_itr->pdgId());
          nbos10++;
-      }
+       }
+     }
    }
    m_nbosons = nbos10;
 
