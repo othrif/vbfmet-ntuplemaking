@@ -70,10 +70,10 @@ public:
    std::vector<Float_t> truth_fatjet_phi;
    std::vector<Float_t> truth_fatjet_m;
 
-   /*     Float_t truth_V_bare_pt;
-        Float_t truth_V_bare_eta;
-        Float_t truth_V_bare_phi;
-        Float_t truth_V_bare_m;*/
+   Float_t truth_V_bare_pt;
+   Float_t truth_V_bare_eta;
+   Float_t truth_V_bare_phi;
+   Float_t truth_V_bare_m;
 
    Float_t truth_V_dressed_pt;
    Float_t truth_V_dressed_eta;
@@ -114,6 +114,7 @@ public:
    Int_t passDetErr;
 
    Bool_t passVjetsFilter;
+   Bool_t passVjetsPTV;
 
    Int_t    n_vx;
    Int_t    n_jet;
@@ -125,10 +126,6 @@ public:
    Double_t met_tst_nolep_j1_dphi;
    Double_t met_tst_nolep_j2_dphi;
    Double_t met_cst_jet;
-   //      Double_t met_tst_nomuon_j1_dphi;
-   //      Double_t met_tst_nomuon_j2_dphi;
-   //      Double_t met_tst_noelectron_j1_dphi;
-   //      Double_t met_tst_noelectron_j2_dphi;
    Double_t metsig_tst;
    Double_t metsig_tst_nolep;
 

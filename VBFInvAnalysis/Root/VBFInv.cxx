@@ -1202,11 +1202,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       }
    }
 
-   // if (passesJetCleanTightCustom != passesJetCleanTight )
-   //  std::cout << evtNbr << " cleaning: DFCommonJets_eventClean_LooseBad=" << passesJetCleanLoose << ",
-   //  DFCommonJets_jetClean_TightBad=" << passesJetCleanTight << " > passesJetCleanTightCustom=" <<
-   //  passesJetCleanTightCustom << std::endl;
-
    m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
    content.passJetCleanLoose = passesJetCleanLoose;
    content.passJetCleanTight = passesJetCleanTight;
@@ -1736,11 +1731,16 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.truth_V_dressed_phi = truth_V_dressed.Phi();
       cand.evt.truth_V_dressed_m   = truth_V_dressed.M();
       // Bare
-      /*
-      const TLorentzVector truth_V_bare = VBFInvAnalysis::getTruthBosonP4(truthParticles, truthElectrons, truthMuons,
-      truthParticles, kFALSE); cand.evt.truth_V_bare_pt = truth_V_bare.Pt(); cand.evt.truth_V_bare_eta =
-      truth_V_bare.Eta(); cand.evt.truth_V_bare_phi = truth_V_bare.Phi(); cand.evt.truth_V_bare_m = truth_V_bare.M();
-      */
+      const TLorentzVector truth_V_bare =
+         VBFInvAnalysis::getTruthBosonP4(truthParticles, truthElectrons, truthMuons, truthParticles, kFALSE);
+      cand.evt.truth_V_bare_pt  = truth_V_bare.Pt();
+      cand.evt.truth_V_bare_eta = truth_V_bare.Eta();
+      cand.evt.truth_V_bare_phi = truth_V_bare.Phi();
+      cand.evt.truth_V_bare_m   = truth_V_bare.M();
+
+      // Used for PTV slicing PTV500_1000 and PTV1000_E_CMS samples ( 364216-364229 )
+      bool checkPTV = false; if (cand.evt.truth_V_dressed_pt>500.0e3) checkPTV = true;
+      cand.evt.passVjetsPTV = checkPTV ;
 
    } // done with MC only
 
