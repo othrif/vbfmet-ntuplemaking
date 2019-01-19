@@ -12,38 +12,36 @@ mainMCTest = OrderedDict([
   ])
 
 mainMC = OrderedDict([
-    ('MoreVjets', range(364216, 364229 + 1)),
-    ('signal',    [308276,308567,308284]),
-    ('signalAlt', [308275] + range(308277,308283 + 1)),
-    ('VH',        [308071,308072]),
-    ('VV',        range(363355, 363360+1) + [363489]),
-    ('EWK',       range(308092, 308098+1)),
-    ('Wenu',      range(364170,364183 + 1)),
-    ('Wmunu',     range(364156,364169 + 1)),
-    ('Wtaunu',    range(364184,364197 + 1)),
-    ('Zee',       range(364114, 364127 + 1)),
-    ('Zmumu',     range(364100, 364113 +1)),
-    ('Ztautau',   range(364128, 364141 + 1)),
-    ('Znunu',     range(364142, 364155 + 1)),
-    ('ZnunuMG',   range(361515, 361519 + 1)),
-    ('ZtautauMG', range(361510, 361514 + 1)),
-    ('ZmumuMG',   range(363123, 363146 + 1)),
-    ('ZeeMG',     range(363147, 363170 + 1)),
-    ('WmunuMG',   range(363624, 363647 + 1)),
-    ('WenuMG',    range(363600, 363623 + 1)),
-    ('WtaunuMG',  range(363648, 363671 + 1)),
-    ('QCDw',      range(361020,361032 + 1)),
-    ('QCDpl',     range(310502,310502 + 1)),
-    ('top',       [410470,410472,410011,410012,410013,410014,410025,410026])
+    ('signal',     [308276,308567,308284]),
+    ('signalAlt',  [308275] + range(308277,308283 + 1)),
+    ('VH',         [308071,308072]),
+    ('Multiboson', range(363355, 363360+1) + range(364242,364250 + 1) + range(364253,364255 + 1) + [363489,363494]),
+    ('EWK',        range(308092, 308098+1)),
+    ('Wenu',       range(364170,364183 + 1)),
+    ('Wmunu',      range(364156,364169 + 1)),
+    ('Wtaunu',     range(364184,364197 + 1)),
+    ('Zee',        range(364114, 364127 + 1)),
+    ('Zmumu',      range(364100, 364113 +1)),
+    ('Ztautau',    range(364128, 364141 + 1)),
+    ('Znunu',      range(364142, 364155 + 1)),
+    ('MoreVjets',  range(364216, 364229 + 1)),
+    ('ExtVjets',   range(309662, 309679 + 1)),
+    ('ZnunuMG',    range(361515, 361519 + 1)),
+    ('ZtautauMG',  range(361510, 361514 + 1)),
+    ('ZmumuMG',    range(363123, 363146 + 1)),
+    ('ZeeMG',      range(363147, 363170 + 1)),
+    ('WmunuMG',    range(363624, 363647 + 1)),
+    ('WenuMG',     range(363600, 363623 + 1)),
+    ('WtaunuMG',   range(363648, 363671 + 1)),
+    ('top',        [410470,410471,410472])
     ])
 
 altMC = OrderedDict([
     ('ZllVBF',    [345101,345102,345099,345100]),
     ('ZllDY',     range(364198, 364215+1)),
-    ('topAlt',    [410471]),
-    ('VVrare',    [363494,364250,364254,364255] ),
-    ('VVV',       range(364242,364249 + 1)),
-    ('QCDunw',    range(426001,426009 + 1))
+    ('QCDunw',    range(426001,426009 + 1)),
+    ('QCDpl',      range(310502,310502 + 1)),
+    ('QCDw',      range(361020,361032 + 1))
     ])
 
 truthMC = OrderedDict([
@@ -63,18 +61,14 @@ mcCampaign = {"mc16a":"r9364", "mc16c":"r9781", "mc16d":"r10201", "mc16e":"r1072
 
 # Modified by user:
 #####################
-pTagDict = { "data15_13TeV"                  : "p3576",
-             "data16_13TeV"                  : "p3576",
-             "data17_13TeV"                  : "p3481",
-             #"data18_13TeV"                  : "p3679", # misses jet variables
-             "data18_13TeV"                  : "p3583",
-             #"mc16_13TeV"                    : "p3596"} # skimmed or unskimmed here
-             #"mc16_13TeV"                    : "p3627"} # skimmed or unskimmed here. for mc16e
-             #"mc16_13TeV"                    : "p3500"}
-             "mc16_13TeV"                    : "p3575"}
+pTagDict = { "data15_13TeV"                  : "p3713",
+             "data16_13TeV"                  : "p3713",
+             "data17_13TeV"                  : "p3713",
+             "data18_13TeV"                  : "p3713",
+             "mc16_13TeV"                    : "p3712"}
 #myMC = mainMCTest
 myMC = mainMC
-myMC.update(altMC)
+myMC.update(myMC)
 #####################
 #
 # Command line arguments

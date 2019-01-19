@@ -72,10 +72,10 @@ void Analysis::outEvent::reset()
    truth_fatjet_eta.clear();
    truth_fatjet_phi.clear();
    truth_fatjet_m.clear();
-   /* truth_V_bare_pt = -9999;
-    truth_V_bare_eta = -9999;
-    truth_V_bare_phi = -9999;
-    truth_V_bare_m = -9999;*/
+   truth_V_bare_pt = -9999;
+   truth_V_bare_eta = -9999;
+   truth_V_bare_phi = -9999;
+   truth_V_bare_m = -9999;
    truth_V_dressed_pt  = -9999;
    truth_V_dressed_eta = -9999;
    truth_V_dressed_phi = -9999;
@@ -113,6 +113,7 @@ void Analysis::outEvent::reset()
    passDetErr        = -9999;
 
    passVjetsFilter = false;
+   passVjetsPTV = false;
 
    n_vx          = -9999;
    n_jet         = -9999;
@@ -180,41 +181,17 @@ void Analysis::outEvent::attachToTree(TTree *tree)
          // MET 2015-2016
          trigName == "HLT_xe70_mht" || trigName == "HLT_xe90_mht_L1XE50" || trigName == "HLT_xe100_mht_L1XE50" ||
          trigName == "HLT_xe110_mht_L1XE50" || trigName == "HLT_noalg_L1J400" ||
+         trigName == "HLT_j70_j50_0eta490_invm1100j70_dphi20_deta40_L1MJJ-500-NFF" ||
+         trigName == "HLT_j70_j50_0eta490_invm1000j50_dphi24_xe90_pufit_xe50_L1MJJ-500-NFF"
+      )
+         tree->Branch(prefix + "trigger_" + trigName, &itrig.second);
+      if (!doTrim() && (
          trigName == "HLT_2j35_btight_2j35_L13J25.0ETA23" ||
          trigName == "HLT_2j35_bmv2c2060_split_2j35_L14J15.0ETA25" ||
          trigName == "HLT_2j15_gsc35_bmv2c1040_split_2j15_gsc35_boffperf_split_L14J15.0ETA25" ||
          trigName == "HLT_2j35_bmv2c1060_split_2j35_L14J15.0ETA25"
-
-         //      || trigName == "HLT_j70_j50_0eta490_invm1100j70_dphi20_deta40_L1MJJ-500-NFF"
-         //      || trigName == "HLT_j70_j50_0eta490_invm1000j50_dphi24_xe90_pufit_xe50_L1MJJ-500-NFF"
-         /*
-               // el 2015
-               || trigName == "HLT_e24_lhmedium_L1EM20VH"
-               || trigName == "HLT_e60_lhmedium"
-               || trigName == "HLT_e120_lhloose"
-               // el 2016
-               || trigName == "HLT_e24_lhtight_nod0_ivarloose"
-               || trigName == "HLT_e26_lhtight_nod0_ivarloose"
-               || trigName == "HLT_e60_lhmedium_nod0"
-               || trigName == "HLT_e60_medium"
-               || trigName == "HLT_e120_lhloose_nod0"
-               || trigName == "HLT_e140_lhloose_nod0"
-               || trigName == "HLT_e300_etcut"
-               // mu 2015
-               || trigName == "HLT_mu20_iloose_L1MU15"
-               || trigName == "HLT_mu40"
-               || trigName == "HLT_mu60_0eta105_msonly"
-               // mu 2016
-               || trigName == "HLT_mu24_iloose"
-               || trigName == "HLT_mu24_ivarloose"
-               || trigName == "HLT_mu40"
-               || trigName == "HLT_mu50"
-               || trigName == "HLT_mu24_ivarmedium"
-               || trigName == "HLT_mu24_imedium"
-               || trigName == "HLT_mu26_ivarmedium"
-               || trigName == "HLT_mu26_imedium"
-         */
-      )
+         )
+         )
          tree->Branch(prefix + "trigger_" + trigName, &itrig.second);
    }
    tree->Branch(prefix + "trigger_lep", &trigger_lep);
@@ -268,10 +245,10 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "truth_tau_phi", &truth_tau_phi);
       tree->Branch(prefix + "truth_tau_m", &truth_tau_m);
       tree->Branch(prefix + "truth_tau_status", &truth_tau_status);
-      /* tree->Branch(prefix + "truth_V_bare_pt", &truth_V_bare_pt);
+      tree->Branch(prefix + "truth_V_bare_pt", &truth_V_bare_pt);
       tree->Branch(prefix + "truth_V_bare_eta", &truth_V_bare_eta);
       tree->Branch(prefix + "truth_V_bare_phi", &truth_V_bare_phi);
-      tree->Branch(prefix + "truth_V_bare_m", &truth_V_bare_m);*/
+      tree->Branch(prefix + "truth_V_bare_m", &truth_V_bare_m);
       tree->Branch(prefix + "truth_V_dressed_pt", &truth_V_dressed_pt);
       tree->Branch(prefix + "truth_V_dressed_eta", &truth_V_dressed_eta);
       tree->Branch(prefix + "truth_V_dressed_phi", &truth_V_dressed_phi);
@@ -286,6 +263,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "passDetErr", &passDetErr);
 
    tree->Branch(prefix + "passVjetsFilter", &passVjetsFilter);
+   tree->Branch(prefix + "passVjetsPTV", &passVjetsPTV);
 
    tree->Branch(prefix + "n_vx", &n_vx);
    tree->Branch(prefix + "n_jet", &n_jet);
