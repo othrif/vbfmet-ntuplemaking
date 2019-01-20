@@ -1,8 +1,6 @@
 #ifndef GETTRUTHBOSONP4_H
 #define GETTRUTHBOSONP4_H
 
-// author: Remi Zaidan
-
 #include <xAODTruth/TruthParticleContainer.h>
 #include <TLorentzVector.h>
 #include <vector>

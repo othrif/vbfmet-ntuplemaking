@@ -22,6 +22,7 @@ public:
    Float_t   averageIntPerXing;
    Float_t   corAverageIntPerXing;
    Float_t   vtx_sumpt2;
+   Int_t     l1_met_trig_encoded;
 
    Float_t              mcEventWeight;
    Float_t              mcEventWeightXsec;
@@ -69,10 +70,10 @@ public:
    std::vector<Float_t> truth_fatjet_phi;
    std::vector<Float_t> truth_fatjet_m;
 
-   /*     Float_t truth_V_bare_pt;
-        Float_t truth_V_bare_eta;
-        Float_t truth_V_bare_phi;
-        Float_t truth_V_bare_m;*/
+   Float_t truth_V_bare_pt;
+   Float_t truth_V_bare_eta;
+   Float_t truth_V_bare_phi;
+   Float_t truth_V_bare_m;
 
    Float_t truth_V_dressed_pt;
    Float_t truth_V_dressed_eta;
@@ -104,7 +105,6 @@ public:
    std::map<TString, Int_t>   trigger;
    Int_t                      trigger_lep;
    Int_t                      trigger_met;
-   Int_t                      custom_trigger_met;
 
    Int_t passGRL;
    //      Int_t passTrigger;
@@ -112,6 +112,9 @@ public:
    Int_t passJetCleanLoose;
    Int_t passJetCleanTight;
    Int_t passDetErr;
+
+   Bool_t passVjetsFilter;
+   Bool_t passVjetsPTV;
 
    Int_t    n_vx;
    Int_t    n_jet;
@@ -123,12 +126,12 @@ public:
    Double_t met_tst_nolep_j1_dphi;
    Double_t met_tst_nolep_j2_dphi;
    Double_t met_cst_jet;
-   //      Double_t met_tst_nomuon_j1_dphi;
-   //      Double_t met_tst_nomuon_j2_dphi;
-   //      Double_t met_tst_noelectron_j1_dphi;
-   //      Double_t met_tst_noelectron_j2_dphi;
    Double_t metsig_tst;
    Double_t metsig_tst_nolep;
+
+   Double_t truthF_jj_mass;
+   Double_t truthF_jj_deta;
+   Double_t truthF_jj_dphi;
 
    Int_t n_bjet;
    Int_t n_mu;

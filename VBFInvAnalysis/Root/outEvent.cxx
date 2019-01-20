@@ -25,6 +25,7 @@ void Analysis::outEvent::reset()
    averageIntPerXing    = -9999;
    corAverageIntPerXing = -9999;
    vtx_sumpt2           = -9999;
+   l1_met_trig_encoded  = 0;
 
    // Weights
    mcEventWeight     = 1.0;
@@ -71,10 +72,10 @@ void Analysis::outEvent::reset()
    truth_fatjet_eta.clear();
    truth_fatjet_phi.clear();
    truth_fatjet_m.clear();
-   /* truth_V_bare_pt = -9999;
-    truth_V_bare_eta = -9999;
-    truth_V_bare_phi = -9999;
-    truth_V_bare_m = -9999;*/
+   truth_V_bare_pt = -9999;
+   truth_V_bare_eta = -9999;
+   truth_V_bare_phi = -9999;
+   truth_V_bare_m = -9999;
    truth_V_dressed_pt  = -9999;
    truth_V_dressed_eta = -9999;
    truth_V_dressed_phi = -9999;
@@ -103,7 +104,6 @@ void Analysis::outEvent::reset()
    }
    trigger_lep        = -9999;
    trigger_met        = -9999;
-   custom_trigger_met = -9999;
 
    passGRL = -9999;
    // passTrigger = -9999;
@@ -111,6 +111,9 @@ void Analysis::outEvent::reset()
    passJetCleanLoose = -9999;
    passJetCleanTight = -9999;
    passDetErr        = -9999;
+
+   passVjetsFilter = false;
+   passVjetsPTV = false;
 
    n_vx          = -9999;
    n_jet         = -9999;
@@ -130,6 +133,10 @@ void Analysis::outEvent::reset()
    met_cst_jet           = -9999;
    metsig_tst            = -9999;
    metsig_tst_nolep      = -9999;
+
+   truthF_jj_mass               = -9999;
+   truthF_jj_deta               = -9999;
+   truthF_jj_dphi               = -9999;
 
    // clear the map
    for (std::map<TString, Float_t>::iterator it = syst_var_map.begin(); it != syst_var_map.end(); ++it) {
@@ -155,6 +162,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
    tree->Branch(prefix + "mcEventWeightXsec", &mcEventWeightXsec);
    if (!doTrim()) tree->Branch(prefix + "mcEventWeights", &mcEventWeights);
+   if (!doTrim()) tree->Branch("l1_met_trig_encoded", &l1_met_trig_encoded);
 
    tree->Branch(prefix + "puWeight", &puWeight);
    tree->Branch(prefix + "btagSFWeight", &btagSFWeight);
@@ -168,50 +176,26 @@ void Analysis::outEvent::attachToTree(TTree *tree)
 
    for (auto &itrig : trigger) {
       const TString trigName = itrig.first;
+      //std::cout << "Trigger: " << itrig.first << std::endl;
       if (
          // MET 2015-2016
          trigName == "HLT_xe70_mht" || trigName == "HLT_xe90_mht_L1XE50" || trigName == "HLT_xe100_mht_L1XE50" ||
          trigName == "HLT_xe110_mht_L1XE50" || trigName == "HLT_noalg_L1J400" ||
+         trigName == "HLT_j70_j50_0eta490_invm1100j70_dphi20_deta40_L1MJJ-500-NFF" ||
+         trigName == "HLT_j70_j50_0eta490_invm1000j50_dphi24_xe90_pufit_xe50_L1MJJ-500-NFF"
+      )
+         tree->Branch(prefix + "trigger_" + trigName, &itrig.second);
+      if (!doTrim() && (
          trigName == "HLT_2j35_btight_2j35_L13J25.0ETA23" ||
          trigName == "HLT_2j35_bmv2c2060_split_2j35_L14J15.0ETA25" ||
          trigName == "HLT_2j15_gsc35_bmv2c1040_split_2j15_gsc35_boffperf_split_L14J15.0ETA25" ||
          trigName == "HLT_2j35_bmv2c1060_split_2j35_L14J15.0ETA25"
-
-         //      || trigName == "HLT_j70_j50_0eta490_invm1100j70_dphi20_deta40_L1MJJ-500-NFF"
-         //      || trigName == "HLT_j70_j50_0eta490_invm1000j50_dphi24_xe90_pufit_xe50_L1MJJ-500-NFF"
-         /*
-               // el 2015
-               || trigName == "HLT_e24_lhmedium_L1EM20VH"
-               || trigName == "HLT_e60_lhmedium"
-               || trigName == "HLT_e120_lhloose"
-               // el 2016
-               || trigName == "HLT_e24_lhtight_nod0_ivarloose"
-               || trigName == "HLT_e26_lhtight_nod0_ivarloose"
-               || trigName == "HLT_e60_lhmedium_nod0"
-               || trigName == "HLT_e60_medium"
-               || trigName == "HLT_e120_lhloose_nod0"
-               || trigName == "HLT_e140_lhloose_nod0"
-               || trigName == "HLT_e300_etcut"
-               // mu 2015
-               || trigName == "HLT_mu20_iloose_L1MU15"
-               || trigName == "HLT_mu40"
-               || trigName == "HLT_mu60_0eta105_msonly"
-               // mu 2016
-               || trigName == "HLT_mu24_iloose"
-               || trigName == "HLT_mu24_ivarloose"
-               || trigName == "HLT_mu40"
-               || trigName == "HLT_mu50"
-               || trigName == "HLT_mu24_ivarmedium"
-               || trigName == "HLT_mu24_imedium"
-               || trigName == "HLT_mu26_ivarmedium"
-               || trigName == "HLT_mu26_imedium"
-         */
-      )
+         )
+         )
          tree->Branch(prefix + "trigger_" + trigName, &itrig.second);
    }
    tree->Branch(prefix + "trigger_lep", &trigger_lep);
    tree->Branch(prefix + "trigger_met", &trigger_met);
-   tree->Branch(prefix + "custom_trigger_met", &custom_trigger_met);
 
    /*
        tree->Branch(prefix + "pdf_id1", &pdf_id1);
@@ -261,10 +245,10 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "truth_tau_phi", &truth_tau_phi);
       tree->Branch(prefix + "truth_tau_m", &truth_tau_m);
       tree->Branch(prefix + "truth_tau_status", &truth_tau_status);
-      /* tree->Branch(prefix + "truth_V_bare_pt", &truth_V_bare_pt);
+      tree->Branch(prefix + "truth_V_bare_pt", &truth_V_bare_pt);
       tree->Branch(prefix + "truth_V_bare_eta", &truth_V_bare_eta);
       tree->Branch(prefix + "truth_V_bare_phi", &truth_V_bare_phi);
-      tree->Branch(prefix + "truth_V_bare_m", &truth_V_bare_m);*/
+      tree->Branch(prefix + "truth_V_bare_m", &truth_V_bare_m);
       tree->Branch(prefix + "truth_V_dressed_pt", &truth_V_dressed_pt);
       tree->Branch(prefix + "truth_V_dressed_eta", &truth_V_dressed_eta);
       tree->Branch(prefix + "truth_V_dressed_phi", &truth_V_dressed_phi);
@@ -277,6 +261,9 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "passJetCleanLoose", &passJetCleanLoose);
    tree->Branch(prefix + "passJetCleanTight", &passJetCleanTight);
    tree->Branch(prefix + "passDetErr", &passDetErr);
+
+   tree->Branch(prefix + "passVjetsFilter", &passVjetsFilter);
+   tree->Branch(prefix + "passVjetsPTV", &passVjetsPTV);
 
    tree->Branch(prefix + "n_vx", &n_vx);
    tree->Branch(prefix + "n_jet", &n_jet);
@@ -296,6 +283,10 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "met_cst_jet", &met_cst_jet);
    tree->Branch(prefix + "metsig_tst", &metsig_tst);
    tree->Branch(prefix + "metsig_tst_nolep", &metsig_tst_nolep);
+
+   tree->Branch(prefix + "truthF_jj_mass", &truthF_jj_mass);
+   tree->Branch(prefix + "truthF_jj_deta", &truthF_jj_deta);
+   tree->Branch(prefix + "truthF_jj_dphi", &truthF_jj_dphi);
    return;
 }
 
