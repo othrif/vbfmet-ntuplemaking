@@ -442,6 +442,14 @@ EL::StatusCode VBFInv::initialize()
       m_NumberEventsinNtuple->SetDirectory(outputFile);
    }
 
+   // setting up some the details to off for systematics
+   bool tmp_doEventDetail=doEventDetail;
+   bool tmp_doTauDetail=doTauDetail;
+   bool tmp_doElectronDetail=doElectronDetail;
+   bool tmp_doMETDetail=doMETDetail;
+   bool tmp_doMuonDetail=doMuonDetail;
+   bool tmp_doJetDetail=doJetDetail;
+
    for (const auto &syst : m_sysList) {
       const TString thisSyst  = syst.systset.name();
       const TString treeName  = (thisSyst == "") ? "MiniNtuple" : ("MiniNtuple_" + thisSyst).ReplaceAll(" ", "_");
@@ -456,6 +464,23 @@ EL::StatusCode VBFInv::initialize()
       const Bool_t isNominal = (thisSyst == "");
       const Bool_t trim = (!isNominal || doTrim || doElectronDetail || doMuonDetail || doJetDetail || doMETDetail ||
                            doEventDetail || doRnS || doContLepDetail);
+
+      // turn off detail for the systematics
+      if(isNominal){ // no change
+	doEventDetail=tmp_doEventDetail;
+	doTauDetail=tmp_doTauDetail;
+	doElectronDetail=tmp_doElectronDetail;
+	doMETDetail=tmp_doMETDetail;
+	doMuonDetail=tmp_doMuonDetail;
+	doJetDetail=tmp_doJetDetail;
+      }else{
+	doEventDetail=false;
+	doTauDetail=false;
+	doElectronDetail=false;
+	doMETDetail=false;
+	doMuonDetail=false;
+	doJetDetail=false;
+      }
 
       ANA_MSG_INFO("Creating TTree named " << treeName.Data() << " for systematic named \"" << thisSyst.Data() << "\"");
 
@@ -605,8 +630,8 @@ EL::StatusCode VBFInv ::readConfig()
    metSkim           = env.GetValue("VBF.metSkim", 0);
    mjjSkim           = env.GetValue("VBF.mjjSkim", 0);
    detajjSkim        = env.GetValue("VBF.detajjSkim", 0);
-   pt1SkimForSyst    = env.GetValue("VBF.ptSkimForSyst", 0);
-   pt2SkimForSyst    = env.GetValue("VBF.ptSkimForSyst", 0);
+   pt1SkimForSyst    = env.GetValue("VBF.pt1SkimForSyst", 0);
+   pt2SkimForSyst    = env.GetValue("VBF.pt2SkimForSyst", 0);
    metSkimForSyst    = env.GetValue("VBF.metSkimForSyst", 0);
    mjjSkimForSyst    = env.GetValue("VBF.mjjSkimForSyst", 0);
    detajjSkimForSyst = env.GetValue("VBF.detajjSkimForSyst", 0);
