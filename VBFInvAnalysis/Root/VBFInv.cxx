@@ -445,6 +445,7 @@ EL::StatusCode VBFInv::initialize()
    // setting up some the details to off for systematics
    bool tmp_doEventDetail=doEventDetail;
    bool tmp_doTauDetail=doTauDetail;
+   bool tmp_doPhotonDetail=doPhotonDetail;
    bool tmp_doElectronDetail=doElectronDetail;
    bool tmp_doMETDetail=doMETDetail;
    bool tmp_doMuonDetail=doMuonDetail;
@@ -469,6 +470,7 @@ EL::StatusCode VBFInv::initialize()
       if(isNominal){ // no change
 	doEventDetail=tmp_doEventDetail;
 	doTauDetail=tmp_doTauDetail;
+	doPhotonDetail=tmp_doPhotonDetail;
 	doElectronDetail=tmp_doElectronDetail;
 	doMETDetail=tmp_doMETDetail;
 	doMuonDetail=tmp_doMuonDetail;
@@ -476,6 +478,7 @@ EL::StatusCode VBFInv::initialize()
       }else{
 	doEventDetail=false;
 	doTauDetail=false;
+	doPhotonDetail=false;
 	doElectronDetail=false;
 	doMETDetail=false;
 	doMuonDetail=false;
@@ -525,8 +528,8 @@ EL::StatusCode VBFInv::initialize()
       if (doFatJetDetail) m_cand[thisSyst].fatjet["fatjet"] = Analysis::outFatJet("fatjet", (trim && !doFatJetDetail));
       if (doTrackJetDetail)
          m_cand[thisSyst].trackjet["trackjet"] = Analysis::outTrackJet("trackjet", (trim && !doTrackJetDetail));
-      if (doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim);
-      if (doPhotonDetail) m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim);
+      if (doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim && !doTauDetail);
+      if (doPhotonDetail) m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim && !doPhotonDetail);
 
       // Set trimming option for remaning outHolder objects
       m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail && !doRnS));
