@@ -115,12 +115,18 @@ for rucio in rucios:
   print 'adding rucio dataset ',rucio
   ROOT.SH.scanRucio(sh, rucio)
 ruciolists = getlist(args.ruciolist)
+print ruciolists
 for ruciolist in ruciolists:
   print 'adding rucio datasets from text file ',ruciolist
   for rucioraw in open(ruciolist).readlines():
     rucio = rucioraw.rstrip('\n').replace(' ', '') # remove spaces from line
     if rucio.startswith('#') == False and rucio != '': # ignore comments / separators
-      ROOT.SH.scanRucio(sh, rucio)
+      if (args.driver == "condor"):
+        ROOT.SH.addGrid(sh,rucio)
+      else:
+        ROOT.SH.scanRucio(sh, rucio)
+if args.driver == "condor" and ruciolists != '':
+  ROOT.SH.makeGridDirect(sh,args.replicationSite,"root://dcache-atlas-xrootd.desy.de:1094/","", False)
 dirs = getlist(args.dir)
 for dir in dirs:
   print 'adding directory with sample ',dir
@@ -262,8 +268,6 @@ elif (args.driver == 'condor'):
     condor_options+="should_transfer_files = NO" + "\n"
     condor_options+="Requirements = ( OpSysAndVer == \"SL6\")" + "\n"
     #  Not working well OpSysAndVer == \"CentOS7\" ||
-    #condor_options+="transfer_input_files  = /tmp/x509up_u29949" + "\n"
-    #condor_options+="environment = \"X509_USER_PROXY=${HOME}/x509up_u29949\"" + "\n"
     #    condor_options+="" + "\n"
     driver.options().setString (ROOT.EL.Job.optCondorConf, condor_options);
     driver.shellInit = "export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase && source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh";

@@ -410,8 +410,7 @@ EL::StatusCode VBFInvTruth ::execute()
          if (debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthJets!");
       }
    } else {
-      if (debug)
-         ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
+      if (debug) ANA_MSG_INFO("Retrieved truth jet container in AntiKt4TruthDressedWZJets!");
       ANA_CHECK(evtStore()->retrieve(jets, "AntiKt4TruthDressedWZJets"));
    }
 
