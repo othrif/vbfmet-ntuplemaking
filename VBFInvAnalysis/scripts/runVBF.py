@@ -49,6 +49,7 @@ parser.add_argument("--JetpTFilter", type=float, dest="JetpTFilter", default=200
 parser.add_argument("--MjjFilter", type=float, dest="MjjFilter", default=800000, help="Truth jet invariant mass for di-jets of the VBF filter, in MeV", metavar="cut")
 parser.add_argument("--PhijjFilter", type=float, dest="PhijjFilter", default=2.5, help="Truth jet delta Phi for di-jets of the VBF filter", metavar="cut")
 parser.add_argument("--doTrim", dest="doTrim", action="store_true", default=False, help="Apply trimming, only to nominal as systematics is trimmed by default")
+parser.add_argument("--doTrimSyst", dest="doTrimSyst", action="store_true", default=False, help="Apply trimming and remove details for the systematics. Nominal is unchanged")
 parser.add_argument("--doElectronDetail", dest="doElectronDetail", action="store_true", default=False, help="add detailed branches for electrons")
 parser.add_argument("--doMuonDetail", dest="doMuonDetail", action="store_true", default=False, help="add detailed branches for muons")
 parser.add_argument("--doJetDetail", dest="doJetDetail", action="store_true", default=False, help="add detailed branches for jets")
@@ -161,6 +162,7 @@ if( args.algoName == "VBFInv" ):
   alg.doSystematics = args.doSystematics
   alg.doSkim = args.doSkim
   alg.doTrim = args.doTrim
+  alg.doTrimSyst = args.doTrimSyst
   alg.pt1Skim = args.pt1Skim
   alg.pt1SkimForSyst = args.pt1SkimForSyst
   alg.pt2Skim = args.pt2Skim
