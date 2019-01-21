@@ -61,7 +61,7 @@ parser.add_argument("--doContLepDetail", dest="doContLepDetail", action="store_t
 parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
-parser.add_argument("--noTruthBoson", dest="noTruthBoson",action='store_true', default=True, help="deactivate boson mode")
+parser.add_argument("--noTruthBoson", dest="noTruthBoson",action='store_true', default=False, help="deactivate boson mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
 parser.add_argument("--doFatJetDetail", dest="doFatJetDetail", action="store_true", default=False, help="store detailed branches for FatJet")
 parser.add_argument("--doTrackJetDetail", dest="doTrackJetDetail", action="store_true", default=False, help="store detailed branches for TrackJets")
@@ -117,12 +117,18 @@ for rucio in rucios:
   print 'adding rucio dataset ',rucio
   ROOT.SH.scanRucio(sh, rucio)
 ruciolists = getlist(args.ruciolist)
+print ruciolists
 for ruciolist in ruciolists:
   print 'adding rucio datasets from text file ',ruciolist
   for rucioraw in open(ruciolist).readlines():
     rucio = rucioraw.rstrip('\n').replace(' ', '') # remove spaces from line
     if rucio.startswith('#') == False and rucio != '': # ignore comments / separators
-      ROOT.SH.scanRucio(sh, rucio)
+      if (args.driver == "condor"):
+        ROOT.SH.addGrid(sh,rucio)
+      else:
+        ROOT.SH.scanRucio(sh, rucio)
+if args.driver == "condor" and ruciolists != '':
+  ROOT.SH.makeGridDirect(sh,args.replicationSite,"root://dcache-atlas-xrootd.desy.de:1094/","", False)
 dirs = getlist(args.dir)
 for dir in dirs:
   print 'adding directory with sample ',dir
@@ -263,7 +269,8 @@ elif (args.driver == 'condor'):
     condor_options+="notify_user = othmane.rifki@desy.de" + "\n"
     condor_options+="notification = Error" + "\n"
     condor_options+="should_transfer_files = NO" + "\n"
-    condor_options+="Requirements = (OpSysAndVer == \"CentOS7\" || OpSysAndVer == \"SL6\")" + "\n"
+    condor_options+="Requirements = ( OpSysAndVer == \"SL6\")" + "\n"
+    #  Not working well OpSysAndVer == \"CentOS7\" ||
     #    condor_options+="" + "\n"
     driver.options().setString (ROOT.EL.Job.optCondorConf, condor_options);
     driver.shellInit = "export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase && source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh";
