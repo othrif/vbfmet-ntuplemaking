@@ -49,6 +49,7 @@ parser.add_argument("--JetpTFilter", type=float, dest="JetpTFilter", default=200
 parser.add_argument("--MjjFilter", type=float, dest="MjjFilter", default=800000, help="Truth jet invariant mass for di-jets of the VBF filter, in MeV", metavar="cut")
 parser.add_argument("--PhijjFilter", type=float, dest="PhijjFilter", default=2.5, help="Truth jet delta Phi for di-jets of the VBF filter", metavar="cut")
 parser.add_argument("--doTrim", dest="doTrim", action="store_true", default=False, help="Apply trimming, only to nominal as systematics is trimmed by default")
+parser.add_argument("--doDetail", dest="doDetail", action="store_true", default=False, help="add detailed branches for all")
 parser.add_argument("--doElectronDetail", dest="doElectronDetail", action="store_true", default=False, help="add detailed branches for electrons")
 parser.add_argument("--doMuonDetail", dest="doMuonDetail", action="store_true", default=False, help="add detailed branches for muons")
 parser.add_argument("--doJetDetail", dest="doJetDetail", action="store_true", default=False, help="add detailed branches for jets")
@@ -175,17 +176,17 @@ if( args.algoName == "VBFInv" ):
   alg.JetpTFilter = args.JetpTFilter
   alg.MjjFilter = args.MjjFilter
   alg.PhijjFilter = args.PhijjFilter
-  alg.doElectronDetail = args.doElectronDetail
-  alg.doMuonDetail = args.doMuonDetail
-  alg.doJetDetail = args.doJetDetail
-  alg.doTauDetail = args.doTauDetail
-  alg.doPhotonDetail = args.doPhotonDetail
-  alg.doMETDetail = args.doMETDetail
-  alg.doEventDetail = args.doEventDetail
-  alg.doContLepDetail = args.doContLepDetail
+  alg.doElectronDetail = args.doElectronDetail or args.doDetail
+  alg.doMuonDetail = args.doMuonDetail or args.doDetail
+  alg.doJetDetail = args.doJetDetail or args.doDetail
+  alg.doTauDetail = args.doTauDetail or args.doDetail
+  alg.doPhotonDetail = args.doPhotonDetail or args.doDetail
+  alg.doMETDetail = args.doMETDetail or args.doDetail
+  alg.doEventDetail = args.doEventDetail or args.doDetail
+  alg.doContLepDetail = args.doContLepDetail or args.doDetail
   alg.doRnS = args.doRnS
-  alg.doFatJetDetail = args.doFatJetDetail
-  alg.doTrackJetDetail = args.doTrackJetDetail
+  alg.doFatJetDetail = args.doFatJetDetail or args.doDetail
+  alg.doTrackJetDetail = args.doTrackJetDetail or args.doDetail
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
