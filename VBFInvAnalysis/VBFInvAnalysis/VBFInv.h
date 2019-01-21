@@ -98,6 +98,7 @@ public:
    Bool_t   doSystematics;
    Bool_t   doSkim;
    Bool_t   doTrim;
+   Bool_t   doTrimSyst;
    Bool_t   doRnS;
    Bool_t   doFatJetDetail;
    Bool_t   doTrackJetDetail;

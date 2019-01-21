@@ -49,7 +49,7 @@ ClassImp(VBFInv)
    : debug(false), verbose(false), config_file(""), ST_config_file(""), prw_file(""), lumicalc_file(""), GRL_file(""),
      MC_campaign(""), skip_syst(""), trigger_list(""), pt1Skim(0), pt1SkimForSyst(0), pt2Skim(0), pt2SkimForSyst(0),
      metSkim(0), metSkimForSyst(0), mjjSkim(0), mjjSkimForSyst(0), detajjSkim(0), detajjSkimForSyst(0),
-     rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doRnS(false),
+     rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false), doRnS(false),
      doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false), doJetDetail(false),
      doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false), doContLepDetail(false),
      JetEtaFilter(5.0), JetpTFilter(20.0e3),MjjFilter(800.0e3),PhijjFilter(2.5),
@@ -186,6 +186,7 @@ EL::StatusCode VBFInv::initialize()
    ANA_MSG_INFO("  - MC campaign = " << MC_campaign);
    ANA_MSG_INFO("  - doSkim = " << doSkim);
    ANA_MSG_INFO("  - doTrim = " << doTrim);
+   ANA_MSG_INFO("  - doTrimSyst = " << doTrimSyst);
    ANA_MSG_INFO("  - pt1Skim = " << pt1Skim << " MeV ( " << pt1SkimForSyst << " MeV for systematics)");
    ANA_MSG_INFO("  - pt2Skim = " << pt1Skim << " MeV ( " << pt2SkimForSyst << " MeV for systematics)");
    ANA_MSG_INFO("  - metSkim = " << metSkim << " MeV ( " << metSkimForSyst << " MeV for systematics)");
@@ -467,22 +468,16 @@ EL::StatusCode VBFInv::initialize()
                            doEventDetail || doRnS || doContLepDetail);
 
       // turn off detail for the systematics
-      if(isNominal){ // no change
-	doEventDetail=tmp_doEventDetail;
-	doTauDetail=tmp_doTauDetail;
-	doPhotonDetail=tmp_doPhotonDetail;
-	doElectronDetail=tmp_doElectronDetail;
-	doMETDetail=tmp_doMETDetail;
-	doMuonDetail=tmp_doMuonDetail;
-	doJetDetail=tmp_doJetDetail;
-      }else{
-	doEventDetail=false;
-	doTauDetail=false;
-	doPhotonDetail=false;
-	doElectronDetail=false;
-	doMETDetail=false;
-	doMuonDetail=false;
-	doJetDetail=false;
+      if(doTrimSyst){
+	if(isNominal){ // no change
+	  doEventDetail=tmp_doEventDetail;
+	  doTauDetail=tmp_doTauDetail;
+	  doPhotonDetail=tmp_doPhotonDetail;
+	  doElectronDetail=tmp_doElectronDetail;
+	  doMETDetail=tmp_doMETDetail;
+	  doMuonDetail=tmp_doMuonDetail;
+	  doJetDetail=tmp_doJetDetail;
+	}else{  doEventDetail=false; doTauDetail=false; doPhotonDetail=false; doElectronDetail=false; doMETDetail=false; doMuonDetail=false; doJetDetail=false; }
       }
 
       ANA_MSG_INFO("Creating TTree named " << treeName.Data() << " for systematic named \"" << thisSyst.Data() << "\"");
