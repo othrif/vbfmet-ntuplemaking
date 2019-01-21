@@ -138,6 +138,7 @@ public:
    Int_t n_mu_baseline;
    Int_t n_el;
    Int_t n_el_baseline;
+   Int_t n_ph;
 
 public:
    outEvent(TString name = "", Bool_t doTrim = kFALSE);
