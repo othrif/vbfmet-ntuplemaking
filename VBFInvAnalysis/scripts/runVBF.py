@@ -185,8 +185,8 @@ if( args.algoName == "VBFInv" ):
   alg.doEventDetail = args.doEventDetail or args.doDetail
   alg.doContLepDetail = args.doContLepDetail or args.doDetail
   alg.doRnS = args.doRnS
-  alg.doFatJetDetail = args.doFatJetDetail or args.doDetail
-  alg.doTrackJetDetail = args.doTrackJetDetail or args.doDetail
+  alg.doFatJetDetail = args.doFatJetDetail
+  alg.doTrackJetDetail = args.doTrackJetDetail
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper
   alg.MultiWeight = args.isMultiWeight
