@@ -122,6 +122,7 @@ void Analysis::outEvent::reset()
    n_el_baseline = 0;
    n_mu          = -9999;
    n_mu_baseline = 0;
+   n_ph          = 0;
 
    jj_mass               = -9999;
    jj_deta               = -9999;
@@ -272,6 +273,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "n_mu", &n_mu);
    tree->Branch(prefix + "n_el_baseline", &n_el_baseline);
    tree->Branch(prefix + "n_mu_baseline", &n_mu_baseline);
+   tree->Branch(prefix + "n_ph", &n_ph);
 
    tree->Branch(prefix + "jj_mass", &jj_mass);
    tree->Branch(prefix + "jj_deta", &jj_deta);

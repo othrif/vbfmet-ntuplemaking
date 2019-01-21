@@ -1540,6 +1540,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                float &sysSF = cand.evt.GetSystVar("muSFWeight", thisSyst, m_tree[""]);
                sysSF        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
             } else if (thisSyst.Contains("TAUS_EFF")) { // not implemented!! we do not use photons
+	      //} else if (thisSyst.Contains("JET_Rtrk_")) { // not implemented!! we do not use largeR jets
+	      //} else if (thisSyst.Contains("JET_MassRes_")) { // not implemented!! we do not use largeR jets
+	      //} else if (thisSyst.Contains("JET_Comb_")) { // not implemented!! we do not use largeR jets
             } else if (thisSyst.Contains("PH_EFF")) {   // not implemented!! we do not use photons
             } else {
                ANA_MSG_INFO("Not configured to save this weight systematic var. " << sysWeight.name().c_str());
@@ -1852,11 +1855,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    /////////////////////////////
    // Selected photons
    ////////////////////////////
-   if (doPhotonDetail) {
-      for (auto thisPh : content.goodPhotons) {
-         cand.ph["ph"].add(*thisPh);
-      }
-   }
+   for (auto thisPh : content.goodPhotons) {
+     if (doPhotonDetail) { cand.ph["ph"].add(*thisPh);}
+     ++cand.evt.n_ph;
+     }
 
    /////////////////////////////
    // Selected taus
