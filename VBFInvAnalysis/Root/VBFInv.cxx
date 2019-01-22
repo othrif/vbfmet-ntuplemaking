@@ -51,9 +51,9 @@ ClassImp(VBFInv)
      metSkim(0), metSkimForSyst(0), mjjSkim(0), mjjSkimForSyst(0), detajjSkim(0), detajjSkimForSyst(0),
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false), doRnS(false),
      doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false), doJetDetail(false),
-     doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false), doContLepDetail(false),
+      doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false), doContLepDetail(false), savePVOnly(false),
      JetEtaFilter(5.0), JetpTFilter(20.0e3),MjjFilter(800.0e3),PhijjFilter(2.5),
-     m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false),
+  m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false), 
      m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
      m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
@@ -520,6 +520,7 @@ EL::StatusCode VBFInv::initialize()
          m_cand[thisSyst].el["baseel"] = Analysis::outElectron("baseel", (trim && !doElectronDetail));
       if (doContLepDetail) m_cand[thisSyst].el["contel"] = Analysis::outElectron("contel", (trim && !doContLepDetail));
       m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail && !doRnS));
+      m_cand[thisSyst].jet["jet"].setOutPV(savePVOnly);
       if (doFatJetDetail) m_cand[thisSyst].fatjet["fatjet"] = Analysis::outFatJet("fatjet", (trim && !doFatJetDetail));
       if (doTrackJetDetail)
          m_cand[thisSyst].trackjet["trackjet"] = Analysis::outTrackJet("trackjet", (trim && !doTrackJetDetail));
@@ -1036,10 +1037,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    // invisible particles - just removing all of the baseline objects for study of looser lepton definition
    xAOD::IParticleContainer invis(SG::VIEW_ELEMENTS);
-   for (auto muon : content.baselineMuons) {
+   for (const auto &muon : content.baselineMuons) {
       invis.push_back(muon);
    }
-   for (auto electron : content.baselineElectrons) {
+   for (const auto &electron : content.baselineElectrons) {
       invis.push_back(electron);
    }
    // MET, with invisble leptons

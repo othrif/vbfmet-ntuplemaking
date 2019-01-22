@@ -192,6 +192,7 @@ if( args.algoName == "VBFInv" ):
   alg.doMETDetail = args.doMETDetail or args.doDetail
   alg.doEventDetail = args.doEventDetail or args.doDetail
   alg.doContLepDetail = args.doContLepDetail or args.doDetail
+  alg.savePVOnly = False # saves only the PV value for the jets when True  
   alg.doRnS = args.doRnS
   alg.doFatJetDetail = args.doFatJetDetail
   alg.doTrackJetDetail = args.doTrackJetDetail
@@ -247,7 +248,7 @@ elif (args.driver == 'prun'):
     print dset_name_mask, len(dset_name_mask)
     driver = ROOT.EL.PrunDriver()
     if args.doSystematics:
-      driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '1')
+      driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '4')
       driver.options().setString('nc_optGridNfilesPerJob', '1')
       #--nGBPerJob=4
     else:

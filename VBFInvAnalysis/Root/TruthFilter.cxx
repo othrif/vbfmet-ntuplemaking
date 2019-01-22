@@ -10,8 +10,8 @@ namespace VBFInvAnalysis {
 
    bool passFilter=false;
    std::vector<TLorentzVector> jets;
+   TLorentzVector tmp;
    for (const auto &jet : *truthJets) {
-     TLorentzVector tmp;
      tmp.SetPtEtaPhiM(jet->pt(),jet->eta(),jet->phi(),jet->m() );
      if(fabs(jet->eta() )<JetEtaFilter && jet->pt()>JetpTFilter) jets.push_back(tmp);
    }
