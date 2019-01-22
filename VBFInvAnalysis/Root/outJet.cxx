@@ -3,7 +3,7 @@
 #include <TTree.h>
 #include <xAODBase/IParticleHelpers.h>
 
-Analysis::outJet::outJet(TString name, Bool_t doTrim) : Analysis::outObject::outObject(name, doTrim)
+Analysis::outJet::outJet(TString name, Bool_t doTrim) : Analysis::outObject::outObject(name, doTrim), m_savePV(false)
 {
    reset();
 }
@@ -24,12 +24,12 @@ void Analysis::outJet::reset()
    raw_m.clear();
 
    timing.clear();
-   btag_weight.clear();
    isbjet.clear();
+   btag_weight.clear();
    jvt.clear();
    fjvt.clear();
-   passOR.clear();
    passJvt.clear();
+   passOR.clear();
    passJetLoose.clear();
    passJetTight.clear();
 
@@ -193,9 +193,20 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 
       float tmp_trkwidth;
       if (tmp_sumpttrk_vec.size() > 0 /*&& susytools_handle->GetPrimVtx()*/) {
-         tmp_trkwidth = tmp_trkwidth_vec[vtx];
+	//tmp_trkwidth = tmp_trkwidth_vec[vtx];
+	tmp_trkwidth = tmp_trkwidth_vec[0]; // setting to primary vertex
       } else {
          tmp_trkwidth = 0.;
+      }
+
+      // reduce output to save only the PV
+      if(m_savePV){
+	tmp_sumpttrk.clear();
+	tmp_numtrk.clear();
+	if(tmp_sumpttrk_vec.size()>0){
+	  tmp_sumpttrk.push_back(tmp_sumpttrk_vec.at(0));
+	  tmp_numtrk.push_back(tmp_numtrk_vec.at(0));
+	}
       }
 
       HighestJVFVtx.push_back(vtx);

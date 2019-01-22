@@ -110,6 +110,7 @@ public:
    Bool_t   doMETDetail;
    Bool_t   doEventDetail;
    Bool_t   doContLepDetail;
+   Bool_t   savePVOnly;         
    Double_t JetEtaFilter;
    Double_t JetpTFilter;
    Double_t MjjFilter;

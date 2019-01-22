@@ -39,12 +39,16 @@ public:
    std::vector<Float_t>               fch;
    std::vector<Float_t>               Width;
 
+   Bool_t m_savePV;               //!
+
 public:
    outJet(TString name = "", Bool_t doTrim = kFALSE);
    ~outJet();
    void reset();
    void attachToTree(TTree *tree);
    void add(const xAOD::Jet &input);
+
+   void setOutPV(const Bool_t save) { m_savePV=save; }
 };
 } // namespace Analysis
 
