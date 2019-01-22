@@ -241,7 +241,7 @@ elif (args.driver == 'prun'):
     print dset_name_mask, len(dset_name_mask)
     driver = ROOT.EL.PrunDriver()
     if args.doSystematics:
-      driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '1')
+      driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '4')
       driver.options().setString('nc_optGridNfilesPerJob', '1')
       #--nGBPerJob=4
     else:
