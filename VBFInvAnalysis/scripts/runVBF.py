@@ -49,6 +49,8 @@ parser.add_argument("--JetpTFilter", type=float, dest="JetpTFilter", default=200
 parser.add_argument("--MjjFilter", type=float, dest="MjjFilter", default=800000, help="Truth jet invariant mass for di-jets of the VBF filter, in MeV", metavar="cut")
 parser.add_argument("--PhijjFilter", type=float, dest="PhijjFilter", default=2.5, help="Truth jet delta Phi for di-jets of the VBF filter", metavar="cut")
 parser.add_argument("--doTrim", dest="doTrim", action="store_true", default=False, help="Apply trimming, only to nominal as systematics is trimmed by default")
+parser.add_argument("--doDetail", dest="doDetail", action="store_true", default=False, help="add detailed branches for all")
+parser.add_argument("--doTrimSyst", dest="doTrimSyst", action="store_true", default=False, help="Apply trimming and remove details for the systematics. Nominal is unchanged")
 parser.add_argument("--doElectronDetail", dest="doElectronDetail", action="store_true", default=False, help="add detailed branches for electrons")
 parser.add_argument("--doMuonDetail", dest="doMuonDetail", action="store_true", default=False, help="add detailed branches for muons")
 parser.add_argument("--doJetDetail", dest="doJetDetail", action="store_true", default=False, help="add detailed branches for jets")
@@ -59,7 +61,7 @@ parser.add_argument("--doContLepDetail", dest="doContLepDetail", action="store_t
 parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
-parser.add_argument("--noTruthBoson", dest="noTruthBoson",action='store_true', default=True, help="deactivate boson mode")
+parser.add_argument("--noTruthBoson", dest="noTruthBoson",action='store_true', default=False, help="deactivate boson mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
 parser.add_argument("--doFatJetDetail", dest="doFatJetDetail", action="store_true", default=False, help="store detailed branches for FatJet")
 parser.add_argument("--doTrackJetDetail", dest="doTrackJetDetail", action="store_true", default=False, help="store detailed branches for TrackJets")
@@ -115,12 +117,18 @@ for rucio in rucios:
   print 'adding rucio dataset ',rucio
   ROOT.SH.scanRucio(sh, rucio)
 ruciolists = getlist(args.ruciolist)
+print ruciolists
 for ruciolist in ruciolists:
   print 'adding rucio datasets from text file ',ruciolist
   for rucioraw in open(ruciolist).readlines():
     rucio = rucioraw.rstrip('\n').replace(' ', '') # remove spaces from line
     if rucio.startswith('#') == False and rucio != '': # ignore comments / separators
-      ROOT.SH.scanRucio(sh, rucio)
+      if (args.driver == "condor"):
+        ROOT.SH.addGrid(sh,rucio)
+      else:
+        ROOT.SH.scanRucio(sh, rucio)
+if args.driver == "condor" and ruciolists != '':
+  ROOT.SH.makeGridDirect(sh,args.replicationSite,"root://dcache-atlas-xrootd.desy.de:1094/","", False)
 dirs = getlist(args.dir)
 for dir in dirs:
   print 'adding directory with sample ',dir
@@ -161,6 +169,7 @@ if( args.algoName == "VBFInv" ):
   alg.doSystematics = args.doSystematics
   alg.doSkim = args.doSkim
   alg.doTrim = args.doTrim
+  alg.doTrimSyst = args.doTrimSyst
   alg.pt1Skim = args.pt1Skim
   alg.pt1SkimForSyst = args.pt1SkimForSyst
   alg.pt2Skim = args.pt2Skim
@@ -175,14 +184,15 @@ if( args.algoName == "VBFInv" ):
   alg.JetpTFilter = args.JetpTFilter
   alg.MjjFilter = args.MjjFilter
   alg.PhijjFilter = args.PhijjFilter
-  alg.doElectronDetail = args.doElectronDetail
-  alg.doMuonDetail = args.doMuonDetail
-  alg.doJetDetail = args.doJetDetail
-  alg.doTauDetail = args.doTauDetail
-  alg.doPhotonDetail = args.doPhotonDetail
-  alg.doMETDetail = args.doMETDetail
-  alg.doEventDetail = args.doEventDetail
-  alg.doContLepDetail = args.doContLepDetail
+  alg.doElectronDetail = args.doElectronDetail or args.doDetail
+  alg.doMuonDetail = args.doMuonDetail or args.doDetail
+  alg.doJetDetail = args.doJetDetail or args.doDetail
+  alg.doTauDetail = args.doTauDetail or args.doDetail
+  alg.doPhotonDetail = args.doPhotonDetail or args.doDetail
+  alg.doMETDetail = args.doMETDetail or args.doDetail
+  alg.doEventDetail = args.doEventDetail or args.doDetail
+  alg.doContLepDetail = args.doContLepDetail or args.doDetail
+  alg.savePVOnly = False # saves only the PV value for the jets when True  
   alg.doRnS = args.doRnS
   alg.doFatJetDetail = args.doFatJetDetail
   alg.doTrackJetDetail = args.doTrackJetDetail
@@ -238,7 +248,7 @@ elif (args.driver == 'prun'):
     print dset_name_mask, len(dset_name_mask)
     driver = ROOT.EL.PrunDriver()
     if args.doSystematics:
-      driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '1')
+      driver.options().setString(ROOT.EL.Job.optGridNGBPerJob, '4')
       driver.options().setString('nc_optGridNfilesPerJob', '1')
       #--nGBPerJob=4
     else:
@@ -260,7 +270,8 @@ elif (args.driver == 'condor'):
     condor_options+="notify_user = othmane.rifki@desy.de" + "\n"
     condor_options+="notification = Error" + "\n"
     condor_options+="should_transfer_files = NO" + "\n"
-    condor_options+="Requirements = (OpSysAndVer == \"CentOS7\" || OpSysAndVer == \"SL6\")" + "\n"
+    condor_options+="Requirements = ( OpSysAndVer == \"SL6\")" + "\n"
+    #  Not working well OpSysAndVer == \"CentOS7\" ||
     #    condor_options+="" + "\n"
     driver.options().setString (ROOT.EL.Job.optCondorConf, condor_options);
     driver.shellInit = "export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase && source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh";

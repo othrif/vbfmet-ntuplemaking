@@ -50,17 +50,17 @@ void Analysis::outElectron::attachToTree(TTree *tree)
    tree->Branch(prefix + "phi", &phi);
    tree->Branch(prefix + "m", &m);
    if (!doTrim()) {
-      tree->Branch(prefix + "ptcone20", &ptcone20);
+     //tree->Branch(prefix + "ptcone20", &ptcone20);
       tree->Branch(prefix + "ptvarcone20", &ptvarcone20);
-      tree->Branch(prefix + "etcone20", &etcone20);
+      //tree->Branch(prefix + "etcone20", &etcone20);
       tree->Branch(prefix + "topoetcone20", &topoetcone20);
-      tree->Branch(prefix + "ptcone30", &ptcone30);
+      //tree->Branch(prefix + "ptcone30", &ptcone30);
       tree->Branch(prefix + "ptvarcone30", &ptvarcone30);
-      tree->Branch(prefix + "etcone30", &etcone30);
+      //tree->Branch(prefix + "etcone30", &etcone30);
       tree->Branch(prefix + "topoetcone30", &topoetcone30);
-      tree->Branch(prefix + "ptcone40", &ptcone40);
+      //tree->Branch(prefix + "ptcone40", &ptcone40);
       tree->Branch(prefix + "ptvarcone40", &ptvarcone40);
-      tree->Branch(prefix + "etcone40", &etcone40);
+      //tree->Branch(prefix + "etcone40", &etcone40);
       tree->Branch(prefix + "topoetcone40", &topoetcone40);
       tree->Branch(prefix + "d0", &d0);
       tree->Branch(prefix + "d0sig", &d0sig);

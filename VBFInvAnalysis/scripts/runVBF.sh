@@ -50,7 +50,7 @@ then
     read ANSWER
     case $ANSWER in
 	[yY]) rm -f "$log_file" ;;
-	[nN]) now=`date +%Y%m%d%H%M%S`; log_file="./logProduction/${version}/log_${desc}_${now}.txt"; ;;
+	[nN]) now=`date +%Y%m%d%H%M%S`; log_file="./${version}_${desc}_${now}.txt"; ;;
     esac
 else
     echo "Will create a log file: ${log_file}"

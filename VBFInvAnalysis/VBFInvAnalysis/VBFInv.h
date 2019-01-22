@@ -98,6 +98,7 @@ public:
    Bool_t   doSystematics;
    Bool_t   doSkim;
    Bool_t   doTrim;
+   Bool_t   doTrimSyst;
    Bool_t   doRnS;
    Bool_t   doFatJetDetail;
    Bool_t   doTrackJetDetail;
@@ -109,6 +110,7 @@ public:
    Bool_t   doMETDetail;
    Bool_t   doEventDetail;
    Bool_t   doContLepDetail;
+   Bool_t   savePVOnly;         
    Double_t JetEtaFilter;
    Double_t JetpTFilter;
    Double_t MjjFilter;
