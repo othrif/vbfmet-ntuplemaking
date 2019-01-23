@@ -1322,25 +1322,22 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // el 2015
       cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] ||
       cand.evt.trigger["HLT_e120_lhloose"] ||
-      // el 2016
+      // el 2016+2017+2018
       cand.evt.trigger["HLT_e24_lhtight_nod0_ivarloose"] || cand.evt.trigger["HLT_e26_lhtight_nod0_ivarloose"] ||
       cand.evt.trigger["HLT_e60_lhmedium_nod0"] || cand.evt.trigger["HLT_e60_medium"] ||
       cand.evt.trigger["HLT_e120_lhloose_nod0"] || cand.evt.trigger["HLT_e140_lhloose_nod0"] ||
       cand.evt.trigger["HLT_e300_etcut"] ||
+     // el added in 2018
+      cand.evt.trigger["HLT_e26_lhtight_nod0"] ||
       // mu 2015
       cand.evt.trigger["HLT_mu20_iloose_L1MU15"] || cand.evt.trigger["HLT_mu40"] ||
       cand.evt.trigger["HLT_mu60_0eta105_msonly"] ||
       // mu 2016
       cand.evt.trigger["HLT_mu24_iloose"] || cand.evt.trigger["HLT_mu24_ivarloose"] || cand.evt.trigger["HLT_mu40"] ||
+      cand.evt.trigger["HLT_mu24_iloose_L1MU15"] || cand.evt.trigger["HLT_mu24_ivarloose_L1MU15"] || // adding the MC triggers, which were named differently
       cand.evt.trigger["HLT_mu50"] || cand.evt.trigger["HLT_mu24_ivarmedium"] || cand.evt.trigger["HLT_mu24_imedium"] ||
       cand.evt.trigger["HLT_mu26_ivarmedium"] || cand.evt.trigger["HLT_mu26_imedium"];
-   bool diMuon = cand.evt.trigger["HLT_mu20_mu8noL1"] || cand.evt.trigger["HLT_2mu10"] ||
-                 cand.evt.trigger["HLT_mu22_mu8noL1"] || cand.evt.trigger["HLT_2mu14"];
-   bool diEle = cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"] ||
-                cand.evt.trigger["HLT_2e15_lhvloose_nod0_L12EM13VH"] ||
-                cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"] || cand.evt.trigger["HLT_2e24_lhvloose_nod0"];
-   if (diMuon) cand.evt.trigger_lep += 0x10;
-   if (diEle) cand.evt.trigger_lep += 0x100;
+
 
    // raw event info
    cand.evt.runNumber            = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
@@ -1355,16 +1352,42 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
    Bool_t is2015(kFALSE);
    Bool_t is2016(kFALSE);
-   /*  Bool_t is2017(kFALSE);
-     Bool_t is2018(kFALSE);*/
+   Bool_t is2017(kFALSE);
+   Bool_t is2018(kFALSE);
 
    if ((cand.evt.year == 0 && cand.evt.runNumber >= 276262 && cand.evt.runNumber <= 284484) || cand.evt.year == 2015)
       is2015 = kTRUE; // data2015
    if ((cand.evt.year == 0 && cand.evt.runNumber >= 296939 && cand.evt.runNumber <= 311481) || cand.evt.year == 2016)
       is2016 = kTRUE; // data2016
-   /*   if ((cand.evt.year == 0 && cand.evt.runNumber >= 324320 && cand.evt.runNumber<=341649 ) || cand.evt.year ==
-     2017) is2017 = kTRUE; // data2017 if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197) || cand.evt.year ==
-     2018) is2018 = kTRUE; // data2018*/
+   if ((cand.evt.year == 0 && cand.evt.runNumber >= 324320 && cand.evt.runNumber<=341649 ) || cand.evt.year == 2017) is2017 = kTRUE;
+   if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197) || cand.evt.year == 2018) is2018 = kTRUE; // data2018*/
+
+   //
+   // trigger logic implemented by year
+   //
+   //https://twiki.cern.ch/twiki/bin/view/Atlas/MuonTriggerPhysicsRecommendationsRel212017
+   bool diMuon = cand.evt.trigger["HLT_mu18_mu8noL1"] || cand.evt.trigger["HLT_mu20_mu8noL1"] || cand.evt.trigger["HLT_2mu10"] || // 2015+2016
+     cand.evt.trigger["HLT_mu22_mu8noL1"] || cand.evt.trigger["HLT_2mu14"]; //2017+2018
+   bool diMuonYearlyOpt1L1 = is2015 ? cand.evt.trigger["HLT_mu18_mu8noL1"] : cand.evt.trigger["HLT_mu22_mu8noL1"];
+   bool diMuonYearlyOpt2L1 = is2015 ? cand.evt.trigger["HLT_2mu10"] : cand.evt.trigger["HLT_2mu14"];
+   bool muonTrig = is2015 ? (cand.evt.trigger["HLT_mu20_iloose_L1MU15"] || cand.evt.trigger["HLT_mu40"] || cand.evt.trigger["HLT_mu60_0eta105_msonly"]) : 
+                            (cand.evt.trigger["HLT_mu26_ivarmedium"] || cand.evt.trigger["HLT_mu50"] || cand.evt.trigger["HLT_mu60_0eta105_msonly"]);
+   bool elecTrig = is2015 ? (cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] || cand.evt.trigger["HLT_e120_lhloose"]) :
+                            (cand.evt.trigger["HLT_e26_lhtight_nod0_ivarloose"] || cand.evt.trigger["HLT_e60_lhmedium_nod0"] || cand.evt.trigger["HLT_e140_lhloose_nod0"] || cand.evt.trigger["HLT_e300_etcut"]);
+   // need to decide on the years of usage https://twiki.cern.ch/twiki/bin/view/AtlasProtected/LatestRecommendationsElectronIDRun2
+   bool diEle = cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"] || // 2015
+                cand.evt.trigger["HLT_2e17_lhvloose_nod0"] ||  // 2016
+                cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"] || cand.evt.trigger["HLT_2e24_lhvloose_nod0"];// 2017+2018
+   bool diEleYearlyOpt1 = is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"]) : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"] : cand.evt.trigger["HLT_2e24_lhvloose_nod0"]);
+   bool diEleYearlyOpt2 = is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"]) : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"] : (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"] : cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"]));
+   if (diMuon)             cand.evt.trigger_lep += 0x10;
+   if (diMuonYearlyOpt1L1) cand.evt.trigger_lep += 0x20;
+   if (diMuonYearlyOpt2L1) cand.evt.trigger_lep += 0x40;
+   if (diEle)           cand.evt.trigger_lep += 0x100;
+   if (diEleYearlyOpt1) cand.evt.trigger_lep += 0x200;
+   if (diEleYearlyOpt2) cand.evt.trigger_lep += 0x400;
+   if (muonTrig)        cand.evt.trigger_lep += 0x2;
+   if (elecTrig)        cand.evt.trigger_lep += 0x4;
 
    // Testing trigger configuration:
    /*cand.evt.trigger_met = (is2015 && cand.evt.trigger["HLT_xe70_mht"]) ||
@@ -1381,8 +1404,25 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       customMETtrig = kTRUE;
    else if (cand.evt.trigger["HLT_noalg_L1J400"])
       customMETtrig = kTRUE;
-
+   
    cand.evt.trigger_met = customMETtrig;
+   // extra trigger info
+   if(is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE55"])      cand.evt.trigger_met += 0x2; // unprescaled
+   if(is2017 && cand.evt.trigger["HLT_xe90_pufit_L1XE50"])       cand.evt.trigger_met += 0x4; // best combination. loss of 270/pb or 900/pb
+   if(is2018 && cand.evt.trigger["HLT_xe110_pufit_xe70_L1XE50"]) cand.evt.trigger_met += 0x8; // unprescaled
+   if(cand.evt.trigger["HLT_xe90_pufit_L1XE50"])                 cand.evt.trigger_met += 0x10;
+   if(cand.evt.trigger["HLT_xe100_pufit_L1XE50"])                cand.evt.trigger_met += 0x20;
+   if(cand.evt.trigger["HLT_xe100_pufit_L1XE55"])                cand.evt.trigger_met += 0x40;
+   if(cand.evt.trigger["HLT_xe110_pufit_L1XE50"])                cand.evt.trigger_met += 0x80;
+   if(cand.evt.trigger["HLT_xe110_pufit_L1XE55"])                cand.evt.trigger_met += 0x100;
+   if(cand.evt.trigger["HLT_xe110_pufit_xe70_L1XE50"])           cand.evt.trigger_met += 0x200;
+   if(cand.evt.trigger["HLT_xe120_pufit_L1XE50"])                cand.evt.trigger_met += 0x400;
+   if(cand.evt.trigger["HLT_xe110_pufit_xe65_L1XE50"])           cand.evt.trigger_met += 0x800;
+   if(cand.evt.trigger["HLT_j420"])                              cand.evt.trigger_met += 0x1000;
+   if(cand.evt.trigger["HLT_g25_medium_L1EM22VHI_2j35_0eta490_bmv2c1077_split_2j35_0eta490"])   cand.evt.trigger_met += 0x2000;
+   if(cand.evt.trigger["HLT_j70_j50_0eta490_invm1000j50_dphi24_xe90_pufit_xe50_L1MJJ-500-NFF"]) cand.evt.trigger_met += 0x4000;
+   if(cand.evt.trigger["HLT_j70_j50_0eta490_invm1100j70_dphi20_deta40_L1MJJ-500-NFF"])          cand.evt.trigger_met += 0x8000;
+   if(cand.evt.trigger["HLT_g35_medium_j70_j50_0eta490_invm900j50_L1MJJ-500-NFF"])              cand.evt.trigger_met += 0x10000;
 
    // pass event flags
    cand.evt.passGRL = content.passGRL;
@@ -1682,16 +1722,14 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
             } else {
                // number of truth fatjets
                Int_t nTruthFatJets(0);
-               for (const auto &truthJ_itr : *truthFatJets) {
-                  nTruthFatJets++;
-               }
-               cand.evt.n_fatjet_truth = nTruthFatJets;
                for (const auto &part : *truthFatJets) {
+		  nTruthFatJets++;
                   cand.evt.truth_fatjet_pt.push_back(part->pt());
                   cand.evt.truth_fatjet_eta.push_back(part->eta());
                   cand.evt.truth_fatjet_phi.push_back(part->phi());
                   cand.evt.truth_fatjet_m.push_back(part->m());
                }
+               cand.evt.n_fatjet_truth = nTruthFatJets;
             }
          }
       }
