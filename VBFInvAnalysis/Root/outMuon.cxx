@@ -25,6 +25,7 @@ void Analysis::outMuon::reset()
    topoetcone20.clear();
    ptcone30.clear();
    ptvarcone30.clear();
+   ptvarcone30_TightTTVA_pt1000.clear();
    etcone30.clear();
    topoetcone30.clear();
    ptcone40.clear();
@@ -62,6 +63,7 @@ void Analysis::outMuon::attachToTree(TTree *tree)
       tree->Branch(prefix + "topoetcone20", &topoetcone20);
       tree->Branch(prefix + "ptcone30", &ptcone30);
       tree->Branch(prefix + "ptvarcone30", &ptvarcone30);
+      tree->Branch(prefix + "ptvarcone30_TightTTVA_pt1000", &ptvarcone30_TightTTVA_pt1000);
       tree->Branch(prefix + "etcone30", &etcone30);
       tree->Branch(prefix + "topoetcone30", &topoetcone30);
       tree->Branch(prefix + "ptcone40", &ptcone40);
@@ -116,12 +118,16 @@ void Analysis::outMuon::add(const xAOD::Muon &input)
 
       static SG::AuxElement::ConstAccessor<float> acc_ptvarcone20("ptvarcone20");
       static SG::AuxElement::ConstAccessor<float> acc_ptvarcone30("ptvarcone30");
+      static SG::AuxElement::ConstAccessor<float> acc_ptvarcone30_TightTTVA_pt1000("ptvarcone30_TightTTVA_pt1000");
       static SG::AuxElement::ConstAccessor<float> acc_ptvarcone40("ptvarcone40");
       if (acc_ptvarcone20.isAvailable(input)) {
          ptvarcone20.push_back(acc_ptvarcone20(input));
       }
       if (acc_ptvarcone30.isAvailable(input)) {
          ptvarcone30.push_back(acc_ptvarcone30(input));
+      }
+      if (acc_ptvarcone30_TightTTVA_pt1000.isAvailable(input)) {
+         ptvarcone30_TightTTVA_pt1000.push_back(acc_ptvarcone30_TightTTVA_pt1000(input));
       }
       if (acc_ptvarcone40.isAvailable(input)) {
          ptvarcone40.push_back(acc_ptvarcone40(input));

@@ -19,6 +19,7 @@ public:
    std::vector<Float_t> topoetcone20;
    std::vector<Float_t> ptcone30;
    std::vector<Float_t> ptvarcone30;
+   std::vector<Float_t> ptvarcone30_TightTTVA_pt1000;
    std::vector<Float_t> etcone30;
    std::vector<Float_t> topoetcone30;
    std::vector<Float_t> ptcone40;
