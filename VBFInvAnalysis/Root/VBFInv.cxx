@@ -1422,7 +1422,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if(cand.evt.trigger["HLT_g25_medium_L1EM22VHI_2j35_0eta490_bmv2c1077_split_2j35_0eta490"])   cand.evt.trigger_met += 0x2000;
    if(cand.evt.trigger["HLT_j70_j50_0eta490_invm1000j50_dphi24_xe90_pufit_xe50_L1MJJ-500-NFF"]) cand.evt.trigger_met += 0x4000;
    if(cand.evt.trigger["HLT_j70_j50_0eta490_invm1100j70_dphi20_deta40_L1MJJ-500-NFF"])          cand.evt.trigger_met += 0x8000;
-   if(cand.evt.trigger["HLT_g35_medium_j70_j50_0eta490_invm900j50_L1MJJ-500-NFF "])             cand.evt.trigger_met += 0x10000;
+   if(cand.evt.trigger["HLT_g35_medium_j70_j50_0eta490_invm900j50_L1MJJ-500-NFF"])              cand.evt.trigger_met += 0x10000;
 
    // pass event flags
    cand.evt.passGRL = content.passGRL;
