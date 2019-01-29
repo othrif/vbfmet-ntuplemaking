@@ -1,3 +1,7 @@
+data16_13TeV.00310738.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3713
+data16_13TeV.00311170.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3713
+data16_13TeV.00298773.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3713
+data16_13TeV.00303208.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3713
 data16_13TeV.00304128.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3713
 data16_13TeV.00309375.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3713
 data16_13TeV.00302137.physics_Main.deriv.DAOD_EXOT5.r9264_p3083_p3713
