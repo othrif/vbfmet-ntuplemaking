@@ -207,24 +207,26 @@ EL::StatusCode VBFInv::initialize()
    // Cross section
    if (m_isMC) {
       std::string xSecFilePath = "dev/PMGTools/PMGxsecDB_mc15.txt";
-      xSecFilePath             = PathResolverFindCalibFile(xSecFilePath);
+      xSecFilePath             = "";//PathResolverFindCalibFile(xSecFilePath);
       my_XsecDB                = new SUSY::CrossSectionDB(xSecFilePath);
    }
 
    // GRL
    std::vector<std::string> vecStringGRL;
-   vecStringGRL.push_back(PathResolverFindCalibFile(
-      "GoodRunsLists/data15_13TeV/20170619/physics_25ns_21.0.19.xml")); // 2015 GRL, R21 (3219.56 pb-1)
-   vecStringGRL.push_back(PathResolverFindCalibFile(
-      "GoodRunsLists/data16_13TeV/20180129/physics_25ns_21.0.19.xml")); // 2016 GRL, R21 (32988.1 pb-1)
-   vecStringGRL.push_back(PathResolverFindCalibFile(
-      "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.xml")); // 2017 GRL, R21 (44307.4 pb-1)
-   vecStringGRL.push_back(PathResolverFindCalibFile(
-      "GoodRunsLists/data18_13TeV/20181111/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL, R21 (59937.2 pb-1)
-   ANA_CHECK(m_grl.setProperty("GoodRunsListVec", vecStringGRL));
-   ANA_CHECK(m_grl.setProperty("PassThrough",
-                               false)); // if true (default) will ignore result of GRL and will just pass all events
-   ANA_CHECK(m_grl.initialize());
+   if(!m_isMC){
+     vecStringGRL.push_back(PathResolverFindCalibFile(
+						      "GoodRunsLists/data15_13TeV/20170619/physics_25ns_21.0.19.xml")); // 2015 GRL, R21 (3219.56 pb-1)
+     vecStringGRL.push_back(PathResolverFindCalibFile(
+						      "GoodRunsLists/data16_13TeV/20180129/physics_25ns_21.0.19.xml")); // 2016 GRL, R21 (32988.1 pb-1)
+     vecStringGRL.push_back(PathResolverFindCalibFile(
+						      "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.xml")); // 2017 GRL, R21 (44307.4 pb-1)
+     vecStringGRL.push_back(PathResolverFindCalibFile(
+						      "GoodRunsLists/data18_13TeV/20181111/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL, R21 (59937.2 pb-1)
+     ANA_CHECK(m_grl.setProperty("GoodRunsListVec", vecStringGRL));
+     ANA_CHECK(m_grl.setProperty("PassThrough",
+				 false)); // if true (default) will ignore result of GRL and will just pass all events
+     ANA_CHECK(m_grl.initialize());
+   }
 
    // configure forward JVT tool
    // m_jetFwdJvtTool.setTypeAndName("JetForwardJvtTool/JetForwardJvtTool_VBF");
