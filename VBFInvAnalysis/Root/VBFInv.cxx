@@ -486,7 +486,7 @@ EL::StatusCode VBFInv::initialize()
 
       m_tree[thisSyst] = new TTree(treeName, treeTitle);
       m_tree[thisSyst]->SetDirectory(outputFile);
-      m_tree[thisSyst]->SetAutoFlush(-3000000); // lower to 3MB before writing
+      m_tree[thisSyst]->SetAutoFlush(-1000000); // lower to 3MB before writing
 
       // save, in all trees, the trigger decision
       std::vector<std::string> triggersToSave = getTokens(trigger_list, ",");
