@@ -299,11 +299,9 @@ EL::StatusCode VBFInv::initialize()
       case 284500:
          mc_campaign = "mc16a";
          prw_lumicalc.push_back(PathResolverFindCalibFile(
-            "GoodRunsLists/data15_13TeV/20170619/"
-            "PHYS_StandardGRL_All_Good_25ns_276262-284484_OflLumi-13TeV-008.root")); // 2015 LumiCalc
+            "GoodRunsLists/data15_13TeV/20170619/PHYS_StandardGRL_All_Good_25ns_276262-284484_OflLumi-13TeV-008.root")); // 2015 LumiCalc
          prw_lumicalc.push_back(PathResolverFindCalibFile(
-            "GoodRunsLists/data16_13TeV/20180129/"
-            "PHYS_StandardGRL_All_Good_25ns_297730-311481_OflLumi-13TeV-009.root")); // 2016 LumiCalc
+            "GoodRunsLists/data16_13TeV/20180129/PHYS_StandardGRL_All_Good_25ns_297730-311481_OflLumi-13TeV-009.root")); // 2016 LumiCalc
          break;
       case 300000:
          if (amiTag.find("r10201") != std::string::npos)
@@ -325,14 +323,17 @@ EL::StatusCode VBFInv::initialize()
          }
 
          prw_lumicalc.push_back(PathResolverFindCalibFile(
-            "GoodRunsLists/data18_13TeV/20181111/"
-            "ilumicalc_histograms_None_348885-364292_OflLumi-13TeV-001.root")); // 2018 LumiCalc
+            "GoodRunsLists/data18_13TeV/20181111/ilumicalc_histograms_None_348885-364292_OflLumi-13TeV-001.root")); // 2018 LumiCalc
          prw_conf.push_back(
             PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
          break;
       }
       std::string prwConfigFile = "dev/SUSYTools/PRW_AUTOCONFIG_SIM/files/pileup_" + mc_campaign + "_dsid" +
                                   std::to_string(eventInfo->mcChannelNumber()) + "_" + simType + ".root";
+      //"DSID" + std::to_string(DSID_INT/1000) + "xxx/pileup_" + mcCampaignMD + "_dsid" + std::to_string(DSID_INT) + "_" + simType + ".root";
+      //prwConfigFile = "dev/PileupReweighting/mc16_13TeV/pileup_" + mc_campaign + "_dsid" + std::to_string(eventInfo->mcChannelNumber()) + "_" + simType + ".root";
+      prwConfigFile = "dev/PileupReweighting/share/DSID"+std::to_string(eventInfo->mcChannelNumber()/1000)+"xxx/pileup_"+mc_campaign+ "_dsid"+ std::to_string(eventInfo->mcChannelNumber())+"_"+simType + ".root";
+      std::cout << "input:  " << prwConfigFile << " "  << PathResolverFindCalibFile(prwConfigFile) << std::endl;
       prwConfigFile = PathResolverFindCalibFile(prwConfigFile);
       if (prwConfigFile.empty()) {
          std::vector<std::string> prw_conf_tmp = getTokens(prw_file, ",");
