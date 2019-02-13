@@ -106,7 +106,6 @@ void Analysis::outEvent::reset()
    trigger_met        = -9999;
 
    passGRL = -9999;
-   // passTrigger = -9999;
    passPV            = -9999;
    passJetCleanLoose = -9999;
    passJetCleanTight = -9999;
@@ -159,9 +158,9 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "bcid", &bcid);
    tree->Branch(prefix + "averageIntPerXing", &averageIntPerXing);
    tree->Branch(prefix + "corAverageIntPerXing", &corAverageIntPerXing);
-   tree->Branch(prefix + "vtx_sumpt2", &vtx_sumpt2);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
-   tree->Branch(prefix + "mcEventWeightXsec", &mcEventWeightXsec);
+   //if (!doTrim()) tree->Branch(prefix + "vtx_sumpt2", &vtx_sumpt2);
+   //if (!doTrim()) tree->Branch(prefix + "mcEventWeightXsec", &mcEventWeightXsec);
    if (!doTrim()) tree->Branch(prefix + "mcEventWeights", &mcEventWeights);
    if (!doTrim()) tree->Branch("l1_met_trig_encoded", &l1_met_trig_encoded);
 
@@ -207,7 +206,6 @@ void Analysis::outEvent::attachToTree(TTree *tree)
        tree->Branch(prefix + "pdf_pdf2", &pdf_pdf2);
        tree->Branch(prefix + "pdf_scale", &pdf_scale);
    */
-
    if (!doTrim()) {
       tree->Branch(prefix + "n_jet_truth", &n_jet_truth);
       tree->Branch(prefix + "truth_jet_pt", &truth_jet_pt);
@@ -215,19 +213,21 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "truth_jet_phi", &truth_jet_phi);
       tree->Branch(prefix + "truth_jet_m", &truth_jet_m);
       tree->Branch(prefix + "truth_jet_label", &truth_jet_label);
-      tree->Branch(prefix + "truth_jetmu_pt", &truth_jetmu_pt);
-      tree->Branch(prefix + "truth_jetmu_eta", &truth_jetmu_eta);
-      tree->Branch(prefix + "truth_jetmu_phi", &truth_jetmu_phi);
-      tree->Branch(prefix + "truth_jetmu_m", &truth_jetmu_m);
-      tree->Branch(prefix + "truth_jetmunu_pt", &truth_jetmunu_pt);
-      tree->Branch(prefix + "truth_jetmunu_eta", &truth_jetmunu_eta);
-      tree->Branch(prefix + "truth_jetmunu_phi", &truth_jetmunu_phi);
-      tree->Branch(prefix + "truth_jetmunu_m", &truth_jetmunu_m);
-      tree->Branch(prefix + "n_fatjet_truth", &n_fatjet_truth);
-      tree->Branch(prefix + "truth_fatjet_pt", &truth_fatjet_pt);
-      tree->Branch(prefix + "truth_fatjet_eta", &truth_fatjet_eta);
-      tree->Branch(prefix + "truth_fatjet_phi", &truth_fatjet_phi);
-      tree->Branch(prefix + "truth_fatjet_m", &truth_fatjet_m);
+      if(!doExtraTrim()){
+	tree->Branch(prefix + "truth_jetmu_pt", &truth_jetmu_pt);
+	tree->Branch(prefix + "truth_jetmu_eta", &truth_jetmu_eta);
+	tree->Branch(prefix + "truth_jetmu_phi", &truth_jetmu_phi);
+	tree->Branch(prefix + "truth_jetmu_m", &truth_jetmu_m);
+	tree->Branch(prefix + "truth_jetmunu_pt", &truth_jetmunu_pt);
+	tree->Branch(prefix + "truth_jetmunu_eta", &truth_jetmunu_eta);
+	tree->Branch(prefix + "truth_jetmunu_phi", &truth_jetmunu_phi);
+	tree->Branch(prefix + "truth_jetmunu_m", &truth_jetmunu_m);
+	tree->Branch(prefix + "n_fatjet_truth", &n_fatjet_truth);
+	tree->Branch(prefix + "truth_fatjet_pt", &truth_fatjet_pt);
+	tree->Branch(prefix + "truth_fatjet_eta", &truth_fatjet_eta);
+	tree->Branch(prefix + "truth_fatjet_phi", &truth_fatjet_phi);
+	tree->Branch(prefix + "truth_fatjet_m", &truth_fatjet_m);
+      }
       tree->Branch(prefix + "n_mu_truth", &n_mu_truth);
       tree->Branch(prefix + "truth_mu_pt", &truth_mu_pt);
       tree->Branch(prefix + "truth_mu_eta", &truth_mu_eta);
@@ -257,7 +257,6 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    }
 
    tree->Branch(prefix + "passGRL", &passGRL);
-   //  tree->Branch(prefix + "passTrigger", &passTrigger);
    tree->Branch(prefix + "passPV", &passPV);
    tree->Branch(prefix + "passJetCleanLoose", &passJetCleanLoose);
    tree->Branch(prefix + "passJetCleanTight", &passJetCleanTight);

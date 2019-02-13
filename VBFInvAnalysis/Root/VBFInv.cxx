@@ -480,7 +480,7 @@ EL::StatusCode VBFInv::initialize()
 	  doMETDetail=tmp_doMETDetail;
 	  doMuonDetail=tmp_doMuonDetail;
 	  doJetDetail=tmp_doJetDetail;
-	}else{  doEventDetail=false; doTauDetail=false; doPhotonDetail=false; doElectronDetail=false; doMETDetail=false; doMuonDetail=false; doJetDetail=false; }
+	}else{  doEventDetail=false; doTauDetail=false; doPhotonDetail=false; doElectronDetail=false; /*doMETDetail=false;*/ doMuonDetail=false; doJetDetail=false; }
       }
 
       ANA_MSG_INFO("Creating TTree named " << treeName.Data() << " for systematic named \"" << thisSyst.Data() << "\"");
@@ -505,9 +505,9 @@ EL::StatusCode VBFInv::initialize()
       if (doMETDetail) {
          m_cand[thisSyst].met["met_tight_tst"]       = Analysis::outMET("met_tight_tst", (trim && !doMETDetail));
          m_cand[thisSyst].met["met_tight_tst_nolep"] = Analysis::outMET("met_tight_tst_nolep", (trim && !doMETDetail));
-         m_cand[thisSyst].met["met_tighter_tst"]     = Analysis::outMET("met_tighter_tst", (trim && !doMETDetail));
-         m_cand[thisSyst].met["met_tighter_tst_nolep"] =
-            Analysis::outMET("met_tighter_tst_nolep", (trim && !doMETDetail));
+         //m_cand[thisSyst].met["met_tighter_tst"]     = Analysis::outMET("met_tighter_tst", (trim && !doMETDetail));
+         //m_cand[thisSyst].met["met_tighter_tst_nolep"] =
+         //   Analysis::outMET("met_tighter_tst_nolep", (trim && !doMETDetail));
          m_cand[thisSyst].met["met_tenacious_tst"] = Analysis::outMET("met_tenacious_tst", (trim && !doMETDetail));
          m_cand[thisSyst].met["met_tenacious_tst_nolep"] =
             Analysis::outMET("met_tenacious_tst_nolep", (trim && !doMETDetail));
@@ -533,6 +533,7 @@ EL::StatusCode VBFInv::initialize()
 
       // Set trimming option for remaning outHolder objects
       m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail && !doRnS));
+      m_cand[thisSyst].evt.setDoExtraTrim(doTrimSyst);
       m_cand[thisSyst].rns.setDoTrim((trim && !doRnS));
       // m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
@@ -1019,11 +1020,11 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, content.electrons, content.muons,
           content.photons, // note baseline is applied inside SUSYTools
           kTRUE, kTRUE, nullptr, myMET_Tight_tst, myMETsig_Tight_tst, 1);
-   TLorentzVector myMET_Tighter_tst;
-   double         myMETsig_Tighter_tst;
-   getMET(content.met_tighter_tst, content.met_tighter_tstAux, content.jets, content.electrons, content.muons,
-          content.photons, // note baseline is applied inside SUSYTools
-          kTRUE, kTRUE, nullptr, myMET_Tighter_tst, myMETsig_Tighter_tst, 2);
+   //TLorentzVector myMET_Tighter_tst;
+   //double         myMETsig_Tighter_tst;
+   //getMET(content.met_tighter_tst, content.met_tighter_tstAux, content.jets, content.electrons, content.muons,
+   //       content.photons, // note baseline is applied inside SUSYTools
+   //       kTRUE, kTRUE, nullptr, myMET_Tighter_tst, myMETsig_Tighter_tst, 2);
    TLorentzVector myMET_Tenacious_tst;
    double         myMETsig_Tenacious_tst;
    getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, content.electrons, content.muons,
@@ -1064,11 +1065,11 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets, content.electrons, content.muons,
           content.photons, // note baseline is applied inside SUSYTools
           kTRUE, kTRUE, &invis, myMET_Tight_tst_nolep, myMETsig_Tight_tst_nolep, 1);
-   TLorentzVector myMET_Tighter_tst_nolep;
-   double         myMETsig_Tighter_tst_nolep;
-   getMET(content.met_tighter_tst_nolep, content.met_tighter_tst_nolepAux, content.jets, content.electrons,
-          content.muons, content.photons, // note baseline is applied inside SUSYTools
-          kTRUE, kTRUE, &invis, myMET_Tighter_tst_nolep, myMETsig_Tighter_tst_nolep, 2);
+   //TLorentzVector myMET_Tighter_tst_nolep;
+   //double         myMETsig_Tighter_tst_nolep;
+   //getMET(content.met_tighter_tst_nolep, content.met_tighter_tst_nolepAux, content.jets, content.electrons,
+   //       content.muons, content.photons, // note baseline is applied inside SUSYTools
+   //       kTRUE, kTRUE, &invis, myMET_Tighter_tst_nolep, myMETsig_Tighter_tst_nolep, 2);
    TLorentzVector myMET_Tenacious_tst_nolep;
    double         myMETsig_Tenacious_tst_nolep;
    getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets, content.electrons,
@@ -1275,8 +1276,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    if (doMETDetail)
       saveMe = saveMe || ((*content.met_tight_tst_nolep)["Final"]->met() > metSkimToUse) ||
                ((*content.met_tight_tst)["Final"]->met() > metSkimToUse) ||
-               ((*content.met_tighter_tst_nolep)["Final"]->met() > metSkimToUse) ||
-               ((*content.met_tighter_tst)["Final"]->met() > metSkimToUse) ||
+	//((*content.met_tighter_tst_nolep)["Final"]->met() > metSkimToUse) ||
+	//((*content.met_tighter_tst)["Final"]->met() > metSkimToUse) ||
                ((*content.met_tenacious_tst_nolep)["Final"]->met() > metSkimToUse) ||
                ((*content.met_tenacious_tst)["Final"]->met() > metSkimToUse);
    if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::MET_skim, event_weight);
@@ -1851,6 +1852,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    cand.evt.n_mu = content.goodMuons.size();
    // if( cand.evt.n_mu_baseline != 0)
    // std::cout << "Number of muons in event=" << cand.evt.n_mu << ", baseline=" << cand.evt.n_mu_baseline << std::endl;
+   static SG::AuxElement::Accessor<char> acc_signal("signal");
    static SG::AuxElement::Accessor<char> acc_bad("bad");
    for (auto muon : content.goodMuons) {
       cand.mu["mu"].add(*muon);
@@ -1866,8 +1868,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       tmp_ptvarcone30_TightTTVA_pt1000/muon->pt() << ", topoetcone20/pt=" << tmp_topoetcone20/muon->pt() << std::endl;
       */
    }
-   for (auto muon : content.baselineMuons) {
-      if (doMuonDetail) cand.mu["basemu"].add(*muon);
+   for (auto muon : content.baselineMuons) {// saving leptons failing the signal selection, but still baseline  
+     if (doMuonDetail && (acc_signal(*muon) == 0)) cand.mu["basemu"].add(*muon);
       ++cand.evt.n_mu_baseline;
    }
 
@@ -1878,8 +1880,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    for (auto electron : content.goodElectrons) {
       cand.el["el"].add(*electron);
    }
-   for (auto electron : content.baselineElectrons) {
-      if (doElectronDetail) cand.el["baseel"].add(*electron);
+   for (auto electron : content.baselineElectrons) {// saving leptons failing the signal selection, but still baseline
+     if (doElectronDetail && (acc_signal(*electron) == 0)) cand.el["baseel"].add(*electron);
       ++cand.evt.n_el_baseline;
    }
    // add the container leptons for lepton veto studies
@@ -1914,11 +1916,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    //-----------------------------------------------------------------------
    cand.met["met_tst"].add(*((*content.met_tst)["Final"]));
    cand.met["met_tight_tst"].add(*((*content.met_tight_tst)["Final"]));
-   cand.met["met_tighter_tst"].add(*((*content.met_tighter_tst)["Final"]));
+   //cand.met["met_tighter_tst"].add(*((*content.met_tighter_tst)["Final"]));
    cand.met["met_tenacious_tst"].add(*((*content.met_tenacious_tst)["Final"]));
    cand.met["met_soft_tst"].add(*((*content.met_tst)["PVSoftTrk"]));
    cand.met["met_tight_tst_nolep"].add(*((*content.met_tight_tst_nolep)["Final"]));
-   cand.met["met_tighter_tst_nolep"].add(*((*content.met_tighter_tst_nolep)["Final"]));
+   //cand.met["met_tighter_tst_nolep"].add(*((*content.met_tighter_tst_nolep)["Final"]));
    cand.met["met_tenacious_tst_nolep"].add(*((*content.met_tenacious_tst_nolep)["Final"]));
 
    //  cand.met["met_tst_nomuon"].add(*((*content.met_tst_nomuon)["Final"]));
