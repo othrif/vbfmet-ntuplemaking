@@ -309,8 +309,7 @@ EL::StatusCode VBFInv::initialize()
          else
             mc_campaign = "mc16c";
          prw_lumicalc.push_back(PathResolverFindCalibFile(
-            "GoodRunsLists/data17_13TeV/20180619/"
-            "physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
+            "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
          prw_conf.push_back(PathResolverFindCalibFile(
             "GoodRunsLists/data17_13TeV/20180619/"
             "physics_25ns_Triggerno17e33prim.actualMu.OflLumi-13TeV-010.root")); // 2017 ActualMu
@@ -1869,7 +1868,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       */
    }
    for (auto muon : content.baselineMuons) {// saving leptons failing the signal selection, but still baseline  
-     if (doMuonDetail && (acc_signal(*muon) == 0)) cand.mu["basemu"].add(*muon);
+     if (doMuonDetail && !(acc_signal(*muon) == 1)) cand.mu["basemu"].add(*muon);
+     //std::cout << "muon is signal? " << (acc_signal(*muon) == 1) << std::endl;
       ++cand.evt.n_mu_baseline;
    }
 
@@ -1881,7 +1881,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.el["el"].add(*electron);
    }
    for (auto electron : content.baselineElectrons) {// saving leptons failing the signal selection, but still baseline
-     if (doElectronDetail && (acc_signal(*electron) == 0)) cand.el["baseel"].add(*electron);
+     if (doElectronDetail && !(acc_signal(*electron) == 1)) cand.el["baseel"].add(*electron);
       ++cand.evt.n_el_baseline;
    }
    // add the container leptons for lepton veto studies
