@@ -1332,7 +1332,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // add vertex info
    static SG::AuxElement::Accessor<float> acc_sumPt2("sumPt2");
    const xAOD::Vertex *pvD               = m_susytools_handle->GetPrimVtx();
-   if(pvD){  cand.evt.vtx_sumpt2 = acc_sumPt2(*pvD);
+   if(pvD){  if(acc_sumPt2.isAvailable(*pvD)) cand.evt.vtx_sumpt2 = acc_sumPt2(*pvD);
    } else  cand.evt.vtx_sumpt2 = -999;
 
    // trigger
