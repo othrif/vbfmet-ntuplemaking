@@ -57,19 +57,19 @@ void Analysis::outMuon::attachToTree(TTree *tree)
       tree->Branch(prefix + "d0sig", &d0sig);
       tree->Branch(prefix + "z0", &z0);
       tree->Branch(prefix + "z0sig", &z0sig);
-      tree->Branch(prefix + "ptcone20", &ptcone20);
+      //tree->Branch(prefix + "ptcone20", &ptcone20);
       tree->Branch(prefix + "ptvarcone20", &ptvarcone20);
-      tree->Branch(prefix + "etcone20", &etcone20);
+      //tree->Branch(prefix + "etcone20", &etcone20);
       tree->Branch(prefix + "topoetcone20", &topoetcone20);
-      tree->Branch(prefix + "ptcone30", &ptcone30);
+      //tree->Branch(prefix + "ptcone30", &ptcone30);
       tree->Branch(prefix + "ptvarcone30", &ptvarcone30);
       tree->Branch(prefix + "ptvarcone30_TightTTVA_pt1000", &ptvarcone30_TightTTVA_pt1000);
-      tree->Branch(prefix + "etcone30", &etcone30);
+      //tree->Branch(prefix + "etcone30", &etcone30);
       tree->Branch(prefix + "topoetcone30", &topoetcone30);
-      tree->Branch(prefix + "ptcone40", &ptcone40);
-      tree->Branch(prefix + "ptvarcone40", &ptvarcone40);
-      tree->Branch(prefix + "etcone40", &etcone40);
-      tree->Branch(prefix + "topoetcone40", &topoetcone40);
+      //tree->Branch(prefix + "ptcone40", &ptcone40);
+      //tree->Branch(prefix + "ptvarcone40", &ptvarcone40);
+      //tree->Branch(prefix + "etcone40", &etcone40);
+      //tree->Branch(prefix + "topoetcone40", &topoetcone40);
       tree->Branch(prefix + "truthType", &truthType);
       tree->Branch(prefix + "truthOrigin", &truthOrigin);
    }
