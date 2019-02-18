@@ -866,7 +866,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
             // calculate d0 and z0
             const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
             const Float_t       primary_vertex_z = pv ? pv->z() : 0;
-            // content.vtx_sumpt2 = sumPt2(*pv);
             dec_new_d0(*mu)    = HelperFunctions::getD0(mu);
             dec_new_d0sig(*mu) = HelperFunctions::getD0sig(mu, content.eventInfo);
             dec_new_z0(*mu)    = HelperFunctions::getZ0(mu, primary_vertex_z);
@@ -1329,6 +1328,12 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if (doRnS && !m_isMC) {
       cand.rns.rnsPSweight = cand.rns.getPSweight(m_susytools_handle, event, content.eventInfo->runNumber(), debug);
    }
+
+   // add vertex info
+   static SG::AuxElement::Accessor<float> acc_sumPt2("sumPt2");
+   const xAOD::Vertex *pvD               = m_susytools_handle->GetPrimVtx();
+   if(pvD){  cand.evt.vtx_sumpt2 = acc_sumPt2(*pvD);
+   } else  cand.evt.vtx_sumpt2 = -999;
 
    // trigger
    for (auto &kv : cand.evt.trigger) {

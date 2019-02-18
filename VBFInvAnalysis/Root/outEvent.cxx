@@ -159,7 +159,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "averageIntPerXing", &averageIntPerXing);
    tree->Branch(prefix + "corAverageIntPerXing", &corAverageIntPerXing);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
-   //if (!doTrim()) tree->Branch(prefix + "vtx_sumpt2", &vtx_sumpt2);
+   if (!doTrim()) tree->Branch(prefix + "vtx_sumpt2", &vtx_sumpt2);
    //if (!doTrim()) tree->Branch(prefix + "mcEventWeightXsec", &mcEventWeightXsec);
    if (!doTrim()) tree->Branch(prefix + "mcEventWeights", &mcEventWeights);
    if (!doTrim()) tree->Branch("l1_met_trig_encoded", &l1_met_trig_encoded);
