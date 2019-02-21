@@ -24,7 +24,7 @@ parser.add_argument( "-k", "--nskip", type = int, dest = "nskip", help="Number o
 parser.add_argument( "-r", "--replicationSite", type = str, dest = "replicationSite", default = "DESY-HH_LOCALGROUPDISK", help="Name of disk where to replicate output of grid jobs" )
 parser.add_argument( "-w", "--overwrite", dest = "overwrite", action = "store_false", default = True, help = "don't overwrite previous submitDir")
 parser.add_argument( "-d", "--driver", type = str, dest = "driver", default = "local", choices = ["local", "prun","condor"], help = "driver to be used (local, prun, condor)", metavar="driver")
-parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth", "VBFInvSherpaTruth"], help = "algorithm name (e.g. VBFInv, VBFInvTruth)")
+parser.add_argument( "-a", "--algo", type = str, dest = "algoName", default = "VBFInv", choices = ["VBFInv","VBFInvTruth", "VBFInvSherpaTruth", "VBFInvVjetsRW"], help = "algorithm name (e.g. VBFInv, VBFInvTruth, VBFInvSherpaTruth, VBFInvVjetsRW)")
 parser.add_argument( "-u", "--user", type=str, dest="userName", default=os.environ["USER"], help="username for grid jobs", metavar="userName")
 
 # Algorithm configuration
@@ -192,7 +192,7 @@ if( args.algoName == "VBFInv" ):
   alg.doMETDetail = args.doMETDetail or args.doDetail
   alg.doEventDetail = args.doEventDetail or args.doDetail
   alg.doContLepDetail = args.doContLepDetail or args.doDetail
-  alg.savePVOnly = False # saves only the PV value for the jets when True  
+  alg.savePVOnly = False # saves only the PV value for the jets when True
   alg.doRnS = args.doRnS
   alg.doFatJetDetail = args.doFatJetDetail
   alg.doTrackJetDetail = args.doTrackJetDetail
@@ -207,8 +207,10 @@ elif ( args.algoName == "VBFInvSherpaTruth"):
   alg.shouldNotCluster = args.noClusterPartons
   alg.partonJetPtCut = args.partonPt
   alg.truthJetPtCut = args.truthPt
+elif ( args.algoName == "VBFInvVjetsRW"):
+  alg.skipCBK = args.skipCutBookKeper
 else:
-  print("ERROR: You need to enter a valid algorithm name: \"VBFInv\" or \"VBFInvTruth\"")
+  print("ERROR: You need to enter a valid algorithm name: \"VBFInv\" or \"VBFInvTruth\" or \"VBFInvSherpaTruth\" or \"VBFInvVjetsRW\"")
   sys.exit()
 job.algsAdd( alg )
 
@@ -256,8 +258,8 @@ elif (args.driver == 'prun'):
       driver.options().setString('nc_optGridNfilesPerJob', '5')
       #--nGBPerJob=10
     driver.options().setString('nc_outputSampleName', dset_name_mask)
-    #driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
-    driver.options().setString("nc_optGridDestSE","MWT2_UC_LOCALGROUPDISK")
+    driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
+    #driver.options().setString("nc_optGridDestSE","MWT2_UC_LOCALGROUPDISK")
     if args.replicationSite != None:
         driver.options().setString('nc_destSE', args.replicationSite)
     driver.submitOnly(job, args.submitDir )

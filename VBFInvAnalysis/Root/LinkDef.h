@@ -14,5 +14,6 @@
 #pragma link C++ class VBFInv+;
 #pragma link C++ class VBFInvTruth+;
 #pragma link C++ class VBFInvSherpaTruth+;
+#pragma link C++ class VBFInvVjetsRW+;
 
 #endif // __CINT__
