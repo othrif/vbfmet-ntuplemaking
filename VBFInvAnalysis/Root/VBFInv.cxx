@@ -1109,7 +1109,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       (*content.met_tst_nolep)["Final"]->setMpx(mpx + px);
       (*content.met_tst_nolep)["Final"]->setMpy(mpy + py);
    }
-
+   // set the vector
+   myMET_tst_nolep.SetPxPyPzE((*content.met_tst_nolep)["Final"]->mpx(), (*content.met_tst_nolep)["Final"]->mpy(),0.0, (*content.met_tst_nolep)["Final"]->met());
    double met_tst_nolep_j1_dphi = -1., met_tst_nolep_j2_dphi = -1.;
    HelperFunctions::computeMETj(myMET_tst_nolep, content.goodJets, met_tst_nolep_j1_dphi, met_tst_nolep_j2_dphi);
    if (debug) {
@@ -1367,6 +1368,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
    // raw event info
    cand.evt.runNumber            = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
+   cand.evt.runPeriod            = content.eventInfo->runNumber();
    cand.evt.eventNumber          = (ULong64_t)content.eventInfo->eventNumber();
    cand.evt.lumiBlock            = content.eventInfo->lumiBlock();
    cand.evt.bcid                 = content.eventInfo->bcid();

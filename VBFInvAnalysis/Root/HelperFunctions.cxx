@@ -59,13 +59,13 @@ void computeMETj(TLorentzVector met, xAOD::JetContainer jets, double &e_met_j1_d
    std::vector<TLorentzVector> jet_tlv;
    TLorentzVector              jet_tmp;
 
-   if (jets.size() >= 2 && jets.at(0)->pt() > 40000 && jets.at(1)->pt() > 40000) {
+   if (jets.size() >= 2 /*&& jets.at(0)->pt() > 40000 && jets.at(1)->pt() > 40000*/) {
       jet_tmp.SetPtEtaPhiE(jets.at(0)->pt(), jets.at(0)->eta(), jets.at(0)->phi(), jets.at(0)->e());
       jet_tlv.push_back(jet_tmp);
       jet_tmp.SetPtEtaPhiE(jets.at(1)->pt(), jets.at(1)->eta(), jets.at(1)->phi(), jets.at(1)->e());
       jet_tlv.push_back(jet_tmp);
 
-      TLorentzVector jet_sum = jet_tlv.at(0) + jet_tlv.at(1);
+      //TLorentzVector jet_sum = jet_tlv.at(0) + jet_tlv.at(1);
       e_met_j1_dphi          = fabs(jet_tlv.at(0).DeltaPhi(met));
       e_met_j2_dphi          = fabs(jet_tlv.at(1).DeltaPhi(met));
    }
