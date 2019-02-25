@@ -18,6 +18,7 @@ void Analysis::outEvent::reset()
    // General
    year                 = 0;
    runNumber            = -9999;
+   runPeriod            = -9999;
    randomRunNumber      = -9999;
    eventNumber          = 0;
    lumiBlock            = -9999;
@@ -152,6 +153,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
 
    tree->Branch(prefix + "year", &year);
    tree->Branch(prefix + "runNumber", &runNumber);
+   tree->Branch(prefix + "runPeriod", &runPeriod);
    tree->Branch(prefix + "randomRunNumber", &randomRunNumber);
    tree->Branch(prefix + "eventNumber", &eventNumber);
    tree->Branch(prefix + "lumiBlock", &lumiBlock);

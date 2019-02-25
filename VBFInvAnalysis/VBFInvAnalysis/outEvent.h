@@ -15,6 +15,7 @@ public:
    // event variables
    Int_t     year;
    Int_t     runNumber;
+   Int_t     runPeriod;
    Int_t     randomRunNumber;
    ULong64_t eventNumber;
    Int_t     lumiBlock;
