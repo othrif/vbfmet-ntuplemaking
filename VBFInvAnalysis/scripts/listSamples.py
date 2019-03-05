@@ -7,9 +7,7 @@
 
 from collections import OrderedDict
 
-mainMCTest = OrderedDict([
-  ('signal',    [308276,308567,308284])
-  ])
+mainMCTest = OrderedDict([('QCDw',      range(361020,361032 + 1))])
 
 mainMC = OrderedDict([
     ('signal',     [308276,308567,308284]),
@@ -66,8 +64,8 @@ pTagDict = { "data15_13TeV"                  : "p3713",
              "data17_13TeV"                  : "p3713",
              "data18_13TeV"                  : "p3713",
              "mc16_13TeV"                    : "p3712"}
-#myMC = mainMCTest
-myMC = mainMC
+myMC = mainMCTest
+#myMC = mainMC
 myMC.update(myMC)
 #####################
 #
