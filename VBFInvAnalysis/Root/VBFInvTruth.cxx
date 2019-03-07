@@ -59,7 +59,7 @@ EL::StatusCode VBFInvTruth ::histInitialize()
    NumberEvents->GetXaxis()->SetBinLabel(1, "Raw");
    NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
    NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
-   NumberEvents->GetXaxis()->SetBinLabel(4, "RawEXOT5");
+   NumberEvents->GetXaxis()->SetBinLabel(4, "RawTRUTH");
    return EL::StatusCode::SUCCESS;
 }
 
