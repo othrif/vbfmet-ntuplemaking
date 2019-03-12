@@ -115,6 +115,7 @@ public:
    Double_t JetpTFilter;
    Double_t MjjFilter;
    Double_t PhijjFilter;
+   Int_t    m_mcchannel;
 
 private:
    // Configuration, and any other types of variables go here.
