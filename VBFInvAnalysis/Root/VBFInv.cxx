@@ -52,8 +52,8 @@ ClassImp(VBFInv)
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false), doRnS(false),
      doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false), doJetDetail(false),
       doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false), doContLepDetail(false), savePVOnly(false),
-     JetEtaFilter(5.0), JetpTFilter(20.0e3),MjjFilter(800.0e3),PhijjFilter(2.5),
-  m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false),
+  JetEtaFilter(5.0), JetpTFilter(20.0e3),MjjFilter(800.0e3),PhijjFilter(2.5), getMCChannel(-1),
+  m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false), 
      m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
      m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
@@ -327,11 +327,13 @@ EL::StatusCode VBFInv::initialize()
             PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
          break;
       }
+      unsigned mcchannel = eventInfo->mcChannelNumber();
+      if(getMCChannel>0) mcchannel = unsigned(getMCChannel);
       std::string prwConfigFile = "dev/SUSYTools/PRW_AUTOCONFIG_SIM/files/pileup_" + mc_campaign + "_dsid" +
-                                  std::to_string(eventInfo->mcChannelNumber()) + "_" + simType + ".root";
+                                  std::to_string(mcchannel) + "_" + simType + ".root";
       //"DSID" + std::to_string(DSID_INT/1000) + "xxx/pileup_" + mcCampaignMD + "_dsid" + std::to_string(DSID_INT) + "_" + simType + ".root";
       //prwConfigFile = "dev/PileupReweighting/mc16_13TeV/pileup_" + mc_campaign + "_dsid" + std::to_string(eventInfo->mcChannelNumber()) + "_" + simType + ".root";
-      prwConfigFile = "dev/PileupReweighting/share/DSID"+std::to_string(eventInfo->mcChannelNumber()/1000)+"xxx/pileup_"+mc_campaign+ "_dsid"+ std::to_string(eventInfo->mcChannelNumber())+"_"+simType + ".root";
+      prwConfigFile = "dev/PileupReweighting/share/DSID"+std::to_string(mcchannel/1000)+"xxx/pileup_"+mc_campaign+ "_dsid"+ std::to_string(mcchannel)+"_"+simType + ".root";
       std::cout << "input:  " << prwConfigFile << " "  << PathResolverFindCalibFile(prwConfigFile) << std::endl;
       prwConfigFile = PathResolverFindCalibFile(prwConfigFile);
       if (prwConfigFile.empty()) {
@@ -1367,7 +1369,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
 
    // raw event info
-   cand.evt.runNumber            = (m_isMC) ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
+   unsigned mcchannel = content.eventInfo->mcChannelNumber();
+   if(getMCChannel>0) mcchannel = unsigned(getMCChannel);
+   cand.evt.runNumber            = (m_isMC) ? mcchannel : content.eventInfo->runNumber();
    cand.evt.runPeriod            = content.eventInfo->runNumber();
    cand.evt.eventNumber          = (ULong64_t)content.eventInfo->eventNumber();
    cand.evt.lumiBlock            = content.eventInfo->lumiBlock();
