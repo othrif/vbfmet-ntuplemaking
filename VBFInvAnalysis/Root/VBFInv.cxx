@@ -1387,12 +1387,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    Bool_t is2017(kFALSE);
    Bool_t is2018(kFALSE);
 
-   if ((cand.evt.year == 0 && cand.evt.runNumber >= 276262 && cand.evt.runNumber <= 284484) || cand.evt.year == 2015)
-      is2015 = kTRUE; // data2015
-   if ((cand.evt.year == 0 && cand.evt.runNumber >= 296939 && cand.evt.runNumber <= 311481) || cand.evt.year == 2016)
-      is2016 = kTRUE; // data2016
-   if ((cand.evt.year == 0 && cand.evt.runNumber >= 324320 && cand.evt.runNumber<=341649 ) || cand.evt.year == 2017) is2017 = kTRUE;
-   if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197) || cand.evt.year == 2018) is2018 = kTRUE; // data2018*/
+   if ((cand.evt.year == 0 && cand.evt.runNumber >= 276262 && cand.evt.runNumber <= 284484) || cand.evt.year == 2015) is2015 = kTRUE; // data2015
+   if ((cand.evt.year == 0 && cand.evt.runNumber >= 296939 && cand.evt.runNumber <= 311481) || cand.evt.year == 2016) is2016 = kTRUE; // data2016
+   if ((cand.evt.year == 0 && cand.evt.runNumber >= 324320 && cand.evt.runNumber <= 341649) || cand.evt.year == 2017) is2017 = kTRUE; // data2017
+   if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197 && cand.evt.runNumber <= 364485) || cand.evt.year == 2018) is2018 = kTRUE; // data2018
 
    //
    // trigger logic implemented by year
@@ -1402,7 +1400,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
      cand.evt.trigger["HLT_mu22_mu8noL1"] || cand.evt.trigger["HLT_2mu14"]; //2017+2018
    bool diMuonYearlyOpt1L1 = is2015 ? cand.evt.trigger["HLT_mu18_mu8noL1"] : cand.evt.trigger["HLT_mu22_mu8noL1"];
    bool diMuonYearlyOpt2L1 = is2015 ? cand.evt.trigger["HLT_2mu10"] : cand.evt.trigger["HLT_2mu14"];
-   bool muonTrig = is2015 ? (cand.evt.trigger["HLT_mu20_iloose_L1MU15"] || cand.evt.trigger["HLT_mu40"] || cand.evt.trigger["HLT_mu60_0eta105_msonly"]) : 
+   bool muonTrig = is2015 ? (cand.evt.trigger["HLT_mu20_iloose_L1MU15"] || cand.evt.trigger["HLT_mu40"] || cand.evt.trigger["HLT_mu60_0eta105_msonly"]) :
                             (cand.evt.trigger["HLT_mu26_ivarmedium"] || cand.evt.trigger["HLT_mu50"] || cand.evt.trigger["HLT_mu60_0eta105_msonly"]);
    bool elecTrig = is2015 ? (cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] || cand.evt.trigger["HLT_e120_lhloose"]) :
                             (cand.evt.trigger["HLT_e26_lhtight_nod0_ivarloose"] || cand.evt.trigger["HLT_e60_lhmedium_nod0"] || cand.evt.trigger["HLT_e140_lhloose_nod0"] || cand.evt.trigger["HLT_e300_etcut"]);
@@ -1421,11 +1419,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if (muonTrig)        cand.evt.trigger_lep += 0x2;
    if (elecTrig)        cand.evt.trigger_lep += 0x4;
 
-   // Testing trigger configuration:
-   /*cand.evt.trigger_met = (is2015 && cand.evt.trigger["HLT_xe70_mht"]) ||
-                  (is2016 && ( cand.evt.trigger["HLT_xe90_mht_L1XE50"] || cand.evt.trigger["HLT_xe110_mht_L1XE50"] )) ||
-                  cand.evt.trigger["HLT_noalg_L1J400"] ;*/
-   cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : 0;
+   cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : cand.evt.runNumber;
 
    Bool_t customMETtrig(kFALSE);
    if (is2015 && cand.evt.trigger["HLT_xe70_mht"])
@@ -1436,7 +1430,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       customMETtrig = kTRUE;
    else if (cand.evt.trigger["HLT_noalg_L1J400"])
       customMETtrig = kTRUE;
-   
+
    cand.evt.trigger_met = customMETtrig;
    // extra trigger info
    if(is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE55"])      cand.evt.trigger_met += 0x2; // unprescaled
@@ -1895,7 +1889,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       tmp_ptvarcone30_TightTTVA_pt1000/muon->pt() << ", topoetcone20/pt=" << tmp_topoetcone20/muon->pt() << std::endl;
       */
    }
-   for (auto muon : content.baselineMuons) {// saving leptons failing the signal selection, but still baseline  
+   for (auto muon : content.baselineMuons) {// saving leptons failing the signal selection, but still baseline
      if (cand.mu.find("basemu")!=cand.mu.end() && !(acc_signal(*muon) == 1)){
        cand.mu["basemu"].add(*muon);
      }
