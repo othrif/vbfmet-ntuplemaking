@@ -327,7 +327,9 @@ EL::StatusCode VBFInv::initialize()
             PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
          break;
       }
-      unsigned mcchannel = eventInfo->mcChannelNumber();
+      
+      unsigned mcchannel = runNum;
+      if(m_isMC) mcchannel = eventInfo->mcChannelNumber();
       if(getMCChannel>0) mcchannel = unsigned(getMCChannel);
       std::string prwConfigFile = "dev/SUSYTools/PRW_AUTOCONFIG_SIM/files/pileup_" + mc_campaign + "_dsid" +
                                   std::to_string(mcchannel) + "_" + simType + ".root";
@@ -1369,7 +1371,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
 
    // raw event info
-   unsigned mcchannel = content.eventInfo->mcChannelNumber();
+   unsigned mcchannel = m_isMC ? content.eventInfo->mcChannelNumber(): content.eventInfo->runNumber();
    if(getMCChannel>0) mcchannel = unsigned(getMCChannel);
    cand.evt.runNumber            = (m_isMC) ? mcchannel : content.eventInfo->runNumber();
    cand.evt.runPeriod            = content.eventInfo->runNumber();
