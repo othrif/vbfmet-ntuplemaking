@@ -20,6 +20,7 @@ parser.add_argument( "-i", "--inputDirs", type = str, dest = "dir", default = ""
 parser.add_argument( "-g", "--inputRucio", type = str, dest="rucio", default = "", help = "Comma-separated list of input Rucio datasets" )
 parser.add_argument( "-l", "--inputRucioLists", type = str, dest="ruciolist", default = "", help = "Comma-separated list of text files containing one Rucio sample per line (empty lines or lines starting with # are ignored)" )
 parser.add_argument( "-n", "--nevents", type = int, dest = 'nmax', help="Maximum number of events to process for all the datasets")
+parser.add_argument( "-nf", "--nfiles", type = int, dest = 'nfiles', help="number of files per job")
 parser.add_argument( "-k", "--nskip", type = int, dest = "nskip", help="Number of events to skip for all the datasets")
 parser.add_argument( "-r", "--replicationSite", type = str, dest = "replicationSite", default = "DESY-HH_LOCALGROUPDISK", help="Name of disk where to replicate output of grid jobs" )
 parser.add_argument( "-w", "--overwrite", dest = "overwrite", action = "store_false", default = True, help = "don't overwrite previous submitDir")
@@ -233,6 +234,9 @@ if args.nmax > 0:
 if args.nskip > 0:
   job.options().setDouble(ROOT.EL.Job.optSkipEvents, args.nskip);
   print 'Jobs will skip {n} events'.format(n=args.nskip)
+if args.nfiles > 0:
+  job.options().setDouble (ROOT.EL.Job.optFilesPerWorker, args.nfiles); # ~10 for data
+  print 'Jobs will process {n} files'.format(n=args.nfiles)
 
 # define an output
 output = ROOT.EL.OutputStream  ("MiniNtuple")
@@ -271,7 +275,7 @@ elif (args.driver == 'condor'):
     condor_options+="+RequestRuntime = 50000" + "\n"
     condor_options+="RequestMemory = 2G" + "\n"
     condor_options+="RequestDisk = 500M" + "\n"
-    condor_options+="notify_user = othmane.rifki@desy.de" + "\n"
+    condor_options+="notify_user = christian.sander@desy.de" + "\n"
     condor_options+="notification = Error" + "\n"
     condor_options+="should_transfer_files = NO" + "\n"
     condor_options+="Requirements = ( OpSysAndVer == \"SL6\")" + "\n"
