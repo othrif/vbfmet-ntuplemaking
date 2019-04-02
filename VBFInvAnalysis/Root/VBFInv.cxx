@@ -1694,24 +1694,20 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                for (const auto &truthP_itr : *truthP) {
                   if (truthP_itr->status() == 1 && (abs(truthP_itr->pdgId()) == 12 || abs(truthP_itr->pdgId()) == 14 ||
                                                     abs(truthP_itr->pdgId()) == 16)) {
-                     for (const auto &part : *truthJets) {
-                        double dR = truthP_itr->p4().DeltaR(part->p4());
-                        if (dR < 0.4) {
-                           if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
-                              usedBC.push_back(truthP_itr->barcode());
-                              nuActivity += truthP_itr->p4();
-                           }
+                     double dR = truthP_itr->p4().DeltaR(part->p4());
+                     if (dR < 0.4) {
+                        if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
+                           usedBC.push_back(truthP_itr->barcode());
+                           nuActivity += truthP_itr->p4();
                         }
                      }
                   }
                   if (truthP_itr->status() == 1 && abs(truthP_itr->pdgId()) == 13) {
-                     for (const auto &part : *truthJets) {
-                        double dR = truthP_itr->p4().DeltaR(part->p4());
-                        if (dR < 0.4) {
-                           if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
-                              usedBC.push_back(truthP_itr->barcode());
-                              muActivity += truthP_itr->p4();
-                           }
+                     double dR = truthP_itr->p4().DeltaR(part->p4());
+                     if (dR < 0.4) {
+                        if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
+                           usedBC.push_back(truthP_itr->barcode());
+                           muActivity += truthP_itr->p4();
                         }
                      }
                   }
