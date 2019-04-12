@@ -294,6 +294,10 @@ EL::StatusCode VBFInv::initialize()
       std::string              mc_campaign;
       std::string              simType = (m_isAFII ? "AFII" : "FS");
       uint32_t                 runNum  = eventInfo->runNumber();
+      LINE
+      std::cout << "\n\n\n\n" << runNum << std::endl;
+      std::cout << amiTag << std::endl;
+      LINE
       switch (runNum) {
       case 284500:
          mc_campaign = "mc16a";
@@ -306,7 +310,7 @@ EL::StatusCode VBFInv::initialize()
          if (amiTag.find("r10201") != std::string::npos)
             mc_campaign = "mc16d";
          else if (amiTag.find("r9781") != std::string::npos)
-            mc_campaign = "mc16c";
+            mc_campaign = "mc16d";
          else
             mc_campaign = "mc16d";
          prw_lumicalc.push_back(PathResolverFindCalibFile(
@@ -328,9 +332,12 @@ EL::StatusCode VBFInv::initialize()
             PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
          break;
       }
+
       unsigned mcchannel = runNum;
       if(m_isMC) mcchannel = eventInfo->mcChannelNumber();
       if(getMCChannel>0) mcchannel = unsigned(getMCChannel);
+      LINE
+      std::cout << mcchannel << std::endl;
       std::string prwConfigFile = "dev/SUSYTools/PRW_AUTOCONFIG_SIM/files/pileup_" + mc_campaign + "_dsid" +
                                   std::to_string(mcchannel) + "_" + simType + ".root";
       //"DSID" + std::to_string(DSID_INT/1000) + "xxx/pileup_" + mcCampaignMD + "_dsid" + std::to_string(DSID_INT) + "_" + simType + ".root";
@@ -539,11 +546,13 @@ EL::StatusCode VBFInv::initialize()
       // m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
    }
+   LINE
    return EL::StatusCode::SUCCESS;
 }
 
 EL::StatusCode VBFInv::execute()
 {
+   LINE
    ANA_CHECK_SET_TYPE(EL::StatusCode);
 
    // Fail if unchecked status code
@@ -562,6 +571,7 @@ EL::StatusCode VBFInv::execute()
       passExp |= (m_eventCounter <= exponent && (m_eventCounter % exponent) == 0);
    }
    if (passExp) ANA_MSG_INFO("Event number = " << m_eventCounter);
+   LINE
    m_eventCounter++;
 
    // loop on systematic variations
@@ -596,7 +606,9 @@ EL::StatusCode VBFInv::execute()
          m_content_current.isNominal = kFALSE;
       }
       Analysis::ContentHolder &content = (isFirstIteration) ? m_content_nominal : m_content_current;
+      LINE
       analyzeEvent(content, systInfo, m_cand[systName]);
+      LINE
       isFirstIteration = kFALSE;
    }
 
@@ -683,8 +695,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    xAOD::TEvent *event = wk()->xaodEvent();
 
    // Initialize SUSYTools
+   LINE
    ANA_CHECK(m_susytools_handle->ApplyPRWTool());
-
+   LINE
    // event selection using a given systematic variation
    const Bool_t syst_affectsElectrons = ST::testAffectsObject(xAOD::Type::Electron, systInfo.affectsType);
    const Bool_t syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon, systInfo.affectsType);
