@@ -53,7 +53,7 @@ ClassImp(VBFInv)
      doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false), doJetDetail(false),
       doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false), doContLepDetail(false), savePVOnly(false),
   JetEtaFilter(5.0), JetpTFilter(20.0e3),MjjFilter(800.0e3),PhijjFilter(2.5), getMCChannel(-1),
-  m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false), 
+  m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false),
      m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
      m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
@@ -294,7 +294,6 @@ EL::StatusCode VBFInv::initialize()
       std::string              mc_campaign;
       std::string              simType = (m_isAFII ? "AFII" : "FS");
       uint32_t                 runNum  = eventInfo->runNumber();
-
       switch (runNum) {
       case 284500:
          mc_campaign = "mc16a";
@@ -306,8 +305,10 @@ EL::StatusCode VBFInv::initialize()
       case 300000:
          if (amiTag.find("r10201") != std::string::npos)
             mc_campaign = "mc16d";
-         else
+         else if (amiTag.find("r9781") != std::string::npos)
             mc_campaign = "mc16c";
+         else
+            mc_campaign = "mc16d";
          prw_lumicalc.push_back(PathResolverFindCalibFile(
             "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
          prw_conf.push_back(PathResolverFindCalibFile(
@@ -327,7 +328,6 @@ EL::StatusCode VBFInv::initialize()
             PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
          break;
       }
-      
       unsigned mcchannel = runNum;
       if(m_isMC) mcchannel = eventInfo->mcChannelNumber();
       if(getMCChannel>0) mcchannel = unsigned(getMCChannel);
@@ -539,13 +539,11 @@ EL::StatusCode VBFInv::initialize()
       // m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
    }
-
    return EL::StatusCode::SUCCESS;
 }
 
 EL::StatusCode VBFInv::execute()
 {
-
    ANA_CHECK_SET_TYPE(EL::StatusCode);
 
    // Fail if unchecked status code
