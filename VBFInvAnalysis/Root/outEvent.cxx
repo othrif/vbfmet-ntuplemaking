@@ -299,6 +299,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "truthF_jj_deta", &truthF_jj_deta);
    tree->Branch(prefix + "truthF_jj_dphi", &truthF_jj_dphi);
 
+    if (!doTrim()){
    tree->Branch(prefix + "truth_vtx_z", &truth_vtx_z);
    tree->Branch(prefix + "reco_vtx_ntrk", &reco_vtx_ntrk);
    tree->Branch(prefix + "reco_vtx_x", &reco_vtx_x);
@@ -306,7 +307,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "reco_vtx_z", &reco_vtx_z);
    tree->Branch(prefix + "reco_vtx_chiSquared", &reco_vtx_chiSquared);
    tree->Branch(prefix + "reco_vtx_vertexType", &reco_vtx_vertexType);
-
+   }
    return;
 }
 
