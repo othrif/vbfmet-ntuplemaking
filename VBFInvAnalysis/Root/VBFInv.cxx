@@ -1337,7 +1337,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    const xAOD::Vertex *pvD               = m_susytools_handle->GetPrimVtx();
    if(pvD){  if(acc_sumPt2.isAvailable(*pvD)) cand.evt.vtx_sumpt2 = acc_sumPt2(*pvD);
    } else  cand.evt.vtx_sumpt2 = -999;
-
    // trigger
    for (auto &kv : cand.evt.trigger) {
       kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
@@ -1460,6 +1459,31 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
+   for (auto thisVertex : *content.vertices) {
+
+   static SG::AuxElement::ConstAccessor<float> acc_M("M");
+   static SG::AuxElement::ConstAccessor<float> acc_Pt("Pt");
+   static SG::AuxElement::ConstAccessor<float> acc_Eta("Eta");
+   static SG::AuxElement::ConstAccessor<float> acc_Phi("Phi");
+   static SG::AuxElement::ConstAccessor<float> acc_sumPt("sumPt");
+   static SG::AuxElement::ConstAccessor<float> acc_sumPt2("sumPt2");
+   cand.evt.reco_vtx_ntrk.push_back(thisVertex->nTrackParticles());
+   cand.evt.reco_vtx_x.push_back(thisVertex->x());
+   cand.evt.reco_vtx_y.push_back(thisVertex->y());
+   cand.evt.reco_vtx_z.push_back(thisVertex->z());
+   cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
+   cand.evt.reco_vtx_vertexType.push_back(thisVertex->vertexType());
+   std::cout << acc_sumPt2(*thisVertex) << std::endl;
+/*   cand.evt.reco_vtx_M.push_back(acc_M(*thisVertex));
+   cand.evt.reco_vtx_Pt.push_back(acc_Pt(*thisVertex));
+   cand.evt.reco_vtx_Eta.push_back(acc_Eta(*thisVertex));
+   cand.evt.reco_vtx_Phi.push_back(acc_Phi(*thisVertex));
+   cand.evt.reco_vtx_sumPt.push_back(acc_sumPt(*thisVertex));
+   cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));*/
+      }
+
+
+
 
    // jj and met_j
    double jj_deta = -1., jj_mass = -1., jj_dphi = -1.;
@@ -1825,6 +1849,18 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // Used for PTV slicing PTV500_1000 and PTV1000_E_CMS samples ( 364216-364229 )
       bool checkPTV = false; if (cand.evt.truth_V_dressed_pt>500.0e3) checkPTV = true;
       cand.evt.passVjetsPTV = checkPTV ;
+
+      // -- vertices --
+      const xAOD::TruthVertexContainer *truthVertices(nullptr);
+      if (event->retrieve(truthVertices, "TruthVertices").isSuccess()) {
+         xAOD::TruthVertexContainer::const_iterator vtx_itr = truthVertices->begin();
+         cand.evt.truth_vtx_z = (*vtx_itr)->z();
+         /* for (const auto&  truthVtx_itr : *truthVertices) {
+          cand.evt.truth_vtx_ntrk = truthVtx_itr->nOutgoingParticles();//.push_back(truthVtx_itr->nOutgoingParticles());
+          cand.evt.truth_vtx_z = truthVtx_itr->z();//.push_back(truthVtx_itr->z());
+        }*/
+      }
+
 
    } // done with MC only
 
