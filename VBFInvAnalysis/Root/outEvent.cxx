@@ -139,6 +139,14 @@ void Analysis::outEvent::reset()
    truthF_jj_deta               = -9999;
    truthF_jj_dphi               = -9999;
 
+   truth_vtx_z              = -9999;
+   reco_vtx_ntrk.clear();
+   reco_vtx_x.clear();
+   reco_vtx_y.clear();
+   reco_vtx_z.clear();
+   reco_vtx_chiSquared.clear();
+   reco_vtx_vertexType.clear();
+
    // clear the map
    for (std::map<TString, Float_t>::iterator it = syst_var_map.begin(); it != syst_var_map.end(); ++it) {
       it->second = 1.0;
@@ -290,6 +298,16 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "truthF_jj_mass", &truthF_jj_mass);
    tree->Branch(prefix + "truthF_jj_deta", &truthF_jj_deta);
    tree->Branch(prefix + "truthF_jj_dphi", &truthF_jj_dphi);
+
+    if (!doTrim()){
+   tree->Branch(prefix + "truth_vtx_z", &truth_vtx_z);
+   tree->Branch(prefix + "reco_vtx_ntrk", &reco_vtx_ntrk);
+   tree->Branch(prefix + "reco_vtx_x", &reco_vtx_x);
+   tree->Branch(prefix + "reco_vtx_y", &reco_vtx_y);
+   tree->Branch(prefix + "reco_vtx_z", &reco_vtx_z);
+   tree->Branch(prefix + "reco_vtx_chiSquared", &reco_vtx_chiSquared);
+   tree->Branch(prefix + "reco_vtx_vertexType", &reco_vtx_vertexType);
+   }
    return;
 }
 
