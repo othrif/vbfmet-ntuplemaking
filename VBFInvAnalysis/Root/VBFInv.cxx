@@ -296,7 +296,6 @@ EL::StatusCode VBFInv::initialize()
       std::string              mc_campaign;
       std::string              simType = (m_isAFII ? "AFII" : "FS");
       uint32_t                 runNum  = eventInfo->runNumber();
-
       switch (runNum) {
       case 284500:
          mc_campaign = "mc16a";
@@ -308,8 +307,10 @@ EL::StatusCode VBFInv::initialize()
       case 300000:
          if (amiTag.find("r10201") != std::string::npos)
             mc_campaign = "mc16d";
-         else
+         else if (amiTag.find("r9781") != std::string::npos)
             mc_campaign = "mc16c";
+         else
+            mc_campaign = "mc16d";
          prw_lumicalc.push_back(PathResolverFindCalibFile(
             "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
          prw_conf.push_back(PathResolverFindCalibFile(
@@ -329,7 +330,6 @@ EL::StatusCode VBFInv::initialize()
             PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
          break;
       }
-      
       unsigned mcchannel = runNum;
       if(m_isMC) mcchannel = eventInfo->mcChannelNumber();
       if(getMCChannel>0) mcchannel = unsigned(getMCChannel);
@@ -541,13 +541,11 @@ EL::StatusCode VBFInv::initialize()
       // m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
    }
-
    return EL::StatusCode::SUCCESS;
 }
 
 EL::StatusCode VBFInv::execute()
 {
-
    ANA_CHECK_SET_TYPE(EL::StatusCode);
 
    // Fail if unchecked status code
@@ -1341,7 +1339,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    const xAOD::Vertex *pvD               = m_susytools_handle->GetPrimVtx();
    if(pvD){  if(acc_sumPt2.isAvailable(*pvD)) cand.evt.vtx_sumpt2 = acc_sumPt2(*pvD);
    } else  cand.evt.vtx_sumpt2 = -999;
-
    // trigger
    for (auto &kv : cand.evt.trigger) {
       kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
@@ -1464,6 +1461,31 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
+   for (auto thisVertex : *content.vertices) {
+
+   static SG::AuxElement::ConstAccessor<float> acc_M("M");
+   static SG::AuxElement::ConstAccessor<float> acc_Pt("Pt");
+   static SG::AuxElement::ConstAccessor<float> acc_Eta("Eta");
+   static SG::AuxElement::ConstAccessor<float> acc_Phi("Phi");
+   static SG::AuxElement::ConstAccessor<float> acc_sumPt("sumPt");
+   static SG::AuxElement::ConstAccessor<float> acc_sumPt2("sumPt2");
+   cand.evt.reco_vtx_ntrk.push_back(thisVertex->nTrackParticles());
+   cand.evt.reco_vtx_x.push_back(thisVertex->x());
+   cand.evt.reco_vtx_y.push_back(thisVertex->y());
+   cand.evt.reco_vtx_z.push_back(thisVertex->z());
+   cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
+   cand.evt.reco_vtx_vertexType.push_back(thisVertex->vertexType());
+   std::cout << acc_sumPt2(*thisVertex) << std::endl;
+/*   cand.evt.reco_vtx_M.push_back(acc_M(*thisVertex));
+   cand.evt.reco_vtx_Pt.push_back(acc_Pt(*thisVertex));
+   cand.evt.reco_vtx_Eta.push_back(acc_Eta(*thisVertex));
+   cand.evt.reco_vtx_Phi.push_back(acc_Phi(*thisVertex));
+   cand.evt.reco_vtx_sumPt.push_back(acc_sumPt(*thisVertex));
+   cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));*/
+      }
+
+
+
 
    // jj and met_j
    double jj_deta = -1., jj_mass = -1., jj_dphi = -1.;
@@ -1696,24 +1718,20 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                for (const auto &truthP_itr : *truthP) {
                   if (truthP_itr->status() == 1 && (abs(truthP_itr->pdgId()) == 12 || abs(truthP_itr->pdgId()) == 14 ||
                                                     abs(truthP_itr->pdgId()) == 16)) {
-                     for (const auto &part : *truthJets) {
-                        double dR = truthP_itr->p4().DeltaR(part->p4());
-                        if (dR < 0.4) {
-                           if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
-                              usedBC.push_back(truthP_itr->barcode());
-                              nuActivity += truthP_itr->p4();
-                           }
+                     double dR = truthP_itr->p4().DeltaR(part->p4());
+                     if (dR < 0.4) {
+                        if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
+                           usedBC.push_back(truthP_itr->barcode());
+                           nuActivity += truthP_itr->p4();
                         }
                      }
                   }
                   if (truthP_itr->status() == 1 && abs(truthP_itr->pdgId()) == 13) {
-                     for (const auto &part : *truthJets) {
-                        double dR = truthP_itr->p4().DeltaR(part->p4());
-                        if (dR < 0.4) {
-                           if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
-                              usedBC.push_back(truthP_itr->barcode());
-                              muActivity += truthP_itr->p4();
-                           }
+                     double dR = truthP_itr->p4().DeltaR(part->p4());
+                     if (dR < 0.4) {
+                        if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
+                           usedBC.push_back(truthP_itr->barcode());
+                           muActivity += truthP_itr->p4();
                         }
                      }
                   }
@@ -1833,6 +1851,18 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // Used for PTV slicing PTV500_1000 and PTV1000_E_CMS samples ( 364216-364229 )
       bool checkPTV = false; if (cand.evt.truth_V_dressed_pt>500.0e3) checkPTV = true;
       cand.evt.passVjetsPTV = checkPTV ;
+
+      // -- vertices --
+      const xAOD::TruthVertexContainer *truthVertices(nullptr);
+      if (event->retrieve(truthVertices, "TruthVertices").isSuccess()) {
+         xAOD::TruthVertexContainer::const_iterator vtx_itr = truthVertices->begin();
+         cand.evt.truth_vtx_z = (*vtx_itr)->z();
+         /* for (const auto&  truthVtx_itr : *truthVertices) {
+          cand.evt.truth_vtx_ntrk = truthVtx_itr->nOutgoingParticles();//.push_back(truthVtx_itr->nOutgoingParticles());
+          cand.evt.truth_vtx_z = truthVtx_itr->z();//.push_back(truthVtx_itr->z());
+        }*/
+      }
+
 
    } // done with MC only
 

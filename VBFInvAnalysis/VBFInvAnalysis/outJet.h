@@ -21,6 +21,8 @@ public:
    std::vector<Int_t>   isbjet;
    std::vector<Float_t> btag_weight;
    std::vector<Float_t> jvt;
+   std::vector<Float_t> jvfcorr;
+   std::vector<Float_t> jvtrpt;
    std::vector<Float_t> fjvt;
    std::vector<Bool_t>  passJvt;
    std::vector<Bool_t>  passOR;

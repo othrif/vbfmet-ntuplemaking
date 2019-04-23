@@ -28,6 +28,8 @@ void Analysis::outJet::reset()
    btag_weight.clear();
    jvt.clear();
    fjvt.clear();
+   jvfcorr.clear();
+   jvtrpt.clear();
    passJvt.clear();
    passOR.clear();
    passJetLoose.clear();
@@ -67,6 +69,8 @@ void Analysis::outJet::attachToTree(TTree *tree)
    tree->Branch(prefix + "m", &m);
    tree->Branch(prefix + "timing", &timing);
    tree->Branch(prefix + "jvt", &jvt);
+   tree->Branch(prefix + "jvfcorr", &jvfcorr);
+   tree->Branch(prefix + "jvtrpt", &jvtrpt);
    tree->Branch(prefix + "fjvt", &fjvt);
    tree->Branch(prefix + "isbjet", &isbjet);
 
@@ -120,6 +124,8 @@ void Analysis::outJet::add(const xAOD::Jet &input)
    static SG::AuxElement::Accessor<char>       acc_passOR("passOR");
    static SG::AuxElement::Accessor<char>       acc_passJvt("passJvt");
    static SG::AuxElement::ConstAccessor<float> acc_jvt("Jvt");
+   static SG::AuxElement::ConstAccessor<float> acc_jvfcorr("JVFCorr");
+   static SG::AuxElement::ConstAccessor<float> acc_jvtrpt("JvtRpt");
    static SG::AuxElement::ConstAccessor<float> acc_fjvt("fJvt");
    // static SG::AuxElement::Accessor<char>       acc_bad("bad");
    static SG::AuxElement::Accessor<char> acc_jetCleanLoose("DFCommonJets_jetClean_LooseBad");
@@ -139,6 +145,16 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       jvt.push_back(acc_jvt(input));
    } else {
       jvt.push_back(-9999);
+   }
+   if (acc_jvfcorr.isAvailable(input)) {
+      jvfcorr.push_back(acc_jvfcorr(input));
+   } else {
+      jvfcorr.push_back(-9999);
+   }
+   if (acc_jvtrpt.isAvailable(input)) {
+      jvtrpt.push_back(acc_jvtrpt(input));
+   } else {
+      jvtrpt.push_back(-9999);
    }
    if (acc_fjvt.isAvailable(input)) {
       fjvt.push_back(acc_fjvt(input));
