@@ -141,6 +141,15 @@ public:
    Int_t n_el_baseline;
    Int_t n_ph;
 
+   Float_t truth_vtx_z;
+   std::vector<Int_t>   reco_vtx_ntrk;
+   std::vector<Float_t> reco_vtx_x;
+   std::vector<Float_t> reco_vtx_y;
+   std::vector<Float_t> reco_vtx_z;
+   std::vector<Float_t> reco_vtx_chiSquared;
+   std::vector<short>   reco_vtx_vertexType;
+
+
 public:
    outEvent(TString name = "", Bool_t doTrim = kFALSE);
    ~outEvent();
