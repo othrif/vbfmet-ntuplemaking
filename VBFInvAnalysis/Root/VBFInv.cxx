@@ -21,7 +21,8 @@
 #include "AsgTools/MessageCheck.h"
 #include <PATInterfaces/CorrectionCode.h>
 #include <EventLoop/Worker.h>
-#include <EventLoop/OutputStream.h>
+#include <EventLoop/StatusCode.h>
+//#include <EventLoop/OutputStream.h>
 #include "PathResolver/PathResolver.h"
 #include "AsgTools/AsgMetadataTool.h"
 
@@ -53,7 +54,7 @@ ClassImp(VBFInv)
      doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false), doJetDetail(false),
       doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false), doContLepDetail(false), savePVOnly(false),
   JetEtaFilter(5.0), JetpTFilter(20.0e3),MjjFilter(800.0e3),PhijjFilter(2.5), getMCChannel(-1),
-  m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false),
+  m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false), m_computeXS(false),
      m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
      m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
@@ -170,6 +171,7 @@ EL::StatusCode VBFInv::initialize()
 
    m_isMC           = !wk()->metaData()->castDouble("isData");
    m_isAFII         = wk()->metaData()->castDouble("isAFII");
+
    Int_t showerType = -9999;
    if (m_isMC) showerType = ST::getMCShowerType(wk()->metaData()->castString("sample_name"));
 
@@ -199,17 +201,17 @@ EL::StatusCode VBFInv::initialize()
    ANA_MSG_INFO("  - skip_syst = " << skip_syst);
    ANA_MSG_INFO("  - trigger_list = " << trigger_list);
    ANA_MSG_INFO("  - showerType = " << showerType);
+   ANA_MSG_INFO("  - computeXS = " << m_computeXS);
    ANA_MSG_INFO("  - debug = " << debug);
 
    // Event counter
    m_eventCounter = 0;
 
-   // Cross section
-   if (m_isMC) {
+   if (m_isMC && m_computeXS) {
       std::string xSecFilePath = "dev/PMGTools/PMGxsecDB_mc15.txt";
-      xSecFilePath             = "";//PathResolverFindCalibFile(xSecFilePath);
+      //xSecFilePath             = "";//PathResolverFindCalibFile(xSecFilePath);
       my_XsecDB                = new SUSY::CrossSectionDB(xSecFilePath);
-   }
+   }else{ my_XsecDB=NULL; }
 
    // GRL
    std::vector<std::string> vecStringGRL;
@@ -443,7 +445,7 @@ EL::StatusCode VBFInv::initialize()
    //
    // Histograms
    //
-   if (m_event->getEntries()) {
+   if (wk()->tree()->GetEntries()) {
       m_NumberEventsinNtuple = m_NumberEvents;
       m_NumberEvents->SetDirectory(outputFileHist);
       m_NumberEventsinNtuple->SetDirectory(outputFile);
@@ -1423,9 +1425,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    Bool_t customMETtrig(kFALSE);
    if (is2015 && cand.evt.trigger["HLT_xe70_mht"])
       customMETtrig = kTRUE;
-   else if (is2016 && cand.evt.randomRunNumber <= 304008 && cand.evt.trigger["HLT_xe90_mht_L1XE50"])
+   else if (is2016 && cand.evt.randomRunNumber <= 302872 && cand.evt.trigger["HLT_xe90_mht_L1XE50"])
       customMETtrig = kTRUE;
-   else if (is2016 && cand.evt.randomRunNumber > 304008 && cand.evt.trigger["HLT_xe110_mht_L1XE50"])
+   else if (is2016 && cand.evt.randomRunNumber > 302872 && cand.evt.trigger["HLT_xe110_mht_L1XE50"])
       customMETtrig = kTRUE;
    else if (cand.evt.trigger["HLT_noalg_L1J400"])
       customMETtrig = kTRUE;
@@ -1511,7 +1513,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
       // Record all weights
       cand.evt.mcEventWeight     = content.eventInfo->mcEventWeight();
-      cand.evt.mcEventWeightXsec = content.eventInfo->mcEventWeight() * my_XsecDB->xsectTimesEff(cand.evt.runNumber);
+      if(my_XsecDB) cand.evt.mcEventWeightXsec = content.eventInfo->mcEventWeight() * my_XsecDB->xsectTimesEff(cand.evt.runNumber);
       cand.evt.mcEventWeights    = content.eventInfo->mcEventWeights();
       cand.evt.puWeight          = m_susytools_handle->GetPileupWeight();
       cand.evt.btagSFWeight      = m_susytools_handle->BtagSF(&content.goodJets);

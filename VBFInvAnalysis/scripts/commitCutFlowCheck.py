@@ -39,7 +39,7 @@ def Compare(raw_old,raw_new):
             sys.exit(0)
 
 
-fold = ROOT.TFile.Open('root://eosuser.cern.ch//eos/user/s/schae/HInv/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.deriv.DAOD_EXOT5.e6126_s3126_r9364_p3575/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.root')
+fold = ROOT.TFile.Open('root://eosuser.cern.ch//eos/user/s/schae/HInv/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.deriv.DAOD_EXOT5.e6126_s3126_r9364_p3712/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.root')
 fnew = ROOT.TFile.Open('submitDir/data-MiniNtuple/mc16_13TeV.308276.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET125.root')
 
 if not fold or not fnew:
