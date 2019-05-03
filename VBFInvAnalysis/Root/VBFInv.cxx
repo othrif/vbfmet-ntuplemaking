@@ -21,7 +21,8 @@
 #include "AsgTools/MessageCheck.h"
 #include <PATInterfaces/CorrectionCode.h>
 #include <EventLoop/Worker.h>
-#include <EventLoop/OutputStream.h>
+#include <EventLoop/StatusCode.h>
+//#include <EventLoop/OutputStream.h>
 #include "PathResolver/PathResolver.h"
 #include "AsgTools/AsgMetadataTool.h"
 
@@ -53,7 +54,7 @@ ClassImp(VBFInv)
      doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false), doJetDetail(false),
       doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false), doContLepDetail(false), savePVOnly(false),
   JetEtaFilter(5.0), JetpTFilter(20.0e3),MjjFilter(800.0e3),PhijjFilter(2.5), getMCChannel(-1),
-  m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false), 
+  m_isMC(false), m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false), m_computeXS(false),
      m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
      m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
@@ -170,6 +171,7 @@ EL::StatusCode VBFInv::initialize()
 
    m_isMC           = !wk()->metaData()->castDouble("isData");
    m_isAFII         = wk()->metaData()->castDouble("isAFII");
+
    Int_t showerType = -9999;
    if (m_isMC) showerType = ST::getMCShowerType(wk()->metaData()->castString("sample_name"));
 
@@ -199,17 +201,17 @@ EL::StatusCode VBFInv::initialize()
    ANA_MSG_INFO("  - skip_syst = " << skip_syst);
    ANA_MSG_INFO("  - trigger_list = " << trigger_list);
    ANA_MSG_INFO("  - showerType = " << showerType);
+   ANA_MSG_INFO("  - computeXS = " << m_computeXS);
    ANA_MSG_INFO("  - debug = " << debug);
 
    // Event counter
    m_eventCounter = 0;
 
-   // Cross section
-   if (m_isMC) {
+   if (m_isMC && m_computeXS) {
       std::string xSecFilePath = "dev/PMGTools/PMGxsecDB_mc15.txt";
-      xSecFilePath             = "";//PathResolverFindCalibFile(xSecFilePath);
+      //xSecFilePath             = "";//PathResolverFindCalibFile(xSecFilePath);
       my_XsecDB                = new SUSY::CrossSectionDB(xSecFilePath);
-   }
+   }else{ my_XsecDB=NULL; }
 
    // GRL
    std::vector<std::string> vecStringGRL;
@@ -294,7 +296,6 @@ EL::StatusCode VBFInv::initialize()
       std::string              mc_campaign;
       std::string              simType = (m_isAFII ? "AFII" : "FS");
       uint32_t                 runNum  = eventInfo->runNumber();
-
       switch (runNum) {
       case 284500:
          mc_campaign = "mc16a";
@@ -306,8 +307,10 @@ EL::StatusCode VBFInv::initialize()
       case 300000:
          if (amiTag.find("r10201") != std::string::npos)
             mc_campaign = "mc16d";
-         else
+         else if (amiTag.find("r9781") != std::string::npos)
             mc_campaign = "mc16c";
+         else
+            mc_campaign = "mc16d";
          prw_lumicalc.push_back(PathResolverFindCalibFile(
             "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
          prw_conf.push_back(PathResolverFindCalibFile(
@@ -327,7 +330,6 @@ EL::StatusCode VBFInv::initialize()
             PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
          break;
       }
-      
       unsigned mcchannel = runNum;
       if(m_isMC) mcchannel = eventInfo->mcChannelNumber();
       if(getMCChannel>0) mcchannel = unsigned(getMCChannel);
@@ -443,7 +445,7 @@ EL::StatusCode VBFInv::initialize()
    //
    // Histograms
    //
-   if (m_event->getEntries()) {
+   if (wk()->tree()->GetEntries()) {
       m_NumberEventsinNtuple = m_NumberEvents;
       m_NumberEvents->SetDirectory(outputFileHist);
       m_NumberEventsinNtuple->SetDirectory(outputFile);
@@ -539,13 +541,11 @@ EL::StatusCode VBFInv::initialize()
       // m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
    }
-
    return EL::StatusCode::SUCCESS;
 }
 
 EL::StatusCode VBFInv::execute()
 {
-
    ANA_CHECK_SET_TYPE(EL::StatusCode);
 
    // Fail if unchecked status code
@@ -1339,7 +1339,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    const xAOD::Vertex *pvD               = m_susytools_handle->GetPrimVtx();
    if(pvD){  if(acc_sumPt2.isAvailable(*pvD)) cand.evt.vtx_sumpt2 = acc_sumPt2(*pvD);
    } else  cand.evt.vtx_sumpt2 = -999;
-
    // trigger
    for (auto &kv : cand.evt.trigger) {
       kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
@@ -1426,9 +1425,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    Bool_t customMETtrig(kFALSE);
    if (is2015 && cand.evt.trigger["HLT_xe70_mht"])
       customMETtrig = kTRUE;
-   else if (is2016 && cand.evt.randomRunNumber <= 304008 && cand.evt.trigger["HLT_xe90_mht_L1XE50"])
+   else if (is2016 && cand.evt.randomRunNumber <= 302872 && cand.evt.trigger["HLT_xe90_mht_L1XE50"])
       customMETtrig = kTRUE;
-   else if (is2016 && cand.evt.randomRunNumber > 304008 && cand.evt.trigger["HLT_xe110_mht_L1XE50"])
+   else if (is2016 && cand.evt.randomRunNumber > 302872 && cand.evt.trigger["HLT_xe110_mht_L1XE50"])
       customMETtrig = kTRUE;
    else if (cand.evt.trigger["HLT_noalg_L1J400"])
       customMETtrig = kTRUE;
@@ -1462,6 +1461,31 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
+   for (auto thisVertex : *content.vertices) {
+
+   static SG::AuxElement::ConstAccessor<float> acc_M("M");
+   static SG::AuxElement::ConstAccessor<float> acc_Pt("Pt");
+   static SG::AuxElement::ConstAccessor<float> acc_Eta("Eta");
+   static SG::AuxElement::ConstAccessor<float> acc_Phi("Phi");
+   static SG::AuxElement::ConstAccessor<float> acc_sumPt("sumPt");
+   static SG::AuxElement::ConstAccessor<float> acc_sumPt2("sumPt2");
+   cand.evt.reco_vtx_ntrk.push_back(thisVertex->nTrackParticles());
+   cand.evt.reco_vtx_x.push_back(thisVertex->x());
+   cand.evt.reco_vtx_y.push_back(thisVertex->y());
+   cand.evt.reco_vtx_z.push_back(thisVertex->z());
+   cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
+   cand.evt.reco_vtx_vertexType.push_back(thisVertex->vertexType());
+   std::cout << acc_sumPt2(*thisVertex) << std::endl;
+/*   cand.evt.reco_vtx_M.push_back(acc_M(*thisVertex));
+   cand.evt.reco_vtx_Pt.push_back(acc_Pt(*thisVertex));
+   cand.evt.reco_vtx_Eta.push_back(acc_Eta(*thisVertex));
+   cand.evt.reco_vtx_Phi.push_back(acc_Phi(*thisVertex));
+   cand.evt.reco_vtx_sumPt.push_back(acc_sumPt(*thisVertex));
+   cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));*/
+      }
+
+
+
 
    // jj and met_j
    double jj_deta = -1., jj_mass = -1., jj_dphi = -1.;
@@ -1489,7 +1513,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
       // Record all weights
       cand.evt.mcEventWeight     = content.eventInfo->mcEventWeight();
-      cand.evt.mcEventWeightXsec = content.eventInfo->mcEventWeight() * my_XsecDB->xsectTimesEff(cand.evt.runNumber);
+      if(my_XsecDB) cand.evt.mcEventWeightXsec = content.eventInfo->mcEventWeight() * my_XsecDB->xsectTimesEff(cand.evt.runNumber);
       cand.evt.mcEventWeights    = content.eventInfo->mcEventWeights();
       cand.evt.puWeight          = m_susytools_handle->GetPileupWeight();
       cand.evt.btagSFWeight      = m_susytools_handle->BtagSF(&content.goodJets);
@@ -1694,24 +1718,20 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                for (const auto &truthP_itr : *truthP) {
                   if (truthP_itr->status() == 1 && (abs(truthP_itr->pdgId()) == 12 || abs(truthP_itr->pdgId()) == 14 ||
                                                     abs(truthP_itr->pdgId()) == 16)) {
-                     for (const auto &part : *truthJets) {
-                        double dR = truthP_itr->p4().DeltaR(part->p4());
-                        if (dR < 0.4) {
-                           if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
-                              usedBC.push_back(truthP_itr->barcode());
-                              nuActivity += truthP_itr->p4();
-                           }
+                     double dR = truthP_itr->p4().DeltaR(part->p4());
+                     if (dR < 0.4) {
+                        if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
+                           usedBC.push_back(truthP_itr->barcode());
+                           nuActivity += truthP_itr->p4();
                         }
                      }
                   }
                   if (truthP_itr->status() == 1 && abs(truthP_itr->pdgId()) == 13) {
-                     for (const auto &part : *truthJets) {
-                        double dR = truthP_itr->p4().DeltaR(part->p4());
-                        if (dR < 0.4) {
-                           if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
-                              usedBC.push_back(truthP_itr->barcode());
-                              muActivity += truthP_itr->p4();
-                           }
+                     double dR = truthP_itr->p4().DeltaR(part->p4());
+                     if (dR < 0.4) {
+                        if (std::find(usedBC.begin(), usedBC.end(), truthP_itr->barcode()) == usedBC.end()) {
+                           usedBC.push_back(truthP_itr->barcode());
+                           muActivity += truthP_itr->p4();
                         }
                      }
                   }
@@ -1831,6 +1851,18 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // Used for PTV slicing PTV500_1000 and PTV1000_E_CMS samples ( 364216-364229 )
       bool checkPTV = false; if (cand.evt.truth_V_dressed_pt>500.0e3) checkPTV = true;
       cand.evt.passVjetsPTV = checkPTV ;
+
+      // -- vertices --
+      const xAOD::TruthVertexContainer *truthVertices(nullptr);
+      if (event->retrieve(truthVertices, "TruthVertices").isSuccess()) {
+         xAOD::TruthVertexContainer::const_iterator vtx_itr = truthVertices->begin();
+         cand.evt.truth_vtx_z = (*vtx_itr)->z();
+         /* for (const auto&  truthVtx_itr : *truthVertices) {
+          cand.evt.truth_vtx_ntrk = truthVtx_itr->nOutgoingParticles();//.push_back(truthVtx_itr->nOutgoingParticles());
+          cand.evt.truth_vtx_z = truthVtx_itr->z();//.push_back(truthVtx_itr->z());
+        }*/
+      }
+
 
    } // done with MC only
 

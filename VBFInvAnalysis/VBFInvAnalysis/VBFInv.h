@@ -132,6 +132,7 @@ private:
    Int_t  m_eventCounter;         //!
    Bool_t m_determinedDerivation; //!
    Bool_t m_isEXOT5;              //!
+   Bool_t m_computeXS;            //!
 
    asg::AnaToolHandle<IGoodRunsListSelectionTool>           m_grl;                           //!
    asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool>             m_susytools_handle;              //!
