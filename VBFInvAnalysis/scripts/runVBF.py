@@ -194,7 +194,7 @@ if( args.algoName == "VBFInv" ):
   alg.doEventDetail = args.doEventDetail or args.doDetail
   alg.doContLepDetail = args.doContLepDetail or args.doDetail
   alg.getMCChannel = args.getMCChannel
-  alg.savePVOnly = False # saves only the PV value for the jets when True  
+  alg.savePVOnly = True # saves only the PV value for the jets when True  
   alg.doRnS = args.doRnS
   alg.doFatJetDetail = args.doFatJetDetail
   alg.doTrackJetDetail = args.doTrackJetDetail
