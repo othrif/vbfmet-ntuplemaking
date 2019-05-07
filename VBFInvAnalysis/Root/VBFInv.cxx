@@ -1462,10 +1462,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
    for (auto thisVertex : *content.vertices) {
-      static SG::AuxElement::ConstAccessor<float> acc_M("M");
-      static SG::AuxElement::ConstAccessor<float> acc_Pt("Pt");
-      static SG::AuxElement::ConstAccessor<float> acc_Eta("Eta");
-      static SG::AuxElement::ConstAccessor<float> acc_Phi("Phi");
       static SG::AuxElement::ConstAccessor<float> acc_sumPt2("sumPt2");
       cand.evt.reco_vtx_ntrk.push_back(thisVertex->nTrackParticles());
       cand.evt.reco_vtx_x.push_back(thisVertex->x());
