@@ -147,7 +147,9 @@ public:
    std::vector<Float_t> reco_vtx_y;
    std::vector<Float_t> reco_vtx_z;
    std::vector<Float_t> reco_vtx_chiSquared;
+   std::vector<Float_t> reco_vtx_sumPt2;
    std::vector<short>   reco_vtx_vertexType;
+
 
 
 public:

@@ -67,6 +67,7 @@ parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False,
 parser.add_argument("--doFatJetDetail", dest="doFatJetDetail", action="store_true", default=False, help="store detailed branches for FatJet")
 parser.add_argument("--doTrackJetDetail", dest="doTrackJetDetail", action="store_true", default=False, help="store detailed branches for TrackJets")
 parser.add_argument("--getMCChannel", dest="getMCChannel", type=int, default=-1, help="specify the MC Channel number")
+parser.add_argument("--savePVOnly", dest="savePVOnly", action="store_true", default=False, help="saves only the PV value for the jets when True")
 
 # Configure arguments for Sherpa algorithm in a group.
 group = parser.add_argument_group('sherpa', description="Options for the Sherpa Truth algorithm.")
@@ -195,7 +196,7 @@ if( args.algoName == "VBFInv" ):
   alg.doEventDetail = args.doEventDetail or args.doDetail
   alg.doContLepDetail = args.doContLepDetail or args.doDetail
   alg.getMCChannel = args.getMCChannel
-  alg.savePVOnly = False # saves only the PV value for the jets when True  
+  alg.savePVOnly = args.savePVOnly
   alg.m_computeXS = False
   alg.doRnS = args.doRnS
   alg.doFatJetDetail = args.doFatJetDetail
