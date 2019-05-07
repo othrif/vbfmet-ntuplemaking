@@ -27,13 +27,13 @@ before_script:
   - export MAKEFLAGS="-j`nproc` -l`nproc`"
   - echo $KRB_PASSWORD | kinit $KRB_USERNAME
   #- echo "${KRB_PASSWORD}" | kinit ${KRB_USERNAME}@CERN.CH
-  #- echo -e "Host svn.cern.ch lxplus.cern.ch\n\tUser ${KRB_USERNAME}\n\tStrictHostKeyChecking no\n\tGSSAPIAuthentication yes\n\tGSSAPIDelegateCredentials yes\n\tProtocol 2\n\tForwardX11 no\n\tIdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config   
+  #- echo -e "Host svn.cern.ch lxplus.cern.ch\n\tUser ${KRB_USERNAME}\n\tStrictHostKeyChecking no\n\tGSSAPIAuthentication yes\n\tGSSAPIDelegateCredentials yes\n\tProtocol 2\n\tForwardX11 no\n\tIdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
 
 # Common configuration for all the "regular" jobs.
 .job_template: &build_job
   tags:
     - docker
-  image: atlas/analysisbase:21.2.70
+  image: atlas/analysisbase:21.2.73
 
 # Setup for configuring the build of the code in the repository.
 config:
