@@ -1461,19 +1461,26 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
-   for (auto thisVertex : *content.vertices) {
-      static SG::AuxElement::ConstAccessor<float> acc_sumPt2("sumPt2");
-      cand.evt.reco_vtx_ntrk.push_back(thisVertex->nTrackParticles());
-      cand.evt.reco_vtx_x.push_back(thisVertex->x());
-      cand.evt.reco_vtx_y.push_back(thisVertex->y());
-      cand.evt.reco_vtx_z.push_back(thisVertex->z());
-      cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
-      cand.evt.reco_vtx_vertexType.push_back(thisVertex->vertexType());
-      cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));
-      }
-
-
-
+   if(savePVOnly){
+       cand.evt.reco_vtx_ntrk.push_back(pvD->nTrackParticles());
+       cand.evt.reco_vtx_x.push_back(pvD->x());
+       cand.evt.reco_vtx_y.push_back(pvD->y());
+       cand.evt.reco_vtx_z.push_back(pvD->z());
+       cand.evt.reco_vtx_chiSquared.push_back(pvD->chiSquared());
+       cand.evt.reco_vtx_vertexType.push_back(pvD->vertexType());
+       if(acc_sumPt2.isAvailable(*pvD)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*pvD));
+   }else{
+     for (auto thisVertex : *content.vertices) {
+       static SG::AuxElement::ConstAccessor<float> acc_sumPt2("sumPt2");
+       cand.evt.reco_vtx_ntrk.push_back(thisVertex->nTrackParticles());
+       cand.evt.reco_vtx_x.push_back(thisVertex->x());
+       cand.evt.reco_vtx_y.push_back(thisVertex->y());
+       cand.evt.reco_vtx_z.push_back(thisVertex->z());
+       cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
+       cand.evt.reco_vtx_vertexType.push_back(thisVertex->vertexType());
+       if(acc_sumPt2.isAvailable(*thisVertex)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));
+     }
+   }
 
    // jj and met_j
    double jj_deta = -1., jj_mass = -1., jj_dphi = -1.;
