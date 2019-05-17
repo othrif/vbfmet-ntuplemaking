@@ -37,6 +37,7 @@ public:
    std::vector<std::vector<UShort_t>> NTracks;
    std::vector<std::vector<Float_t>>  SumPtTracks;
    std::vector<Float_t>               TrackWidth;
+   std::vector<Float_t>               TracksC1;
    std::vector<Int_t>                 HighestJVFVtx;
    std::vector<Float_t>               FracSamplingMax;
    std::vector<Float_t>               HECFrac;

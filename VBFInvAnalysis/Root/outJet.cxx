@@ -53,6 +53,7 @@ void Analysis::outJet::reset()
    SumPtTracks.clear();
 
    TrackWidth.clear();
+   TracksC1.clear(); //DFCommonJets_QGTagger_TracksWidth DFCommonJets_QGTagger_TracksC1 DFCommonJets_QGTagger_NTracks
    HighestJVFVtx.clear();
    FracSamplingMax.clear();
    HECFrac.clear();
@@ -91,6 +92,7 @@ void Analysis::outJet::attachToTree(TTree *tree)
       tree->Branch(prefix + "NTracks", &NTracks);
       tree->Branch(prefix + "SumPtTracks", &SumPtTracks);
       tree->Branch(prefix + "TrackWidth", &TrackWidth);
+      tree->Branch(prefix + "TracksC1", &TracksC1);
       tree->Branch(prefix + "HighestJVFVtx", &HighestJVFVtx);
       tree->Branch(prefix + "HECFrac", &HECFrac);
       tree->Branch(prefix + "EMFrac", &EMFrac);
@@ -197,7 +199,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 
       // width charged tracks
       std::vector<float> tmp_trkwidth_vec;
-      input.getAttribute("TrackWidthPt1000", tmp_trkwidth_vec);
+      input.getAttribute("TrackWidthPt500", tmp_trkwidth_vec);
 
       std::vector<float>              tmp_sumpttrk;
       std::vector<short unsigned int> tmp_numtrk;
@@ -216,7 +218,6 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 
       float tmp_trkwidth;
       if (tmp_sumpttrk_vec.size() > 0 /*&& susytools_handle->GetPrimVtx()*/) {
-	//tmp_trkwidth = tmp_trkwidth_vec[vtx];
 	tmp_trkwidth = tmp_trkwidth_vec[0]; // setting to primary vertex
       } else {
          tmp_trkwidth = 0.;
@@ -232,10 +233,15 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 	}
       }
 
+      static SG::AuxElement::ConstAccessor<int> acc_DFCommonJets_QGTagger_TracksC1("DFCommonJets_QGTagger_TracksC1");
+      float tmp_TracksC1=-9999.;
+      if(acc_DFCommonJets_QGTagger_TracksC1.isAvailable(input)) tmp_TracksC1 = acc_DFCommonJets_QGTagger_TracksC1(input);
+
       HighestJVFVtx.push_back(vtx);
       SumPtTracks.push_back(tmp_sumpttrk);
       NTracks.push_back(tmp_numtrk);
       TrackWidth.push_back(tmp_trkwidth);
+      TracksC1.push_back(tmp_TracksC1);
 
       double tmp_HECFrac(-9999.);
       input.getAttribute("HECFrac", tmp_HECFrac);
