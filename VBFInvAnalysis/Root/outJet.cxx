@@ -35,9 +35,13 @@ void Analysis::outJet::reset()
    passJetLoose.clear();
    passJetTight.clear();
 
+   //qg variables
    PartonTruthLabelID.clear();
    ConeTruthLabelID.clear();
-
+   truthjet_pt.clear();
+   truthjet_eta.clear();
+   truthjet_nCharged.clear();
+   
    for (auto it : NTracks) {
       it.clear();
    }
@@ -95,6 +99,9 @@ void Analysis::outJet::attachToTree(TTree *tree)
       tree->Branch(prefix + "Width", &Width);
       tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
       tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
+      tree->Branch(prefix + "truthjet_pt", &truthjet_pt);
+      tree->Branch(prefix + "truthjet_eta", &truthjet_eta);
+      tree->Branch(prefix + "truthjet_nCharged", &truthjet_nCharged);
    }
    return;
 }
@@ -252,8 +259,14 @@ void Analysis::outJet::add(const xAOD::Jet &input)
          isbjet.push_back(-9999);
       }
 
+      static SG::AuxElement::ConstAccessor<int> acc_DFCommonJets_QGTagger_truthjet_nCharged("DFCommonJets_QGTagger_truthjet_nCharged");
+      static SG::AuxElement::ConstAccessor<float> acc_DFCommonJets_QGTagger_truthjet_pt("DFCommonJets_QGTagger_truthjet_pt");
+      static SG::AuxElement::ConstAccessor<float> acc_DFCommonJets_QGTagger_truthjet_eta("DFCommonJets_QGTagger_truthjet_eta");
       static SG::AuxElement::ConstAccessor<int> acc_PartonTruthLabelID("PartonTruthLabelID");
       static SG::AuxElement::ConstAccessor<int> acc_ConeTruthLabelID("ConeTruthLabelID");
+      Int_t                                     tmp_truthjet_nCharged(-9999);
+      Float_t                                   tmp_truthjet_pt(-9999);
+      Float_t                                   tmp_truthjet_eta(-9999);
       Int_t                                     tmp_PartonTruthLabelID(-9999);
       Int_t                                     tmp_ConeTruthLabelID(-9999);
       if (acc_PartonTruthLabelID.isAvailable(input)) {
@@ -262,6 +275,14 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       }
       PartonTruthLabelID.push_back(tmp_PartonTruthLabelID);
       ConeTruthLabelID.push_back(tmp_ConeTruthLabelID);
+      if(acc_DFCommonJets_QGTagger_truthjet_nCharged.isAvailable(input)) {  
+	tmp_truthjet_nCharged = acc_DFCommonJets_QGTagger_truthjet_nCharged(input);
+	tmp_truthjet_pt       = acc_DFCommonJets_QGTagger_truthjet_pt(input);
+	tmp_truthjet_eta      = acc_DFCommonJets_QGTagger_truthjet_eta(input);
+      }
+      truthjet_pt.push_back(tmp_truthjet_pt);
+      truthjet_eta.push_back(tmp_truthjet_eta);
+      truthjet_nCharged.push_back(tmp_truthjet_nCharged);
    }
 
    return;

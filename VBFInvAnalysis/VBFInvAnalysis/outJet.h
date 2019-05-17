@@ -30,6 +30,9 @@ public:
    std::vector<Bool_t>  passJetTight;
    std::vector<Int_t>   PartonTruthLabelID;
    std::vector<Int_t>   ConeTruthLabelID;
+   std::vector<Float_t>   truthjet_pt;
+   std::vector<Float_t>   truthjet_eta;
+   std::vector<Int_t>     truthjet_nCharged;
 
    std::vector<std::vector<UShort_t>> NTracks;
    std::vector<std::vector<Float_t>>  SumPtTracks;
