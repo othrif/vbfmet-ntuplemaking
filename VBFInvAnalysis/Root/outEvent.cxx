@@ -23,6 +23,7 @@ void Analysis::outEvent::reset()
    eventNumber          = 0;
    lumiBlock            = -9999;
    bcid                 = -9999;
+   BCIDDistanceFromFront= -9999;
    averageIntPerXing    = -9999;
    corAverageIntPerXing = -9999;
    vtx_sumpt2           = -9999;
@@ -167,6 +168,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "eventNumber", &eventNumber);
    tree->Branch(prefix + "lumiBlock", &lumiBlock);
    tree->Branch(prefix + "bcid", &bcid);
+   tree->Branch(prefix + "BCIDDistanceFromFront", &BCIDDistanceFromFront);
    tree->Branch(prefix + "averageIntPerXing", &averageIntPerXing);
    tree->Branch(prefix + "corAverageIntPerXing", &corAverageIntPerXing);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);

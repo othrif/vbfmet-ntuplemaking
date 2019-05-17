@@ -20,6 +20,7 @@ public:
    ULong64_t eventNumber;
    Int_t     lumiBlock;
    Int_t     bcid;
+   Int_t     BCIDDistanceFromFront;
    Float_t   averageIntPerXing;
    Float_t   corAverageIntPerXing;
    Float_t   vtx_sumpt2;

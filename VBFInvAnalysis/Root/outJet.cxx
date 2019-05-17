@@ -35,9 +35,13 @@ void Analysis::outJet::reset()
    passJetLoose.clear();
    passJetTight.clear();
 
+   //qg variables
    PartonTruthLabelID.clear();
    ConeTruthLabelID.clear();
-
+   truthjet_pt.clear();
+   truthjet_eta.clear();
+   truthjet_nCharged.clear();
+   
    for (auto it : NTracks) {
       it.clear();
    }
@@ -49,6 +53,7 @@ void Analysis::outJet::reset()
    SumPtTracks.clear();
 
    TrackWidth.clear();
+   TracksC1.clear(); //DFCommonJets_QGTagger_TracksWidth DFCommonJets_QGTagger_TracksC1 DFCommonJets_QGTagger_NTracks
    HighestJVFVtx.clear();
    FracSamplingMax.clear();
    HECFrac.clear();
@@ -87,6 +92,7 @@ void Analysis::outJet::attachToTree(TTree *tree)
       tree->Branch(prefix + "NTracks", &NTracks);
       tree->Branch(prefix + "SumPtTracks", &SumPtTracks);
       tree->Branch(prefix + "TrackWidth", &TrackWidth);
+      tree->Branch(prefix + "TracksC1", &TracksC1);
       tree->Branch(prefix + "HighestJVFVtx", &HighestJVFVtx);
       tree->Branch(prefix + "HECFrac", &HECFrac);
       tree->Branch(prefix + "EMFrac", &EMFrac);
@@ -95,6 +101,9 @@ void Analysis::outJet::attachToTree(TTree *tree)
       tree->Branch(prefix + "Width", &Width);
       tree->Branch(prefix + "PartonTruthLabelID", &PartonTruthLabelID);
       tree->Branch(prefix + "ConeTruthLabelID", &ConeTruthLabelID);
+      tree->Branch(prefix + "truthjet_pt", &truthjet_pt);
+      tree->Branch(prefix + "truthjet_eta", &truthjet_eta);
+      tree->Branch(prefix + "truthjet_nCharged", &truthjet_nCharged);
    }
    return;
 }
@@ -190,7 +199,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 
       // width charged tracks
       std::vector<float> tmp_trkwidth_vec;
-      input.getAttribute("TrackWidthPt1000", tmp_trkwidth_vec);
+      input.getAttribute("TrackWidthPt500", tmp_trkwidth_vec);
 
       std::vector<float>              tmp_sumpttrk;
       std::vector<short unsigned int> tmp_numtrk;
@@ -209,7 +218,6 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 
       float tmp_trkwidth;
       if (tmp_sumpttrk_vec.size() > 0 /*&& susytools_handle->GetPrimVtx()*/) {
-	//tmp_trkwidth = tmp_trkwidth_vec[vtx];
 	tmp_trkwidth = tmp_trkwidth_vec[0]; // setting to primary vertex
       } else {
          tmp_trkwidth = 0.;
@@ -225,10 +233,15 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 	}
       }
 
+      static SG::AuxElement::ConstAccessor<int> acc_DFCommonJets_QGTagger_TracksC1("DFCommonJets_QGTagger_TracksC1");
+      float tmp_TracksC1=-9999.;
+      if(acc_DFCommonJets_QGTagger_TracksC1.isAvailable(input)) tmp_TracksC1 = acc_DFCommonJets_QGTagger_TracksC1(input);
+
       HighestJVFVtx.push_back(vtx);
       SumPtTracks.push_back(tmp_sumpttrk);
       NTracks.push_back(tmp_numtrk);
       TrackWidth.push_back(tmp_trkwidth);
+      TracksC1.push_back(tmp_TracksC1);
 
       double tmp_HECFrac(-9999.);
       input.getAttribute("HECFrac", tmp_HECFrac);
@@ -252,8 +265,14 @@ void Analysis::outJet::add(const xAOD::Jet &input)
          isbjet.push_back(-9999);
       }
 
+      static SG::AuxElement::ConstAccessor<int> acc_DFCommonJets_QGTagger_truthjet_nCharged("DFCommonJets_QGTagger_truthjet_nCharged");
+      static SG::AuxElement::ConstAccessor<float> acc_DFCommonJets_QGTagger_truthjet_pt("DFCommonJets_QGTagger_truthjet_pt");
+      static SG::AuxElement::ConstAccessor<float> acc_DFCommonJets_QGTagger_truthjet_eta("DFCommonJets_QGTagger_truthjet_eta");
       static SG::AuxElement::ConstAccessor<int> acc_PartonTruthLabelID("PartonTruthLabelID");
       static SG::AuxElement::ConstAccessor<int> acc_ConeTruthLabelID("ConeTruthLabelID");
+      Int_t                                     tmp_truthjet_nCharged(-9999);
+      Float_t                                   tmp_truthjet_pt(-9999);
+      Float_t                                   tmp_truthjet_eta(-9999);
       Int_t                                     tmp_PartonTruthLabelID(-9999);
       Int_t                                     tmp_ConeTruthLabelID(-9999);
       if (acc_PartonTruthLabelID.isAvailable(input)) {
@@ -262,6 +281,14 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       }
       PartonTruthLabelID.push_back(tmp_PartonTruthLabelID);
       ConeTruthLabelID.push_back(tmp_ConeTruthLabelID);
+      if(acc_DFCommonJets_QGTagger_truthjet_nCharged.isAvailable(input)) {  
+	tmp_truthjet_nCharged = acc_DFCommonJets_QGTagger_truthjet_nCharged(input);
+	tmp_truthjet_pt       = acc_DFCommonJets_QGTagger_truthjet_pt(input);
+	tmp_truthjet_eta      = acc_DFCommonJets_QGTagger_truthjet_eta(input);
+      }
+      truthjet_pt.push_back(tmp_truthjet_pt);
+      truthjet_eta.push_back(tmp_truthjet_eta);
+      truthjet_nCharged.push_back(tmp_truthjet_nCharged);
    }
 
    return;

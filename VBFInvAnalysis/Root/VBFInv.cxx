@@ -1377,6 +1377,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    cand.evt.eventNumber          = (ULong64_t)content.eventInfo->eventNumber();
    cand.evt.lumiBlock            = content.eventInfo->lumiBlock();
    cand.evt.bcid                 = content.eventInfo->bcid();
+   static SG::AuxElement::Accessor<Int_t> acc_BCIDDistanceFromFront("BCIDDistanceFromFront");
+   if(acc_sumPt2.isAvailable(*content.eventInfo))
+     cand.evt.BCIDDistanceFromFront = acc_BCIDDistanceFromFront(*content.eventInfo);
    cand.evt.averageIntPerXing    = content.eventInfo->averageInteractionsPerCrossing();
    cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
 
