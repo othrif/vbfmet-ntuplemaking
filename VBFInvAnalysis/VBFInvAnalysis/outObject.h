@@ -13,12 +13,13 @@ private:
    Bool_t  m_doTrim;
    Bool_t  m_write;
    Bool_t  m_doExtraTrim;
+
 public:
    inline outObject(TString name = "", Bool_t doTrim = kFALSE)
    {
-      m_name   = name;
-      m_doTrim = doTrim;
-      m_write  = true;
+      m_name        = name;
+      m_doTrim      = doTrim;
+      m_write       = true;
       m_doExtraTrim = doTrim;
    }
 
