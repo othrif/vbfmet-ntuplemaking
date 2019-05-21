@@ -1335,7 +1335,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    }
 
    // add vertex info
-   static SG::AuxElement::Accessor<float> acc_sumPt2("sumPt2");
+   static SG::AuxElement::ConstAccessor<float> acc_sumPt2("sumPt2");
+   static SG::AuxElement::ConstAccessor<float> acc_chiSquared( "chiSquared" );
    const xAOD::Vertex *pvD               = m_susytools_handle->GetPrimVtx();
    if(pvD){  if(acc_sumPt2.isAvailable(*pvD)) cand.evt.vtx_sumpt2 = acc_sumPt2(*pvD);
    } else  cand.evt.vtx_sumpt2 = -999;
@@ -1378,7 +1379,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    cand.evt.lumiBlock            = content.eventInfo->lumiBlock();
    cand.evt.bcid                 = content.eventInfo->bcid();
    static SG::AuxElement::Accessor<Int_t> acc_BCIDDistanceFromFront("BCIDDistanceFromFront");
-   if(acc_sumPt2.isAvailable(*content.eventInfo))
+   if(acc_BCIDDistanceFromFront.isAvailable(*content.eventInfo))
      cand.evt.BCIDDistanceFromFront = acc_BCIDDistanceFromFront(*content.eventInfo);
    cand.evt.averageIntPerXing    = content.eventInfo->averageInteractionsPerCrossing();
    cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
@@ -1469,19 +1470,18 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
        cand.evt.reco_vtx_x.push_back(pvD->x());
        cand.evt.reco_vtx_y.push_back(pvD->y());
        cand.evt.reco_vtx_z.push_back(pvD->z());
-       cand.evt.reco_vtx_chiSquared.push_back(pvD->chiSquared());
        cand.evt.reco_vtx_vertexType.push_back(pvD->vertexType());
        if(acc_sumPt2.isAvailable(*pvD)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*pvD));
+       if(acc_chiSquared.isAvailable(*pvD)) cand.evt.reco_vtx_chiSquared.push_back(pvD->chiSquared());
    }else{
      for (auto thisVertex : *content.vertices) {
-       static SG::AuxElement::ConstAccessor<float> acc_sumPt2("sumPt2");
        cand.evt.reco_vtx_ntrk.push_back(thisVertex->nTrackParticles());
        cand.evt.reco_vtx_x.push_back(thisVertex->x());
        cand.evt.reco_vtx_y.push_back(thisVertex->y());
        cand.evt.reco_vtx_z.push_back(thisVertex->z());
-       cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
        cand.evt.reco_vtx_vertexType.push_back(thisVertex->vertexType());
-       if(acc_sumPt2.isAvailable(*thisVertex)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));
+       if(acc_sumPt2.isAvailable(*thisVertex)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));	 
+       if(acc_chiSquared.isAvailable(*thisVertex)) cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
      }
    }
 
