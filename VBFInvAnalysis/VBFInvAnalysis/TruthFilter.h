@@ -8,7 +8,8 @@
 
 namespace VBFInvAnalysis {
 
-bool passTruthFilter(const xAOD::JetContainer *truthJets, double JetEtaFilter, double JetpTFilter, double MjjFilter, double PhijjFilter, double &e_DiJetMass, double &e_JetsDEta, double &e_JetsDPhi);
+bool passTruthFilter(const xAOD::JetContainer *truthJets, double JetEtaFilter, double JetpTFilter, double MjjFilter,
+                     double PhijjFilter, double &e_DiJetMass, double &e_JetsDEta, double &e_JetsDPhi);
 
 } // namespace VBFInvAnalysis
 

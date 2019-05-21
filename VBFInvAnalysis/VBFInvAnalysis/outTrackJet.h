@@ -12,7 +12,7 @@ public:
    std::vector<Float_t> phi;
    std::vector<Float_t> m;
    std::vector<Float_t> btag_weight;
-   std::vector<bool> passDRcut;
+   std::vector<bool>    passDRcut;
 
 public:
    outTrackJet(TString name = "", Bool_t doTrim = kFALSE);
