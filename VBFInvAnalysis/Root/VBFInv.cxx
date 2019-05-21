@@ -53,7 +53,7 @@ ClassImp(VBFInv)
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false),
      doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
-     doContLepDetail(false), savePVOnly(false), JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),
+     doContLepDetail(false), doVertexDetail(false), savePVOnly(false), JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),
      PhijjFilter(2.5), getMCChannel(-1), m_isMC(false), m_isAFII(false), m_eventCounter(0),
      m_determinedDerivation(false), m_isEXOT5(false), m_computeXS(false), m_grl("GoodRunsListSelectionTool/grl", this),
      m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this), m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
@@ -558,6 +558,7 @@ EL::StatusCode VBFInv::initialize()
       // Set trimming option for remaning outHolder objects
       m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail && !doRnS));
       m_cand[thisSyst].evt.setDoExtraTrim(doTrimSyst);
+      m_cand[thisSyst].evt.setDoVertexDetail(doVertexDetail);
       m_cand[thisSyst].rns.setDoTrim((trim && !doRnS));
       // m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
@@ -1516,23 +1517,25 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
-   if (savePVOnly) {
-      cand.evt.reco_vtx_ntrk.push_back(pvD->nTrackParticles());
-      cand.evt.reco_vtx_x.push_back(pvD->x());
-      cand.evt.reco_vtx_y.push_back(pvD->y());
-      cand.evt.reco_vtx_z.push_back(pvD->z());
-      cand.evt.reco_vtx_vertexType.push_back(pvD->vertexType());
-      if (acc_sumPt2.isAvailable(*pvD)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*pvD));
-      if (acc_chiSquared.isAvailable(*pvD)) cand.evt.reco_vtx_chiSquared.push_back(pvD->chiSquared());
-   } else {
-      for (auto thisVertex : *content.vertices) {
-         cand.evt.reco_vtx_ntrk.push_back(thisVertex->nTrackParticles());
-         cand.evt.reco_vtx_x.push_back(thisVertex->x());
-         cand.evt.reco_vtx_y.push_back(thisVertex->y());
-         cand.evt.reco_vtx_z.push_back(thisVertex->z());
-         cand.evt.reco_vtx_vertexType.push_back(thisVertex->vertexType());
-         if (acc_sumPt2.isAvailable(*thisVertex)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));
-         if (acc_chiSquared.isAvailable(*thisVertex)) cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
+   if (doVertexDetail) {
+      if (savePVOnly) {
+         cand.evt.reco_vtx_ntrk.push_back(pvD->nTrackParticles());
+         cand.evt.reco_vtx_x.push_back(pvD->x());
+         cand.evt.reco_vtx_y.push_back(pvD->y());
+         cand.evt.reco_vtx_z.push_back(pvD->z());
+         cand.evt.reco_vtx_vertexType.push_back(pvD->vertexType());
+         if (acc_sumPt2.isAvailable(*pvD)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*pvD));
+         if (acc_chiSquared.isAvailable(*pvD)) cand.evt.reco_vtx_chiSquared.push_back(pvD->chiSquared());
+      } else {
+         for (auto thisVertex : *content.vertices) {
+            cand.evt.reco_vtx_ntrk.push_back(thisVertex->nTrackParticles());
+            cand.evt.reco_vtx_x.push_back(thisVertex->x());
+            cand.evt.reco_vtx_y.push_back(thisVertex->y());
+            cand.evt.reco_vtx_z.push_back(thisVertex->z());
+            cand.evt.reco_vtx_vertexType.push_back(thisVertex->vertexType());
+            if (acc_sumPt2.isAvailable(*thisVertex)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));
+            if (acc_chiSquared.isAvailable(*thisVertex)) cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
+         }
       }
    }
 
@@ -1794,7 +1797,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                cand.evt.truth_jetmu_pt.push_back((part->p4() + muActivity).Pt());
                cand.evt.truth_jetmu_eta.push_back((part->p4() + muActivity).Eta());
                cand.evt.truth_jetmu_phi.push_back((part->p4() + muActivity).Phi());
-               cand.evt.truth_jetmunu_m.push_back((part->p4() + muActivity).M());
+               cand.evt.truth_jetmu_m.push_back((part->p4() + muActivity).M());
                cand.evt.truth_jetmunu_pt.push_back((part->p4() + muActivity + nuActivity).Pt());
                cand.evt.truth_jetmunu_eta.push_back((part->p4() + muActivity + nuActivity).Eta());
                cand.evt.truth_jetmunu_phi.push_back((part->p4() + muActivity + nuActivity).Phi());
