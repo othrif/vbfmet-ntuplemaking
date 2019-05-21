@@ -266,9 +266,10 @@ elif (args.driver == 'prun'):
       driver.options().setString('nc_optGridNfilesPerJob', '5')
       #--nGBPerJob=10
     driver.options().setString('nc_outputSampleName', dset_name_mask)
-    driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
-    #driver.options().setString("nc_optGridDestSE","MWT2_UC_LOCALGROUPDISK")
+    #driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
+    driver.options().setString("nc_optGridDestSE","MWT2_UC_LOCALGROUPDISK")
     if args.replicationSite != None:
+        driver.options().setString("nc_optGridDestSE",args.replicationSite)
         driver.options().setString('nc_destSE', args.replicationSite)
     driver.submitOnly(job, args.submitDir )
 elif (args.driver == 'condor'):
