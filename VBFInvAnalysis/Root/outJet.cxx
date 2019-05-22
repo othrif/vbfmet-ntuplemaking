@@ -217,8 +217,8 @@ void Analysis::outJet::add(const xAOD::Jet &input)
       }
 
       float tmp_trkwidth;
-      if (tmp_sumpttrk_vec.size() > 0 /*&& susytools_handle->GetPrimVtx()*/) {
-         tmp_trkwidth = tmp_trkwidth_vec[0]; // setting to primary vertex
+      if (tmp_trkwidth_vec.size() > 0 /*&& susytools_handle->GetPrimVtx()*/) {
+         tmp_trkwidth = tmp_trkwidth_vec.at(0); // setting to primary vertex
       } else {
          tmp_trkwidth = 0.;
       }
