@@ -2,10 +2,9 @@
 
 namespace VBFInvAnalysis {
 
-bool GreaterPt(const TLorentzVector &a, const TLorentzVector &b)
-{
-   return a.Pt() > b.Pt();
-}
+  static bool GreaterPt(const TLorentzVector &a, const TLorentzVector &b){
+    return a.Pt()>b.Pt();
+  }
 
 bool passTruthFilter(const xAOD::JetContainer *truthJets, double JetEtaFilter, double JetpTFilter, double MjjFilter,
                      double PhijjFilter, double &e_DiJetMass, double &e_JetsDEta, double &e_JetsDPhi)

@@ -4,7 +4,6 @@
 #include "xAODJet/JetContainer.h"
 #include <TLorentzVector.h>
 #include <vector>
-#include <math.h>
 
 namespace VBFInvAnalysis {
 
