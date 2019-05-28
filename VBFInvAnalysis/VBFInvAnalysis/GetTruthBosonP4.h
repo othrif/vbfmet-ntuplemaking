@@ -4,7 +4,6 @@
 #include <xAODTruth/TruthParticleContainer.h>
 #include <TLorentzVector.h>
 #include <vector>
-#include <math.h>
 
 namespace VBFInvAnalysis {
 

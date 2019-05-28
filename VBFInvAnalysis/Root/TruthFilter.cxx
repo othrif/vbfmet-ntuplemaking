@@ -2,7 +2,7 @@
 
 namespace VBFInvAnalysis {
 
-  bool GreaterPt(const TLorentzVector &a, const TLorentzVector &b){
+  static bool GreaterPt(const TLorentzVector &a, const TLorentzVector &b){
     return a.Pt()>b.Pt();
   }
 

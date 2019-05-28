@@ -1238,6 +1238,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    }
 
    // Tight cleaning for PFlow
+   /*
    Bool_t passesJetCleanTightCustom = true;
    for (auto jet : content.goodJets) {
       std::vector<float> SumTrkPt500vec;
@@ -1250,6 +1251,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          passesJetCleanTightCustom = false;
       }
    }
+   */
 
    m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
    content.passJetCleanLoose = passesJetCleanLoose;
@@ -1262,7 +1264,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
      val += 1;
    if(passesJetCleanTight)
      val += 2;
-   if(passesJetCleanTightCustom)
+     if(passesJetCleanTightCustom)
      val += 3;
    content.passJetCleanLoose = passesJetCleanLoose;
    */
