@@ -52,7 +52,7 @@ public:
    //
    // objects we do NOT own
    //
-   const xAOD::EventInfo       *eventInfo; //!
+   const xAOD::EventInfo *      eventInfo; //!
    const xAOD::VertexContainer *vertices;  //!
 
    // MET
@@ -89,19 +89,19 @@ public:
    //
 
    // before selection criteria
-   xAOD::MuonContainer       *muons;        //!
+   xAOD::MuonContainer *      muons;        //!
    xAOD::ShallowAuxContainer *muonsAux;     //!
-   xAOD::ElectronContainer   *electrons;    //!
+   xAOD::ElectronContainer *  electrons;    //!
    xAOD::ShallowAuxContainer *electronsAux; //!
-   xAOD::JetContainer        *jets;         //!
+   xAOD::JetContainer *       jets;         //!
    xAOD::ShallowAuxContainer *jetsAux;      //!
-   xAOD::JetContainer        *fatjets;      //!
+   xAOD::JetContainer *       fatjets;      //!
    xAOD::ShallowAuxContainer *fatjetsAux;   //!
-   xAOD::JetContainer        *trackjets;    //!
+   xAOD::JetContainer *       trackjets;    //!
    xAOD::ShallowAuxContainer *trackjetsAux; //!
-   xAOD::PhotonContainer     *photons;      //!
+   xAOD::PhotonContainer *    photons;      //!
    xAOD::ShallowAuxContainer *photonsAux;   //!
-   xAOD::TauJetContainer     *taus;         //!
+   xAOD::TauJetContainer *    taus;         //!
    xAOD::ShallowAuxContainer *tausAux;      //!
 
    // after selection criteria

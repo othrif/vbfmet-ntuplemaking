@@ -110,7 +110,8 @@ public:
    Bool_t   doMETDetail;
    Bool_t   doEventDetail;
    Bool_t   doContLepDetail;
-   Bool_t   savePVOnly;         
+   Bool_t   doVertexDetail;
+   Bool_t   savePVOnly;
    Double_t JetEtaFilter;
    Double_t JetpTFilter;
    Double_t MjjFilter;
@@ -142,8 +143,8 @@ private:
    asg::AnaToolHandle<IJetModifier>                         m_jetFwdJvtTool;                 //!
    asg::AnaToolHandle<IAsgElectronEfficiencyCorrectionTool> m_elecEfficiencySFTool_anti_id;  //!
    asg::AnaToolHandle<IAsgElectronEfficiencyCorrectionTool> m_elecEfficiencySFTool_anti_iso; //!
-   asg::AnaToolHandle<IJetSelectorTool>                     m_DNNTop80; //!
-   asg::AnaToolHandle<IJetSelectorTool>                     m_DNNW50; //!
+   asg::AnaToolHandle<IJetSelectorTool>                     m_DNNTop80;                      //!
+   asg::AnaToolHandle<IJetSelectorTool>                     m_DNNW50;                        //!
 
    SUSY::CrossSectionDB *my_XsecDB; //!
 
