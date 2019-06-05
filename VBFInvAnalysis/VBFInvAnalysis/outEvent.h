@@ -21,6 +21,7 @@ public:
    Int_t     lumiBlock;
    Int_t     bcid;
    Int_t     BCIDDistanceFromFront;
+   Int_t     BCIDDistanceFromTail;
    Float_t   averageIntPerXing;
    Float_t   corAverageIntPerXing;
    Float_t   vtx_sumpt2;
@@ -115,6 +116,7 @@ public:
    Int_t passJetCleanTight;
    Int_t passDetErr;
 
+   Bool_t passBatman;
    Bool_t passVjetsFilter;
    Bool_t passVjetsPTV;
 

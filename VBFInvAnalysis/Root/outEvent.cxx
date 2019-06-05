@@ -24,6 +24,7 @@ void Analysis::outEvent::reset()
    lumiBlock            = -9999;
    bcid                 = -9999;
    BCIDDistanceFromFront= -9999;
+   BCIDDistanceFromTail = -9999;
    averageIntPerXing    = -9999;
    corAverageIntPerXing = -9999;
    vtx_sumpt2           = -9999;
@@ -112,9 +113,9 @@ void Analysis::outEvent::reset()
    passJetCleanLoose = -9999;
    passJetCleanTight = -9999;
    passDetErr        = -9999;
-
-   passVjetsFilter = false;
-   passVjetsPTV = false;
+   passBatman        = false;
+   passVjetsFilter   = false;
+   passVjetsPTV      = false;
 
    n_vx          = -9999;
    n_jet         = -9999;
@@ -169,6 +170,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "lumiBlock", &lumiBlock);
    tree->Branch(prefix + "bcid", &bcid);
    tree->Branch(prefix + "BCIDDistanceFromFront", &BCIDDistanceFromFront);
+   tree->Branch(prefix + "BCIDDistanceFromTail",  &BCIDDistanceFromTail);
    tree->Branch(prefix + "averageIntPerXing", &averageIntPerXing);
    tree->Branch(prefix + "corAverageIntPerXing", &corAverageIntPerXing);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
@@ -275,6 +277,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "passJetCleanTight", &passJetCleanTight);
    tree->Branch(prefix + "passDetErr", &passDetErr);
 
+   if (!doTrim()) tree->Branch(prefix + "passBatman", &passBatman);
    tree->Branch(prefix + "passVjetsFilter", &passVjetsFilter);
    tree->Branch(prefix + "passVjetsPTV", &passVjetsPTV);
 
@@ -302,15 +305,15 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "truthF_jj_deta", &truthF_jj_deta);
    tree->Branch(prefix + "truthF_jj_dphi", &truthF_jj_dphi);
 
-    if (!doTrim()){
-   tree->Branch(prefix + "truth_vtx_z", &truth_vtx_z);
-   tree->Branch(prefix + "reco_vtx_ntrk", &reco_vtx_ntrk);
-   tree->Branch(prefix + "reco_vtx_x", &reco_vtx_x);
-   tree->Branch(prefix + "reco_vtx_y", &reco_vtx_y);
-   tree->Branch(prefix + "reco_vtx_z", &reco_vtx_z);
-   tree->Branch(prefix + "reco_vtx_sumPt2", &reco_vtx_sumPt2);
-   tree->Branch(prefix + "reco_vtx_chiSquared", &reco_vtx_chiSquared);
-   tree->Branch(prefix + "reco_vtx_vertexType", &reco_vtx_vertexType);
+   if (!doTrim()){
+     tree->Branch(prefix + "truth_vtx_z", &truth_vtx_z);
+     tree->Branch(prefix + "reco_vtx_ntrk", &reco_vtx_ntrk);
+     tree->Branch(prefix + "reco_vtx_x", &reco_vtx_x);
+     tree->Branch(prefix + "reco_vtx_y", &reco_vtx_y);
+     tree->Branch(prefix + "reco_vtx_z", &reco_vtx_z);
+     tree->Branch(prefix + "reco_vtx_sumPt2", &reco_vtx_sumPt2);
+     tree->Branch(prefix + "reco_vtx_chiSquared", &reco_vtx_chiSquared);
+     tree->Branch(prefix + "reco_vtx_vertexType", &reco_vtx_vertexType);
    }
    return;
 }
