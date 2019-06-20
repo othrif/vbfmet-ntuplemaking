@@ -233,7 +233,7 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 	}
       }
 
-      static SG::AuxElement::ConstAccessor<int> acc_DFCommonJets_QGTagger_TracksC1("DFCommonJets_QGTagger_TracksC1");
+      static SG::AuxElement::ConstAccessor<float> acc_DFCommonJets_QGTagger_TracksC1("DFCommonJets_QGTagger_TracksC1");
       float tmp_TracksC1=-9999.;
       if(acc_DFCommonJets_QGTagger_TracksC1.isAvailable(input)) tmp_TracksC1 = acc_DFCommonJets_QGTagger_TracksC1(input);
 

@@ -927,7 +927,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    }
 
    //-- TAUS --
-
    if (content.doTaus) {
       content.taus    = nullptr;
       content.tausAux = nullptr;
@@ -1447,9 +1446,16 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       customMETtrig = kTRUE;
    else if (is2016 && cand.evt.randomRunNumber > 302872 && cand.evt.trigger["HLT_xe110_mht_L1XE50"])
       customMETtrig = kTRUE;
-   else if (cand.evt.trigger["HLT_noalg_L1J400"])
+   else if ((is2015 || is2016) && cand.evt.trigger["HLT_noalg_L1J400"])
       customMETtrig = kTRUE;
-
+   // 2017
+   if(     is2017 && cand.evt.trigger["HLT_xe90_pufit_L1XE50"]   && cand.evt.randomRunNumber <= 328393 ) customMETtrig = kTRUE;
+   else if(is2017 && cand.evt.trigger["HLT_xe100_pufit_L1XE55"]  && 329385<=cand.evt.randomRunNumber && cand.evt.randomRunNumber<=330470 ) customMETtrig = kTRUE;
+   else if(is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE55"]  && 330857<=cand.evt.randomRunNumber && cand.evt.randomRunNumber<=331975 ) customMETtrig = kTRUE;
+   else if(is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE50"]  && 341649>=cand.evt.randomRunNumber && cand.evt.randomRunNumber>331975) customMETtrig = kTRUE;
+   // 2018
+   if(is2018 && cand.evt.trigger["HLT_xe110_pufit_xe70_L1XE50"] && cand.evt.randomRunNumber < 350067 ) customMETtrig = kTRUE;
+   else if(is2018 && cand.evt.trigger["HLT_xe110_pufit_xe65_L1XE50"] && cand.evt.randomRunNumber >= 350067 ) customMETtrig = kTRUE;
    cand.evt.trigger_met = customMETtrig;
    // extra trigger info
    if(is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE55"])      cand.evt.trigger_met += 0x2; // unprescaled
