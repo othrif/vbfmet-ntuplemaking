@@ -30,9 +30,9 @@ public:
    std::vector<Bool_t>  passJetTight;
    std::vector<Int_t>   PartonTruthLabelID;
    std::vector<Int_t>   ConeTruthLabelID;
-   std::vector<Float_t>   truthjet_pt;
-   std::vector<Float_t>   truthjet_eta;
-   std::vector<Int_t>     truthjet_nCharged;
+   std::vector<Float_t> truthjet_pt;
+   std::vector<Float_t> truthjet_eta;
+   std::vector<Int_t>   truthjet_nCharged;
 
    std::vector<std::vector<UShort_t>> NTracks;
    std::vector<std::vector<Float_t>>  SumPtTracks;
@@ -45,7 +45,7 @@ public:
    std::vector<Float_t>               fch;
    std::vector<Float_t>               Width;
 
-   Bool_t m_savePV;               //!
+   Bool_t m_savePV; //!
 
 public:
    outJet(TString name = "", Bool_t doTrim = kFALSE);
@@ -54,7 +54,7 @@ public:
    void attachToTree(TTree *tree);
    void add(const xAOD::Jet &input);
 
-   void setOutPV(const Bool_t save) { m_savePV=save; }
+   void setOutPV(const Bool_t save) { m_savePV = save; }
 };
 } // namespace Analysis
 

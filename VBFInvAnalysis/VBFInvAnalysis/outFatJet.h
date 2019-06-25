@@ -11,8 +11,8 @@ public:
    std::vector<Float_t> eta;
    std::vector<Float_t> phi;
    std::vector<Float_t> m;
-   std::vector<bool> tagStatus_top;
-   std::vector<bool> tagStatus_W;
+   std::vector<bool>    tagStatus_top;
+   std::vector<bool>    tagStatus_W;
 
 public:
    outFatJet(TString name = "", Bool_t doTrim = kFALSE);

@@ -64,7 +64,7 @@ double Analysis::outRnSmear::getPSweight(asg::AnaToolHandle<ST::ISUSYObjDef_xAOD
 
    // retrieve the HLT jets
    const xAOD::JetContainer *hlt_jet = nullptr;
-   TString                   mc_name = "HLT_xAOD__JetContainer_GSCJet";
+   TString                   mc_name = "HLT_xAOD__JetContainer_a4tcemsubjesISFS";
    if (RunNumber <= 320000) mc_name = "HLT_xAOD__JetContainer_a4tcemsubjesFS";
    if (!event->retrieve(hlt_jet, mc_name.Data())) Error("getPSweight()", Form("failed to retrieve %s", mc_name.Data()));
    // Get leading HLT jet
