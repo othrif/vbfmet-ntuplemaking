@@ -16,18 +16,19 @@ void Analysis::outEvent::reset()
 {
 
    // General
-   year                  = 0;
-   runNumber             = -9999;
-   runPeriod             = -9999;
-   randomRunNumber       = -9999;
-   eventNumber           = 0;
-   lumiBlock             = -9999;
-   bcid                  = -9999;
-   BCIDDistanceFromFront = -9999;
-   averageIntPerXing     = -9999;
-   corAverageIntPerXing  = -9999;
-   vtx_sumpt2            = -9999;
-   l1_met_trig_encoded   = 0;
+   year                 = 0;
+   runNumber            = -9999;
+   runPeriod            = -9999;
+   randomRunNumber      = -9999;
+   eventNumber          = 0;
+   lumiBlock            = -9999;
+   bcid                 = -9999;
+   BCIDDistanceFromFront= -9999;
+   BCIDDistanceFromTail = -9999;
+   averageIntPerXing    = -9999;
+   corAverageIntPerXing = -9999;
+   vtx_sumpt2           = -9999;
+   l1_met_trig_encoded  = 0;
 
    // Weights
    mcEventWeight     = 1.0;
@@ -112,9 +113,9 @@ void Analysis::outEvent::reset()
    passJetCleanLoose = -9999;
    passJetCleanTight = -9999;
    passDetErr        = -9999;
-
-   passVjetsFilter = false;
-   passVjetsPTV    = false;
+   passBatman        = false;
+   passVjetsFilter   = false;
+   passVjetsPTV      = false;
 
    n_vx          = -9999;
    n_jet         = -9999;
@@ -169,6 +170,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "lumiBlock", &lumiBlock);
    tree->Branch(prefix + "bcid", &bcid);
    tree->Branch(prefix + "BCIDDistanceFromFront", &BCIDDistanceFromFront);
+   tree->Branch(prefix + "BCIDDistanceFromTail",  &BCIDDistanceFromTail);
    tree->Branch(prefix + "averageIntPerXing", &averageIntPerXing);
    tree->Branch(prefix + "corAverageIntPerXing", &corAverageIntPerXing);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
@@ -271,6 +273,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "passJetCleanTight", &passJetCleanTight);
    tree->Branch(prefix + "passDetErr", &passDetErr);
 
+   if (!doTrim()) tree->Branch(prefix + "passBatman", &passBatman);
    tree->Branch(prefix + "passVjetsFilter", &passVjetsFilter);
    tree->Branch(prefix + "passVjetsPTV", &passVjetsPTV);
 

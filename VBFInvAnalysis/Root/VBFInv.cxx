@@ -956,7 +956,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    }
 
    //-- TAUS --
-
    if (content.doTaus) {
       content.taus    = nullptr;
       content.tausAux = nullptr;
@@ -1247,6 +1246,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    Bool_t                                passesJetCleanLoose = true;
    Bool_t                                passesJetCleanTight = true;
+   Bool_t                                passesBadBatmanClean = true;
    static SG::AuxElement::Accessor<char> acc_eventClean("DFCommonJets_eventClean_LooseBad");
    if (acc_eventClean.isAvailable(*content.eventInfo)) {
       if (debug) print("eventClean_LooseBad", (bool)acc_eventClean(*content.eventInfo));
@@ -1254,6 +1254,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       if (!passesJetCleanLoose && doSkim) {
          return EL::StatusCode::SUCCESS;
       }
+   }
+   
+   // batman cleaning flag
+   static SG::AuxElement::Accessor<char> acc_isBadBatman("DFCommonJets_isBadBatman");
+   if (acc_isBadBatman.isAvailable(*content.eventInfo)) {
+      if (debug) print("eventClean_BadBatman", (bool)acc_isBadBatman(*content.eventInfo));
+      passesBadBatmanClean = !(acc_isBadBatman(*content.eventInfo) == 0);
    }
 
    // Tight cleaning for EMTopo
@@ -1286,6 +1293,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
    content.passJetCleanLoose = passesJetCleanLoose;
    content.passJetCleanTight = passesJetCleanTight;
+   content.passBatman        = passesBadBatmanClean;
 
    // Investigating jet cleaning
    /*
@@ -1413,8 +1421,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    cand.evt.lumiBlock   = content.eventInfo->lumiBlock();
    cand.evt.bcid        = content.eventInfo->bcid();
    static SG::AuxElement::Accessor<Int_t> acc_BCIDDistanceFromFront("BCIDDistanceFromFront");
-   if (acc_BCIDDistanceFromFront.isAvailable(*content.eventInfo))
-      cand.evt.BCIDDistanceFromFront = acc_BCIDDistanceFromFront(*content.eventInfo);
+   static SG::AuxElement::Accessor<Int_t> acc_BCIDDistanceFromTail("BCIDDistanceFromTail");
+   if(acc_BCIDDistanceFromFront.isAvailable(*content.eventInfo))
+     cand.evt.BCIDDistanceFromFront = acc_BCIDDistanceFromFront(*content.eventInfo);
+   if(acc_BCIDDistanceFromTail.isAvailable(*content.eventInfo))
+     cand.evt.BCIDDistanceFromTail = acc_BCIDDistanceFromTail(*content.eventInfo);
    cand.evt.averageIntPerXing    = content.eventInfo->averageInteractionsPerCrossing();
    cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
 
@@ -1484,9 +1495,16 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       customMETtrig = kTRUE;
    else if (is2016 && cand.evt.randomRunNumber > 302872 && cand.evt.trigger["HLT_xe110_mht_L1XE50"])
       customMETtrig = kTRUE;
-   else if (cand.evt.trigger["HLT_noalg_L1J400"])
+   else if ((is2015 || is2016) && cand.evt.trigger["HLT_noalg_L1J400"])
       customMETtrig = kTRUE;
-
+   // 2017
+   if(     is2017 && cand.evt.trigger["HLT_xe90_pufit_L1XE50"]   && cand.evt.randomRunNumber <= 328393 ) customMETtrig = kTRUE;
+   else if(is2017 && cand.evt.trigger["HLT_xe100_pufit_L1XE55"]  && 329385<=cand.evt.randomRunNumber && cand.evt.randomRunNumber<=330470 ) customMETtrig = kTRUE;
+   else if(is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE55"]  && 330857<=cand.evt.randomRunNumber && cand.evt.randomRunNumber<=331975 ) customMETtrig = kTRUE;
+   else if(is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE50"]  && 341649>=cand.evt.randomRunNumber && cand.evt.randomRunNumber>331975) customMETtrig = kTRUE;
+   // 2018
+   if(is2018 && cand.evt.trigger["HLT_xe110_pufit_xe70_L1XE50"] && cand.evt.randomRunNumber < 350067 ) customMETtrig = kTRUE;
+   else if(is2018 && cand.evt.trigger["HLT_xe110_pufit_xe65_L1XE50"] && cand.evt.randomRunNumber >= 350067 ) customMETtrig = kTRUE;
    cand.evt.trigger_met = customMETtrig;
    // extra trigger info
    if (is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE55"]) cand.evt.trigger_met += 0x2; // unprescaled
@@ -1516,6 +1534,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    cand.evt.passDetErr        = content.passDetErr;
    cand.evt.passJetCleanLoose = content.passJetCleanLoose;
    cand.evt.passJetCleanTight = content.passJetCleanTight;
+   cand.evt.passBatman        = content.passBatman;
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)

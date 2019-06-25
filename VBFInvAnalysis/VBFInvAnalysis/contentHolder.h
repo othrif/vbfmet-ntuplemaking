@@ -37,6 +37,7 @@ public:
    Bool_t passJetCleanLoose;
    Bool_t passJetCleanTight;
    Bool_t passDetErr;
+   Bool_t passBatman;
 
    Double_t met_tst_j1_dphi;
    Double_t met_tst_j2_dphi;
