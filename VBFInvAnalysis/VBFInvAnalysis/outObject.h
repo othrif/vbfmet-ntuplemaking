@@ -13,12 +13,14 @@ private:
    Bool_t  m_doTrim;
    Bool_t  m_write;
    Bool_t  m_doExtraTrim;
+   Bool_t  m_doVertextDetail;
+
 public:
    inline outObject(TString name = "", Bool_t doTrim = kFALSE)
    {
-      m_name   = name;
-      m_doTrim = doTrim;
-      m_write  = true;
+      m_name        = name;
+      m_doTrim      = doTrim;
+      m_write       = true;
       m_doExtraTrim = doTrim;
    }
 
@@ -26,6 +28,7 @@ public:
 
    inline Bool_t doTrim() { return m_doTrim; }
    inline Bool_t doExtraTrim() { return m_doExtraTrim; }
+   inline Bool_t doVertexDetail() { return m_doVertextDetail; }
 
    inline Bool_t write() { return m_write; }
 
@@ -33,6 +36,7 @@ public:
 
    inline void setDoTrim(Bool_t val) { m_doTrim = val; }
    inline void setDoExtraTrim(Bool_t val) { m_doExtraTrim = val; }
+   inline void setDoVertexDetail(Bool_t val) { m_doVertextDetail = val; }
 
    inline void setWrite(Bool_t val) { m_write = val; }
 
