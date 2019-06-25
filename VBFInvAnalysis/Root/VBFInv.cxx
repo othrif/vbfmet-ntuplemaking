@@ -85,11 +85,28 @@ EL::StatusCode VBFInv ::histInitialize()
    ANA_MSG_INFO("in histInitialize");
 
    // Events processed before derivation
-   m_NumberEvents = new TH1D("NumberEvents", "Number Events", 4, 0, 4);
+   m_NumberEvents = new TH1D("NumberEvents", "Number Events", 100, 0, 100);
    m_NumberEvents->GetXaxis()->SetBinLabel(1, "Raw");
    m_NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
    m_NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
    m_NumberEvents->GetXaxis()->SetBinLabel(4, "RawEXOT5");
+   m_NumberEvents->GetXaxis()->SetBinLabel(10, "All");
+   m_NumberEvents->GetXaxis()->SetBinLabel(11, "passJetFilter");
+   m_NumberEvents->GetXaxis()->SetBinLabel(12, "passBFilter");
+   m_NumberEvents->GetXaxis()->SetBinLabel(13, "passCFilter");
+   m_NumberEvents->GetXaxis()->SetBinLabel(14, "passLFFilter");
+   m_NumberEvents->GetXaxis()->SetBinLabel(15, "sherpaptv90");
+   m_NumberEvents->GetXaxis()->SetBinLabel(16, "sherpaptv100");
+   m_NumberEvents->GetXaxis()->SetBinLabel(17, "sherpaptv500");
+   m_NumberEvents->GetXaxis()->SetBinLabel(18, "passQCDFilter");
+   m_NumberEvents->GetXaxis()->SetBinLabel(19, "passMGJetFilter");
+   m_NumberEvents->GetXaxis()->SetBinLabel(20, "passMGJetFilterOREleTau");
+   m_NumberEvents->GetXaxis()->SetBinLabel(21, "passMGJetFilterOREleTauPtV75");
+   m_NumberEvents->GetXaxis()->SetBinLabel(22, "passMGJetFilterOREleTauPtV100");
+   m_NumberEvents->GetXaxis()->SetBinLabel(23, "passMGJetFilterPTV100BFilter");
+   m_NumberEvents->GetXaxis()->SetBinLabel(24, "passMGJetFilterPTV100");
+   m_NumberEvents->GetXaxis()->SetBinLabel(25, "passPhotonOR");
+   m_NumberEvents->GetXaxis()->SetBinLabel(26, "passPhotonORIso");
 
    // CutFlow
    TString NameCut("Nominal");
@@ -133,7 +150,33 @@ EL::StatusCode VBFInv ::fileExecute()
          maxcycle     = cbk->cycle();
          allEventsCBK = cbk;
       }
+      unsigned nbin=0;
+      if(cbk->inputStream() == "StreamAOD" ){
+	if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_All" ){ // should always be the right cycle
+	  nbin=10;
+	}else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_VBFSherpa") nbin=11;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_BFilter") nbin=12;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_CFilter") nbin=13;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_LFFilter") nbin=14;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_SherpaPTV90") nbin=15;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_SherpaPTV100") nbin=16;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_SherpaPTV500") nbin=17;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_JZVBFFilter") nbin=18;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGVBFFilter") nbin=19;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGVBFORFilter") nbin=20;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGZnnNp01ORFilter") nbin=21;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_ZOtherORFilter") nbin=22;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGWFilter") nbin=23;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGWNoFlavFilter") nbin=24;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonFilter") nbin=25;
+	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonwIsoFilter") nbin=26;
+	if(nbin>0){
+	  m_NumberEvents->SetBinContent(nbin, cbk->sumOfEventWeights());
+	  m_NumberEvents->SetBinError(nbin, cbk->sumOfEventWeightsSquared());
+	}
+      }//end AOD stream
    }
+
    uint64_t nEventsProcessed    = 0;
    double   sumOfWeights        = 0.;
    double   sumOfWeightsSquared = 0.;
@@ -389,7 +432,6 @@ EL::StatusCode VBFInv::initialize()
    //
    // list of systematics to process
    //
-
    m_sysList.clear();
    m_sysWeightList.clear();
    if (doSystematics && m_isMC) {
