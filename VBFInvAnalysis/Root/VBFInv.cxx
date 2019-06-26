@@ -85,7 +85,7 @@ EL::StatusCode VBFInv ::histInitialize()
    ANA_MSG_INFO("in histInitialize");
 
    // Events processed before derivation
-   m_NumberEvents = new TH1D("NumberEvents", "Number Events", 100, 0, 100);
+   m_NumberEvents = new TH1D("NumberEvents", "Number Events", 30, 0, 30);
    m_NumberEvents->GetXaxis()->SetBinLabel(1, "Raw");
    m_NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
    m_NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
@@ -1638,6 +1638,23 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.jvtSFWeight  = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
       cand.evt.fjvtSFWeight = m_susytools_handle->FJVT_SF(content.jets);
 
+      // add the truth filters 
+      static SG::AuxElement::Accessor<int>   acc_FlavourFilter("FlavourFilter");
+      static SG::AuxElement::Accessor<float> acc_MGVTruthPt("MGVTruthPt");
+      static SG::AuxElement::Accessor<float> acc_SherpaVTruthPt("SherpaVTruthPt");
+      static SG::AuxElement::Accessor<bool> acc_in_vy_overlap("in_vy_overlap");
+      static SG::AuxElement::Accessor<bool> acc_in_vy_overlap_iso("in_vy_overlap_iso");
+      if(acc_FlavourFilter.isAvailable(*content.eventInfo))
+	cand.evt.FlavourFilter = acc_FlavourFilter(*content.eventInfo);
+      if(acc_MGVTruthPt.isAvailable(*content.eventInfo))
+	cand.evt.MGVTruthPt = acc_MGVTruthPt(*content.eventInfo);
+      if(acc_SherpaVTruthPt.isAvailable(*content.eventInfo))
+	cand.evt.SherpaVTruthPt = acc_SherpaVTruthPt(*content.eventInfo);
+      if(acc_in_vy_overlap.isAvailable(*content.eventInfo))
+	cand.evt.in_vy_overlap = acc_in_vy_overlap(*content.eventInfo);
+      if(acc_in_vy_overlap_iso.isAvailable(*content.eventInfo))
+	cand.evt.in_vy_overlap_iso = acc_in_vy_overlap_iso(*content.eventInfo);
+      
       // electron anti-id SF
       // implementing setup
       // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronEfficiencyAntiID#Correlation%20of%20uncertainties

@@ -40,6 +40,11 @@ public:
    Float_t              fjvtSFWeight;
    Float_t              eleANTISF;
 
+   Int_t FlavourFilter;
+   Float_t MGVTruthPt;
+   Float_t SherpaVTruthPt;
+   Bool_t in_vy_overlap;
+   Bool_t in_vy_overlap_iso;
    /*
          Int_t pdf_id1;
          Int_t pdf_id2;

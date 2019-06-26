@@ -44,6 +44,13 @@ void Analysis::outEvent::reset()
    muSFTrigWeight = 1.0;
    eleANTISF      = 1.0;
 
+   // truth filters
+   FlavourFilter=-9999;
+   MGVTruthPt=-9999;
+   SherpaVTruthPt=-9999;
+   in_vy_overlap=false;
+   in_vy_overlap_iso=false;
+
    // PDF
    /*
   pdf_id1 = -9999;
@@ -188,6 +195,12 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "elSFTrigWeight", &elSFTrigWeight);
    tree->Branch(prefix + "muSFTrigWeight", &muSFTrigWeight);
    tree->Branch(prefix + "eleANTISF", &eleANTISF);
+
+   tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
+   tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);
+   tree->Branch(prefix + "SherpaVTruthPt", &SherpaVTruthPt);
+   tree->Branch(prefix + "in_vy_overlap", &in_vy_overlap);
+   tree->Branch(prefix + "in_vy_overlap_iso", &in_vy_overlap_iso);
 
    for (auto &itrig : trigger) {
       const TString trigName = itrig.first;
