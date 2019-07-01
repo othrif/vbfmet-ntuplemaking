@@ -57,6 +57,17 @@ public:
    std::vector<float> *m_el_etcone20; //!
    std::vector<int> *  m_el_pdgid;    //!
 
+   int                 m_nphs;        //!
+   std::vector<float> *m_ph_m;        //!
+   std::vector<float> *m_ph_pt;       //!
+   std::vector<float> *m_ph_eta;      //!
+   std::vector<float> *m_ph_phi;      //!
+   std::vector<uint> * m_ph_type;     //!
+   std::vector<uint> * m_ph_origin;   //!
+   std::vector<float> *m_ph_ptcone30; //!
+   std::vector<float> *m_ph_etcone20; //!
+   std::vector<int> *  m_ph_pdgid;    //!
+
    int                 m_nmus;        //!
    std::vector<float> *m_mu_m;        //!
    std::vector<float> *m_mu_pt;       //!

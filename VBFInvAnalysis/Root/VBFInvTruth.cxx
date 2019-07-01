@@ -140,6 +140,16 @@ EL::StatusCode VBFInvTruth ::initialize()
    m_el_etcone20 = new std::vector<float>();
    m_el_pdgid    = new std::vector<int>();
 
+   m_ph_m        = new std::vector<float>();
+   m_ph_pt       = new std::vector<float>();
+   m_ph_eta      = new std::vector<float>();
+   m_ph_phi      = new std::vector<float>();
+   m_ph_type     = new std::vector<uint>();
+   m_ph_origin   = new std::vector<uint>();
+   m_ph_ptcone30 = new std::vector<float>();
+   m_ph_etcone20 = new std::vector<float>();
+   m_ph_pdgid    = new std::vector<int>();
+
    m_mu_m        = new std::vector<float>();
    m_mu_pt       = new std::vector<float>();
    m_mu_eta      = new std::vector<float>();
@@ -234,6 +244,18 @@ EL::StatusCode VBFInvTruth ::initialize()
    truthTree->Branch("el_etcone20", &m_el_etcone20);
    truthTree->Branch("el_pdgid", &m_el_pdgid);
 
+   // Photons
+   truthTree->Branch("nphs",        &m_nphs);
+   truthTree->Branch("ph_m",        &m_ph_m);
+   truthTree->Branch("ph_pt",       &m_ph_pt);
+   truthTree->Branch("ph_eta",      &m_ph_eta);
+   truthTree->Branch("ph_phi",      &m_ph_phi);
+   truthTree->Branch("ph_type",     &m_ph_type);
+   truthTree->Branch("ph_origin",   &m_ph_origin);
+   truthTree->Branch("ph_ptcone30", &m_ph_ptcone30);
+   truthTree->Branch("ph_etcone20", &m_ph_etcone20);
+   truthTree->Branch("ph_pdgid",    &m_ph_pdgid);
+
    // Muons
    truthTree->Branch("nmus", &m_nmus);
    truthTree->Branch("mu_m", &m_mu_m);
@@ -322,6 +344,16 @@ EL::StatusCode VBFInvTruth ::execute()
    m_el_ptcone30->clear();
    m_el_etcone20->clear();
    m_el_pdgid->clear();
+
+   m_ph_m->clear();
+   m_ph_pt->clear();
+   m_ph_eta->clear();
+   m_ph_phi->clear();
+   m_ph_type->clear();
+   m_ph_origin->clear();
+   m_ph_ptcone30->clear();
+   m_ph_etcone20->clear();
+   m_ph_pdgid->clear();
 
    m_mu_m->clear();
    m_mu_pt->clear();
@@ -417,6 +449,10 @@ EL::StatusCode VBFInvTruth ::execute()
    // Electrons
    const xAOD::TruthParticleContainer *els = nullptr;
    ANA_CHECK(evtStore()->retrieve(els, "TruthElectrons"));
+
+   // Photons
+   const xAOD::TruthParticleContainer *phs = nullptr;
+   ANA_CHECK(evtStore()->retrieve(phs, "TruthPhotons"));
 
    // Muons
    const xAOD::TruthParticleContainer *mus = nullptr;
@@ -556,6 +592,25 @@ EL::StatusCode VBFInvTruth ::execute()
          nel5++;
       }
    m_nels = nel5;
+
+   // Photons
+   int nph5 = 0;
+   for (const auto &ph_itr : *phs){
+     //dec_passOR(*ph_itr) = true;
+     if (ph_itr->pt() > 5000.){// && ph_itr->auxdata<bool>("passTruthOR")) {
+         m_ph_m->push_back(ph_itr->m());
+         m_ph_pt->push_back (ph_itr->pt());
+         m_ph_eta->push_back(ph_itr->eta());
+         m_ph_phi->push_back(ph_itr->phi());
+         m_ph_type->push_back(ph_itr->auxdata<uint>("classifierParticleType"));
+         m_ph_origin->push_back(ph_itr->auxdata<uint>("classifierParticleOrigin"));
+         m_ph_ptcone30->push_back(ph_itr->auxdata<float>("ptcone30"));
+         m_ph_etcone20->push_back(ph_itr->auxdata<float>("etcone20"));
+         m_ph_pdgid->push_back(ph_itr->pdgId());
+         nph5++;
+      }
+   }
+   m_nphs = nph5;
 
    // Muons
    int nmu5 = 0;
