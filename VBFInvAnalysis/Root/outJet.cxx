@@ -53,7 +53,7 @@ void Analysis::outJet::reset()
    SumPtTracks.clear();
 
    TrackWidth.clear();
-   TracksC1.clear(); // DFCommonJets_QGTagger_TracksWidth DFCommonJets_QGTagger_TracksC1 DFCommonJets_QGTagger_NTracks
+   TracksC1.clear(); // DFCommonJets_QGTagger_TracksWidth DFCommonJets_QGTagger_TracksC1 DFCommonJets_QGTagger_NTracks DFCommonJets_QGTagger_truthjet_pt.DFCommonJets_QGTagger_truthjet_nCharged.DFCommonJets_QGTagger_truthjet_eta
    HighestJVFVtx.clear();
    FracSamplingMax.clear();
    HECFrac.clear();
@@ -91,7 +91,7 @@ void Analysis::outJet::attachToTree(TTree *tree)
       tree->Branch(prefix + "btag_weight", &btag_weight);
       tree->Branch(prefix + "NTracks", &NTracks);
       tree->Branch(prefix + "SumPtTracks", &SumPtTracks);
-      tree->Branch(prefix + "TrackWidth", &TrackWidth);
+      tree->Branch(prefix + "TrackWidth", &TrackWidth); // could remove and use width
       tree->Branch(prefix + "TracksC1", &TracksC1);
       tree->Branch(prefix + "HighestJVFVtx", &HighestJVFVtx);
       tree->Branch(prefix + "HECFrac", &HECFrac);
