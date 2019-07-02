@@ -307,16 +307,14 @@ EL::StatusCode VBFInv::initialize()
    ANA_CHECK(m_susytools_Tight_handle.setProperty("DataSource", datasource));
    ANA_CHECK(m_susytools_Tight_handle.setProperty("ConfigFile", ST_config_file.Data()));
    ANA_CHECK(m_susytools_Tight_handle.setProperty("METJetSelection", "Tight"));
-   ANA_CHECK(m_susytools_Tighter_handle.setProperty("DataSource", datasource));
-   ANA_CHECK(m_susytools_Tighter_handle.setProperty("ConfigFile", ST_config_file.Data()));
-   ANA_CHECK(m_susytools_Tighter_handle.setProperty("METJetSelection", "Tighter"));
+   //ANA_CHECK(m_susytools_Tenacious_handle.setProperty("FwdJetUseTightOP", true)); // for some reason this and setBoolProperty do not work
    ANA_CHECK(m_susytools_Tenacious_handle.setProperty("DataSource", datasource));
    ANA_CHECK(m_susytools_Tenacious_handle.setProperty("ConfigFile", ST_config_file.Data()));
    ANA_CHECK(m_susytools_Tenacious_handle.setProperty("METJetSelection", "Tenacious"));
-   //ANA_CHECK(m_susytools_handle.setProperty("FwdJetUseTightOP", false));
-   //ANA_CHECK(m_susytools_handle.setProperty("FwdJetDoJVT", false));
-   ANA_CHECK(m_susytools_Tighter_handle.setProperty("FwdJetUseTightOP", true));
-   ANA_CHECK(m_susytools_Tighter_handle.setProperty("FwdJetDoJVT", true));
+   ANA_CHECK(m_susytools_Tighter_handle.setProperty("DataSource", datasource));
+   TString newST_config_file = ST_config_file+"tight";
+   ANA_CHECK(m_susytools_Tighter_handle.setProperty("ConfigFile", newST_config_file.Data()));
+   ANA_CHECK(m_susytools_Tighter_handle.setProperty("METJetSelection", "Tighter"));
 
    if (verbose) {
       ANA_CHECK(m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
