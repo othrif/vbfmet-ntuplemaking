@@ -276,7 +276,6 @@ EL::StatusCode VBFInv::initialize()
    }
 
    // configure forward JVT tool
-   // m_jetFwdJvtTool.setTypeAndName("JetForwardJvtTool/JetForwardJvtTool_VBF");
    ANA_CHECK(m_jetFwdJvtTool.setProperty("OutputDec", "passFJvt")); // Output decoration
    ANA_CHECK(m_jetFwdJvtTool.setProperty("UseTightOP", true));      // Tight
    ANA_CHECK(m_jetFwdJvtTool.setProperty("EtaThresh", 2.5));
@@ -314,6 +313,10 @@ EL::StatusCode VBFInv::initialize()
    ANA_CHECK(m_susytools_Tenacious_handle.setProperty("DataSource", datasource));
    ANA_CHECK(m_susytools_Tenacious_handle.setProperty("ConfigFile", ST_config_file.Data()));
    ANA_CHECK(m_susytools_Tenacious_handle.setProperty("METJetSelection", "Tenacious"));
+   //ANA_CHECK(m_susytools_handle.setProperty("FwdJetUseTightOP", false));
+   //ANA_CHECK(m_susytools_handle.setProperty("FwdJetDoJVT", false));
+   ANA_CHECK(m_susytools_Tighter_handle.setProperty("FwdJetUseTightOP", true));
+   ANA_CHECK(m_susytools_Tighter_handle.setProperty("FwdJetDoJVT", true));
 
    if (verbose) {
       ANA_CHECK(m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
@@ -571,15 +574,11 @@ EL::StatusCode VBFInv::initialize()
       if (doMETDetail) {
          m_cand[thisSyst].met["met_tight_tst"]       = Analysis::outMET("met_tight_tst", (trim && !doMETDetail));
          m_cand[thisSyst].met["met_tight_tst_nolep"] = Analysis::outMET("met_tight_tst_nolep", (trim && !doMETDetail));
-         // m_cand[thisSyst].met["met_tighter_tst"]     = Analysis::outMET("met_tighter_tst", (trim && !doMETDetail));
-         // m_cand[thisSyst].met["met_tighter_tst_nolep"] =
-         //   Analysis::outMET("met_tighter_tst_nolep", (trim && !doMETDetail));
          m_cand[thisSyst].met["met_tenacious_tst"] = Analysis::outMET("met_tenacious_tst", (trim && !doMETDetail));
          m_cand[thisSyst].met["met_tenacious_tst_nolep"] =
             Analysis::outMET("met_tenacious_tst_nolep", (trim && !doMETDetail));
       }
 
-      //      m_cand[thisSyst].met["met_cst"] = Analysis::outMET("met_cst", (trim && !doMETDetail) );
       m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", (trim && !doMETDetail));
       m_cand[thisSyst].met["met_truth"] = Analysis::outMET("met_truth", (trim && !doMETDetail));
       m_cand[thisSyst].mu["mu"]         = Analysis::outMuon("mu", (trim && !doMuonDetail));
@@ -602,7 +601,6 @@ EL::StatusCode VBFInv::initialize()
       m_cand[thisSyst].evt.setDoExtraTrim(doTrimSyst);
       m_cand[thisSyst].evt.setDoVertexDetail(doVertexDetail);
       m_cand[thisSyst].rns.setDoTrim((trim && !doRnS));
-      // m_cand[thisSyst].setDoTrim(trim); // this forces trimming for all objects
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
    }
    return EL::StatusCode::SUCCESS;
@@ -1097,7 +1095,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst;
    getMET(content.met_tst, content.met_tstAux,
           content.jets, // use all jets (before OR and after corrections) for MET utility
-          &(content.baselineElectrons), &(content.allMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning
+          &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning
           kTRUE,                                             // do TST
           kTRUE,                                             // do JVT
           nullptr,                                           // invisible particles
@@ -1107,13 +1105,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    TLorentzVector myMET_Tight_tst;
    double         myMETsig_Tight_tst;
    getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, 
-	  &(content.baselineElectrons), &(content.allMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
           kTRUE, kTRUE, nullptr, myMET_Tight_tst, myMETsig_Tight_tst, 1);
 
    TLorentzVector myMET_Tenacious_tst;
    double         myMETsig_Tenacious_tst;
    getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, 
-	  &(content.baselineElectrons), &(content.allMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
           kTRUE, kTRUE, nullptr, myMET_Tenacious_tst, myMETsig_Tenacious_tst, 3);
 
    double met_tst_j1_dphi = -1., met_tst_j2_dphi = -1.;
@@ -1138,7 +1136,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst_nolep;
    getMET(content.met_tst_nolep, content.met_tst_nolepAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-	  &(content.baselineElectrons), &(content.allMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
           kTRUE,                                             // do TST
           kTRUE,                                             // do JVT
           nullptr, // invisible particles - using the old style of object removal here
@@ -1148,12 +1146,12 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    TLorentzVector myMET_Tight_tst_nolep;
    double         myMETsig_Tight_tst_nolep;
    getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets, 
-	  &(content.baselineElectrons), &(content.allMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
           kTRUE, kTRUE, &invis, myMET_Tight_tst_nolep, myMETsig_Tight_tst_nolep, 1);
    TLorentzVector myMET_Tenacious_tst_nolep;
    double         myMETsig_Tenacious_tst_nolep;
    getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets, 
-	  &(content.baselineElectrons), &(content.allMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
           kTRUE, kTRUE, &invis, myMET_Tenacious_tst_nolep, myMETsig_Tenacious_tst_nolep, 3);
    // create sum of muon and electron pts
    {
@@ -1191,7 +1189,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_cst;
    getMET(content.met_cst, content.met_cstAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-	  &(content.baselineElectrons), &(content.allMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
           kFALSE,                                            // do TST
           kFALSE,                                            // do JVT
           nullptr,                                           // invisible particles
@@ -1423,7 +1421,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if (m_susytools_handle->IsTrigPassed("L1_XE50")) cand.evt.l1_met_trig_encoded += 0x1;
    if (m_susytools_handle->IsTrigPassed("L1_XE55")) cand.evt.l1_met_trig_encoded += 0x2;
    if (m_susytools_handle->IsTrigPassed("L1_XE60")) cand.evt.l1_met_trig_encoded += 0x4;
-   // cand.evt.passTrigger = -1;
+
    cand.evt.trigger_lep =
       // el 2015
       cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] ||
@@ -1507,9 +1505,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"])
              : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"] : cand.evt.trigger["HLT_2e24_lhvloose_nod0"]);
    bool diEleYearlyOpt2 = is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"])
-                                 : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"]
-                                           : (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"]
-                                                     : cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"]));
+     : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"]
+	: (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"]
+	   : cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"]));
    if (diMuon) cand.evt.trigger_lep += 0x10;
    if (diMuonYearlyOpt1L1) cand.evt.trigger_lep += 0x20;
    if (diMuonYearlyOpt2L1) cand.evt.trigger_lep += 0x40;
@@ -1626,8 +1624,15 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.btagSFWeight   = m_susytools_handle->BtagSF(&content.goodJets);
 
       // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
-      cand.evt.jvtSFWeight  = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
-      cand.evt.fjvtSFWeight = m_susytools_handle->FJVT_SF(content.jets);
+      // load the leading two jets only, so we turn off the signal less jvt temporily
+      static SG::AuxElement::Accessor<char> acc_signal_less_JVT("signal_less_JVT");
+      unsigned ij=0;
+      for (auto jet : content.goodJets) { if(ij<2) acc_signal_less_JVT(*jet)=0; ++ij; }
+      cand.evt.jvtSFWeight         = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
+      cand.evt.fjvtSFWeight        = m_susytools_handle->FJVT_SF(&content.goodJets);
+      cand.evt.fjvtSFTighterWeight = m_susytools_Tighter_handle->FJVT_SF(&content.goodJets);
+      ij=0;// reset the signal value
+      for (auto jet : content.goodJets) { if(ij<2) acc_signal_less_JVT(*jet)=1; ++ij; }
 
       // add the truth filters 
       static SG::AuxElement::Accessor<int>   acc_FlavourFilter("FlavourFilter");
@@ -2047,6 +2052,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
            std::cout << "Muon pT=" << muon->pt()*1e-3 << ", ptvarcone30_TightTTVA_pt1000/pt=" <<
       tmp_ptvarcone30_TightTTVA_pt1000/muon->pt() << ", topoetcone20/pt=" << tmp_topoetcone20/muon->pt() << std::endl;
       */
+   }
+   static SG::AuxElement::Accessor<char> acc_baseline("baseline");
+   for (auto muon : content.allMuons) {
+     if (acc_baseline(*muon) == 1) ++cand.evt.n_mu_baseline_noOR;
    }
    for (auto muon : content.baselineMuons) { // saving leptons failing the signal selection, but still baseline
       if (cand.mu.find("basemu") != cand.mu.end() && !(acc_signal(*muon) == 1)) {

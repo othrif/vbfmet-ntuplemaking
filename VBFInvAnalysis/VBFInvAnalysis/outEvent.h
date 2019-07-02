@@ -38,6 +38,7 @@ public:
    Float_t              btagSFWeight;
    Float_t              jvtSFWeight;
    Float_t              fjvtSFWeight;
+   Float_t              fjvtSFTighterWeight;
    Float_t              eleANTISF;
 
    Int_t FlavourFilter;
@@ -144,6 +145,7 @@ public:
 
    Int_t n_bjet;
    Int_t n_mu;
+   Int_t n_mu_baseline_noOR;
    Int_t n_mu_baseline;
    Int_t n_el;
    Int_t n_el_baseline;
