@@ -2069,7 +2069,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    for (auto electron : content.goodElectrons) {
       cand.el["el"].add(*electron);
    }
+   static SG::AuxElement::Accessor<char> acc_DFCommonCrackVetoCleaning("DFCommonCrackVetoCleaning");
    for (auto electron : content.baselineElectrons) { // saving leptons failing the signal selection, but still baseline
+     if(acc_DFCommonCrackVetoCleaning.isAvailable(*electron) && acc_DFCommonCrackVetoCleaning(*electron)==0) ++cand.evt.n_el_baseline_crackVetoCleaning;
       if (cand.el.find("baseel") != cand.el.end() && !(acc_signal(*electron) == 1)) cand.el["baseel"].add(*electron);
       ++cand.evt.n_el_baseline;
    }
@@ -2087,6 +2089,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // Selected photons
    ////////////////////////////
    for (auto thisPh : content.goodPhotons) {
+     if(acc_DFCommonCrackVetoCleaning.isAvailable(*thisPh) && acc_DFCommonCrackVetoCleaning(*thisPh)==0) ++cand.evt.n_ph_crackVetoCleaning;
       if (cand.ph.find("ph") != cand.ph.end()) {
          cand.ph["ph"].add(*thisPh);
       }

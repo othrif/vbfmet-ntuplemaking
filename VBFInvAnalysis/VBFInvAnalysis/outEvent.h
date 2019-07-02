@@ -149,7 +149,9 @@ public:
    Int_t n_mu_baseline;
    Int_t n_el;
    Int_t n_el_baseline;
+   Int_t n_el_baseline_crackVetoCleaning;
    Int_t n_ph;
+   Int_t n_ph_crackVetoCleaning;
 
    Float_t              truth_vtx_z;
    std::vector<Int_t>   reco_vtx_ntrk;
