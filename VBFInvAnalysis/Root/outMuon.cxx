@@ -38,6 +38,7 @@ void Analysis::outMuon::reset()
    z0sig.clear();
    truthType.clear();
    truthOrigin.clear();
+   passOR.clear();
 
    return;
 }
@@ -72,6 +73,7 @@ void Analysis::outMuon::attachToTree(TTree *tree)
       // tree->Branch(prefix + "topoetcone40", &topoetcone40);
       tree->Branch(prefix + "truthType", &truthType);
       tree->Branch(prefix + "truthOrigin", &truthOrigin);
+      tree->Branch(prefix + "passOR", &passOR);
    }
 
    return;
@@ -159,6 +161,14 @@ void Analysis::outMuon::add(const xAOD::Muon &input)
          truthType.push_back(-9999);
          truthOrigin.push_back(-9999);
       }
+
+      static SG::AuxElement::Accessor<char>       acc_passOR("passOR");
+      if (acc_passOR.isAvailable(input)) {
+         passOR.push_back(acc_passOR(input));
+      } else {
+         passOR.push_back(-9999);
+      }
+
    }
    return;
 }

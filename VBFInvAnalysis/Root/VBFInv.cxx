@@ -565,19 +565,26 @@ EL::StatusCode VBFInv::initialize()
 
       // define all elements of the output tree
       m_cand[thisSyst].met["met_tst"]       = Analysis::outMET("met_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_jet_tst"]    = Analysis::outMET("met_jet_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_ele_tst"]    = Analysis::outMET("met_ele_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_mu_tst"]     = Analysis::outMET("met_mu_tst", (trim && !doMETDetail));
       m_cand[thisSyst].met["met_tst_nolep"] = Analysis::outMET("met_tst_nolep", (trim && !doMETDetail));
       m_cand[thisSyst].met["met_soft_tst"]  = Analysis::outMET("met_soft_tst", (trim && !doMETDetail));
 
-      if (doMETDetail) {
-         m_cand[thisSyst].met["met_tight_tst"]       = Analysis::outMET("met_tight_tst", (trim && !doMETDetail));
-         m_cand[thisSyst].met["met_tight_tst_nolep"] = Analysis::outMET("met_tight_tst_nolep", (trim && !doMETDetail));
-         // m_cand[thisSyst].met["met_tighter_tst"]     = Analysis::outMET("met_tighter_tst", (trim && !doMETDetail));
-         // m_cand[thisSyst].met["met_tighter_tst_nolep"] =
-         //   Analysis::outMET("met_tighter_tst_nolep", (trim && !doMETDetail));
-         m_cand[thisSyst].met["met_tenacious_tst"] = Analysis::outMET("met_tenacious_tst", (trim && !doMETDetail));
-         m_cand[thisSyst].met["met_tenacious_tst_nolep"] =
-            Analysis::outMET("met_tenacious_tst_nolep", (trim && !doMETDetail));
-      }
+      m_cand[thisSyst].met["met_tight_tst"]       = Analysis::outMET("met_tight_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_jet_tight_tst"]       = Analysis::outMET("met_jet_tight_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_ele_tight_tst"]       = Analysis::outMET("met_ele_tight_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_mu_tight_tst"]       = Analysis::outMET("met_mu_tight_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_soft_tight_tst"]       = Analysis::outMET("met_soft_tight_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_tight_tst_nolep"] = Analysis::outMET("met_tight_tst_nolep", (trim && !doMETDetail));
+      // m_cand[thisSyst].met["met_tighter_tst"]     = Analysis::outMET("met_tighter_tst", (trim && !doMETDetail));
+      // m_cand[thisSyst].met["met_tighter_tst_nolep"] = Analysis::outMET("met_tighter_tst_nolep", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_tenacious_tst"] = Analysis::outMET("met_tenacious_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_jet_tenacious_tst"] = Analysis::outMET("met_jet_tenacious_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_ele_tenacious_tst"] = Analysis::outMET("met_ele_tenacious_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_mu_tenacious_tst"] = Analysis::outMET("met_mu_tenacious_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_soft_tenacious_tst"] = Analysis::outMET("met_soft_tenacious_tst", (trim && !doMETDetail));
+      m_cand[thisSyst].met["met_tenacious_tst_nolep"] = Analysis::outMET("met_tenacious_tst_nolep", (trim && !doMETDetail));
 
       //      m_cand[thisSyst].met["met_cst"] = Analysis::outMET("met_cst", (trim && !doMETDetail) );
       m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", (trim && !doMETDetail));
@@ -2099,10 +2106,25 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // MET
    //-----------------------------------------------------------------------
    cand.met["met_tst"].add(*((*content.met_tst)["Final"]));
-   cand.met["met_tight_tst"].add(*((*content.met_tight_tst)["Final"]));
-   // cand.met["met_tighter_tst"].add(*((*content.met_tighter_tst)["Final"]));
-   cand.met["met_tenacious_tst"].add(*((*content.met_tenacious_tst)["Final"]));
+   cand.met["met_jet_tst"].add(*((*content.met_tst)["RefJet"]));
+   cand.met["met_ele_tst"].add(*((*content.met_tst)["RefEle"]));
+   cand.met["met_mu_tst"].add(*((*content.met_tst)["Muons"]));
    cand.met["met_soft_tst"].add(*((*content.met_tst)["PVSoftTrk"]));
+
+   cand.met["met_tight_tst"].add(*((*content.met_tight_tst)["Final"]));
+   cand.met["met_jet_tight_tst"].add(*((*content.met_tight_tst)["RefJet"]));
+   cand.met["met_ele_tight_tst"].add(*((*content.met_tight_tst)["RefEle"]));
+   cand.met["met_mu_tight_tst"].add(*((*content.met_tight_tst)["Muons"]));
+   cand.met["met_soft_tight_tst"].add(*((*content.met_tight_tst)["PVSoftTrk"]));
+
+   // cand.met["met_tighter_tst"].add(*((*content.met_tighter_tst)["Final"]));
+
+   cand.met["met_tenacious_tst"].add(*((*content.met_tenacious_tst)["Final"]));
+   cand.met["met_jet_tenacious_tst"].add(*((*content.met_tenacious_tst)["RefJet"]));
+   cand.met["met_ele_tenacious_tst"].add(*((*content.met_tenacious_tst)["RefEle"]));
+   cand.met["met_mu_tenacious_tst"].add(*((*content.met_tenacious_tst)["Muons"]));
+   cand.met["met_soft_tenacious_tst"].add(*((*content.met_tenacious_tst)["PVSoftTrk"]));
+
    cand.met["met_tight_tst_nolep"].add(*((*content.met_tight_tst_nolep)["Final"]));
    // cand.met["met_tighter_tst_nolep"].add(*((*content.met_tighter_tst_nolep)["Final"]));
    cand.met["met_tenacious_tst_nolep"].add(*((*content.met_tenacious_tst_nolep)["Final"]));
@@ -2110,6 +2132,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    //  cand.met["met_tst_nomuon"].add(*((*content.met_tst_nomuon)["Final"]));
    //  cand.met["met_tst_noelectron"].add(*((*content.met_tst_noelectron)["Final"]));
    cand.met["met_tst_nolep"].add(*((*content.met_tst_nolep)["Final"]));
+
    cand.met["met_track"].add(*((*content.met_track)["Track"]));
    if (m_isMC) cand.met["met_truth"].add(*((*content.met_truth)["NonInt"]));
    //-----------------------------------------------------------------------

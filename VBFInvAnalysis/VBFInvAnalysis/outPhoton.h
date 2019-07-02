@@ -15,6 +15,7 @@ private:
    std::vector<Float_t> pt;
    std::vector<Float_t> eta;
    std::vector<Float_t> phi;
+   std::vector<Bool_t>  passOR;
 
 public:
    outPhoton(TString name = "", Bool_t doTrim = false);
