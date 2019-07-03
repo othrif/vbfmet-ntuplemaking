@@ -38,6 +38,7 @@ void Analysis::outEvent::reset()
    btagSFWeight   = 1.0;
    jvtSFWeight    = 1.0;
    fjvtSFWeight   = 1.0;
+   fjvtSFTighterWeight   = 1.0;
    elSFWeight     = 1.0;
    muSFWeight     = 1.0;
    elSFTrigWeight = 1.0;
@@ -129,9 +130,13 @@ void Analysis::outEvent::reset()
    n_bjet        = -9999;
    n_el          = -9999;
    n_el_baseline = 0;
+   n_el_baseline_noOR = 0;
+   n_el_baseline_crackVetoCleaning = 0;
    n_mu          = -9999;
+   n_mu_baseline_noOR = 0;
    n_mu_baseline = 0;
    n_ph          = 0;
+   n_ph_crackVetoCleaning          = 0;
 
    jj_mass               = -9999;
    jj_deta               = -9999;
@@ -190,6 +195,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "btagSFWeight", &btagSFWeight);
    tree->Branch(prefix + "jvtSFWeight", &jvtSFWeight);
    tree->Branch(prefix + "fjvtSFWeight", &fjvtSFWeight);
+   tree->Branch(prefix + "fjvtSFTighterWeight", &fjvtSFTighterWeight);
    tree->Branch(prefix + "elSFWeight", &elSFWeight);
    tree->Branch(prefix + "muSFWeight", &muSFWeight);
    tree->Branch(prefix + "elSFTrigWeight", &elSFTrigWeight);
@@ -296,8 +302,12 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "n_el", &n_el);
    tree->Branch(prefix + "n_mu", &n_mu);
    tree->Branch(prefix + "n_el_baseline", &n_el_baseline);
+   tree->Branch(prefix + "n_el_baseline_noOR", &n_el_baseline_noOR);
+   tree->Branch(prefix + "n_el_baseline_crackVetoCleaning", &n_el_baseline_crackVetoCleaning);
+   tree->Branch(prefix + "n_mu_baseline_noOR", &n_mu_baseline_noOR);
    tree->Branch(prefix + "n_mu_baseline", &n_mu_baseline);
    tree->Branch(prefix + "n_ph", &n_ph);
+   tree->Branch(prefix + "n_ph_crackVetoCleaning", &n_ph_crackVetoCleaning);
 
    tree->Branch(prefix + "jj_mass", &jj_mass);
    tree->Branch(prefix + "jj_deta", &jj_deta);

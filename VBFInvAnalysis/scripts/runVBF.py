@@ -61,6 +61,7 @@ parser.add_argument("--doMETDetail", dest="doMETDetail", action="store_true", de
 parser.add_argument("--doContLepDetail", dest="doContLepDetail", action="store_true", default=False, help="add container leptons for study of the lepton veto")
 parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--doVertexDetail", dest="doVertexDetail", action="store_true", default=False, help="add detailed branches for vertex info")
+parser.add_argument("--doORDetail", dest="doORDetail", action="store_true", default=False, help="add detailed branches for overlap removal")
 parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
 parser.add_argument("--noTruthBoson", dest="noTruthBoson",action='store_true', default=False, help="deactivate boson mode")
@@ -197,6 +198,7 @@ if( args.algoName == "VBFInv" ):
   alg.doEventDetail = args.doEventDetail or args.doDetail
   alg.doContLepDetail = args.doContLepDetail or args.doDetail
   alg.doVertexDetail = args.doVertexDetail or args.doDetail
+  alg.doORDetail = args.doORDetail or args.doDetail
   alg.getMCChannel = args.getMCChannel
   alg.savePVOnly = args.savePVOnly
   alg.m_computeXS = False
