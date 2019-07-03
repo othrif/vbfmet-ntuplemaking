@@ -130,6 +130,7 @@ void Analysis::outEvent::reset()
    n_bjet        = -9999;
    n_el          = -9999;
    n_el_baseline = 0;
+   n_el_baseline_noOR = 0;
    n_el_baseline_crackVetoCleaning = 0;
    n_mu          = -9999;
    n_mu_baseline_noOR = 0;
@@ -301,6 +302,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "n_el", &n_el);
    tree->Branch(prefix + "n_mu", &n_mu);
    tree->Branch(prefix + "n_el_baseline", &n_el_baseline);
+   tree->Branch(prefix + "n_el_baseline_noOR", &n_el_baseline_noOR);
    tree->Branch(prefix + "n_el_baseline_crackVetoCleaning", &n_el_baseline_crackVetoCleaning);
    tree->Branch(prefix + "n_mu_baseline_noOR", &n_mu_baseline_noOR);
    tree->Branch(prefix + "n_mu_baseline", &n_mu_baseline);

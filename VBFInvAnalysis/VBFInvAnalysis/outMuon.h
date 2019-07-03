@@ -32,6 +32,7 @@ public:
    std::vector<Float_t> z0sig;
    std::vector<Int_t>   truthType;
    std::vector<Int_t>   truthOrigin;
+   std::vector<Bool_t>  passOR;
 
 public:
    outMuon(TString name = "", Bool_t doTrim = kFALSE);

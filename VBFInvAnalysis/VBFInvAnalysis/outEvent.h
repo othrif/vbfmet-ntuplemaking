@@ -149,6 +149,7 @@ public:
    Int_t n_mu_baseline;
    Int_t n_el;
    Int_t n_el_baseline;
+   Int_t n_el_baseline_noOR;
    Int_t n_el_baseline_crackVetoCleaning;
    Int_t n_ph;
    Int_t n_ph_crackVetoCleaning;

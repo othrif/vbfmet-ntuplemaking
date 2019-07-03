@@ -31,6 +31,7 @@ public:
    std::vector<Int_t>   truthType;
    std::vector<Int_t>   truthOrigin;
    bool                 details;
+   std::vector<Bool_t>  passOR;
 
 public:
    outElectron(TString name = "", Bool_t doTrim = kFALSE);
