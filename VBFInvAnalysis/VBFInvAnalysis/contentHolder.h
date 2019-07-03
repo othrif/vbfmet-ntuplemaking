@@ -75,10 +75,6 @@ public:
    std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nolepAux;           //!
    std::shared_ptr<xAOD::MissingETContainer>    met_cst;                    //!
    std::shared_ptr<xAOD::MissingETAuxContainer> met_cstAux;                 //!
-   //      std::shared_ptr<xAOD::MissingETContainer> met_tst_nomuon; //!
-   //      std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nomuonAux; //!
-   //      std::shared_ptr<xAOD::MissingETContainer> met_tst_noelectron; //!
-   //      std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_noelectronAux; //!
    std::shared_ptr<xAOD::MissingETContainer>    met_tst_nophoton;    //!
    std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nophotonAux; //!
    std::shared_ptr<xAOD::MissingETContainer>    met_track;           //!
@@ -109,10 +105,12 @@ public:
    xAOD::MuonContainer     allMuons;          //!
    xAOD::MuonContainer     contMuons;         //!
    xAOD::MuonContainer     baselineMuons;     //!
+   xAOD::MuonContainer     zMuons;            //!
    xAOD::MuonContainer     goodMuons;         //!
    xAOD::ElectronContainer allElectrons;      //!
    xAOD::ElectronContainer contElectrons;     //!
    xAOD::ElectronContainer baselineElectrons; //!
+   xAOD::ElectronContainer zElectrons;        //!
    xAOD::ElectronContainer goodElectrons;     //!
    xAOD::JetContainer      allJets;           //!
    xAOD::JetContainer      goodJets;          //!

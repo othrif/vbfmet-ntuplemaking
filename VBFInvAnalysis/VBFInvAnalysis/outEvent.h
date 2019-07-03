@@ -145,10 +145,17 @@ public:
 
    Int_t n_bjet;
    Int_t n_mu;
+   Int_t n_mu_z;
    Int_t n_mu_baseline_noOR;
    Int_t n_mu_baseline;
+   Int_t n_mu_baseline_loose;
+   Int_t n_mu_baseline_loose_noOR;
+   Int_t n_mu_baseline_iso;
    Int_t n_el;
+   Int_t n_el_z;
+   Int_t n_el_trigMatched;
    Int_t n_el_baseline;
+   Int_t n_el_baseline_iso;
    Int_t n_el_baseline_noOR;
    Int_t n_el_baseline_crackVetoCleaning;
    Int_t n_ph;

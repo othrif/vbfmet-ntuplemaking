@@ -14,6 +14,7 @@ void Analysis::outElectron::reset()
 {
 
    charge.clear();
+   iso.clear();
    pt.clear();
    eta.clear();
    phi.clear();
@@ -51,6 +52,7 @@ void Analysis::outElectron::attachToTree(TTree *tree)
    tree->Branch(prefix + "phi", &phi);
    tree->Branch(prefix + "m", &m);
    if (!doTrim()) {
+      tree->Branch(prefix + "iso", &iso);
       // tree->Branch(prefix + "ptcone20", &ptcone20);
       tree->Branch(prefix + "ptvarcone20", &ptvarcone20);
       // tree->Branch(prefix + "etcone20", &etcone20);
@@ -77,6 +79,9 @@ void Analysis::outElectron::attachToTree(TTree *tree)
 void Analysis::outElectron::add(const xAOD::Electron &input)
 {
 
+  const static SG::AuxElement::ConstAccessor<char> acc_isol("isol");
+  const static SG::AuxElement::ConstAccessor<char> acc_isolHighPt("isolHighPt"); // use different WPs for low-pt and high-pt. split at 200 GeV.
+  iso.push_back(input.pt()<200.0e3 ? (acc_isol(input) ? 1: 0) : (acc_isolHighPt(input) ? 1:0));
    charge.push_back(input.charge());
    pt.push_back(input.pt());
    eta.push_back(input.eta());

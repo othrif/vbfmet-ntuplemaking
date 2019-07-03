@@ -897,6 +897,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    static SG::AuxElement::Accessor<char> acc_passFJvt("passFJvt");
    static SG::AuxElement::Accessor<char> acc_bad("bad");
    static SG::AuxElement::Accessor<char> acc_cosmic("cosmic");
+   const static SG::AuxElement::ConstAccessor<char> acc_isol("isol");
+   const static SG::AuxElement::ConstAccessor<char> acc_isolHighPt("isolHighPt"); // use different WPs for low-pt and high-pt. split at 200 GeV.
+   const static SG::AuxElement::ConstAccessor<float> acc_d0sig("d0sig");
+   const static SG::AuxElement::ConstAccessor<float> acc_z0sinTheta("z0sinTheta");
 
    //-- JETS --
    if (content.doJets) {
@@ -1032,8 +1036,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // Good objects containers clear
    content.goodMuons.clear(SG::VIEW_ELEMENTS);
    content.baselineMuons.clear(SG::VIEW_ELEMENTS);
+   content.zMuons.clear(SG::VIEW_ELEMENTS);
    content.goodElectrons.clear(SG::VIEW_ELEMENTS);
    content.baselineElectrons.clear(SG::VIEW_ELEMENTS);
+   content.zElectrons.clear(SG::VIEW_ELEMENTS);
    content.goodJets.clear(SG::VIEW_ELEMENTS);
    content.goodPhotons.clear(SG::VIEW_ELEMENTS);
    content.baselinePhotons.clear(SG::VIEW_ELEMENTS);
@@ -1072,6 +1078,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto muon : content.allMuons) {
       if (acc_baseline(*muon) == 1 && acc_passOR(*muon) == 1) { // cosmic, baseline, bad muon already applied
          content.baselineMuons.push_back(muon);
+         if(muon->quality()<3 && (muon->pt()<200.0e3 ? acc_isol(*muon) : acc_isolHighPt(*muon)) && 
+	    fabs(acc_z0sinTheta(*muon))<0.5 && 
+	    fabs(acc_d0sig(*muon))<3.0) content.zMuons.push_back(muon); // add iso, impact parameter cuts and Loose PID
          if (acc_signal(*muon) == 1) {
             content.goodMuons.push_back(muon); // CR muons
          }
@@ -1082,6 +1091,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto electron : content.allElectrons) {
       if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) { // baseline is already applied
          content.baselineElectrons.push_back(electron);
+         if((electron->pt()<200.0e3 ? acc_isol(*electron) : acc_isolHighPt(*electron)) && 
+	    fabs(acc_z0sinTheta(*electron))<0.5 && 
+	    fabs(acc_d0sig(*electron))<5.0) content.zElectrons.push_back(electron); // add iso, impact parameter cuts
          if (acc_signal(*electron) == 1) content.goodElectrons.push_back(electron); // CR electrons
       }
    }
@@ -1257,11 +1269,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       //-- MUONS --
       printObjects(content.allMuons, "allMuons");
       printObjects(content.baselineMuons, "baselineMuons");
+      printObjects(content.zMuons, "zMuons");
       printObjects(content.contMuons, "contMuons");
       printObjects(content.goodMuons, "goodMuons");
       //-- ELECTRONS --
       printObjects(content.allElectrons, "allElectrons");
       printObjects(content.baselineElectrons, "baselineElectrons");
+      printObjects(content.baselineElectrons, "zElectrons");
       printObjects(content.contElectrons, "contElectrons");
       printObjects(content.goodElectrons, "goodElectrons");
       //-- MET --
@@ -1724,14 +1738,29 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // You can modify it in the ST config under Trigger SFs configuration
       // Total Electron SF: GetTotalElectronSF(const xAOD::ElectronContainer& electrons, const bool recoSF, const bool
       // idSF, const bool triggerSF, const bool isoSF, const std::string& trigExpr, const bool chfSF)
-      cand.evt.elSFWeight = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
-      cand.evt.elSFTrigWeight =
-         m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
+      const static SG::AuxElement::ConstAccessor<char> acc_trigmatched("trigmatched");
+      if((cand.evt.n_el_z==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu_z==0){
+	cand.evt.elSFWeight     = m_susytools_Tighter_handle->GetTotalElectronSF(content.zElectrons, true, true, false, true, "");
+	cand.evt.elSFTrigWeight = m_susytools_Tighter_handle->GetTotalElectronSF(content.zElectrons, false, false, true, false, "singleLepton");
+	for (auto electron : content.zElectrons) { if(acc_trigmatched.isAvailable(*electron) && acc_trigmatched(*electron)) ++cand.evt.n_el_trigMatched; }
+      }else{
+	cand.evt.elSFWeight = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
+	cand.evt.elSFTrigWeight =
+	  m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
+	for (auto electron : content.goodElectrons) { if(acc_trigmatched.isAvailable(*electron) && acc_trigmatched(*electron)) ++cand.evt.n_el_trigMatched; }
+      }
       // Total Muon SF: GetTotalMuonTriggerSF(const xAOD::MuonContainer& sfmuons, const std::string& trigExpr)
-      cand.evt.muSFWeight     = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
-      cand.evt.muSFTrigWeight = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,
-                                                                   is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
-                                                                          : "HLT_mu26_ivarmedium_OR_HLT_mu50");
+      if((cand.evt.n_el_z==0) && (cand.evt.n_mu_z==2 || cand.evt.n_mu_baseline>1)){
+	cand.evt.muSFWeight     = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
+	cand.evt.muSFTrigWeight = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, false, false,
+								     is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
+								     : "HLT_mu26_ivarmedium_OR_HLT_mu50");
+      }else{
+	cand.evt.muSFWeight     = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
+	cand.evt.muSFTrigWeight = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,
+								     is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
+								     : "HLT_mu26_ivarmedium_OR_HLT_mu50");
+      }
 
       if (debug) {
          print("Electron SF", cand.evt.elSFWeight);
@@ -2050,10 +2079,14 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // Selected muons
    //-----------------------------------------------------------------------
    cand.evt.n_mu = content.goodMuons.size();
+   cand.evt.n_mu_z = content.zMuons.size();
    // if( cand.evt.n_mu_baseline != 0)
    // std::cout << "Number of muons in event=" << cand.evt.n_mu << ", baseline=" << cand.evt.n_mu_baseline << std::endl;
    static SG::AuxElement::Accessor<char> acc_signal("signal");
    static SG::AuxElement::Accessor<char> acc_bad("bad");
+  const static SG::AuxElement::ConstAccessor<char> acc_isol("isol");
+  const static SG::AuxElement::ConstAccessor<char> acc_isolHighPt("isolHighPt"); // use different WPs for low-pt and high-pt. split at 200 GeV.
+
    for (auto muon : content.goodMuons) {
       cand.mu["mu"].add(*muon);
       /* Isolation investigations
@@ -2071,11 +2104,14 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    static SG::AuxElement::Accessor<char> acc_baseline("baseline");
    for (auto muon : content.allMuons) {
      if (acc_baseline(*muon) == 1) ++cand.evt.n_mu_baseline_noOR;
+     if(muon->quality()<3 && (acc_baseline(*muon) == 1))  ++cand.evt.n_mu_baseline_loose_noOR;
    }
    for (auto muon : content.baselineMuons) { // saving leptons failing the signal selection, but still baseline
       if (cand.mu.find("basemu") != cand.mu.end() && !(acc_signal(*muon) == 1)) {
          cand.mu["basemu"].add(*muon);
       }
+      if(muon->pt()<200.0e3 ? acc_isol(*muon) : acc_isolHighPt(*muon))  ++cand.evt.n_mu_baseline_iso;
+      if(muon->quality()<3)  ++cand.evt.n_mu_baseline_loose;
       ++cand.evt.n_mu_baseline;
    }
 
@@ -2086,6 +2122,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
      if (acc_baseline(*electron) == 1) ++cand.evt.n_el_baseline_noOR;
    }
    cand.evt.n_el = content.goodElectrons.size();
+   cand.evt.n_el_z = content.zElectrons.size();
    for (auto electron : content.goodElectrons) {
       cand.el["el"].add(*electron);
    }
@@ -2094,6 +2131,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
      if(acc_DFCommonCrackVetoCleaning.isAvailable(*electron) && acc_DFCommonCrackVetoCleaning(*electron)==0) ++cand.evt.n_el_baseline_crackVetoCleaning;
       if (cand.el.find("baseel") != cand.el.end() && !(acc_signal(*electron) == 1)) cand.el["baseel"].add(*electron);
       ++cand.evt.n_el_baseline;
+      if(electron->pt()<200.0e3 ? acc_isol(*electron) : acc_isolHighPt(*electron))  ++cand.evt.n_el_baseline_iso;
    }
    // add the container leptons for lepton veto studies
    if (doContLepDetail) {
