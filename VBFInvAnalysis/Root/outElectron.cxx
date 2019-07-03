@@ -36,6 +36,7 @@ void Analysis::outElectron::reset()
    z0sig.clear();
    truthType.clear();
    truthOrigin.clear();
+   passOR.clear();
 
    return;
 }
@@ -68,6 +69,7 @@ void Analysis::outElectron::attachToTree(TTree *tree)
       tree->Branch(prefix + "z0sig", &z0sig);
       tree->Branch(prefix + "truthType", &truthType);
       tree->Branch(prefix + "truthOrigin", &truthOrigin);
+      tree->Branch(prefix + "passOR", &passOR);
    }
    return;
 }
@@ -145,6 +147,14 @@ void Analysis::outElectron::add(const xAOD::Electron &input)
          truthType.push_back(-9999);
          truthOrigin.push_back(-9999);
       }
+
+      static SG::AuxElement::Accessor<char>       acc_passOR("passOR");
+      if (acc_passOR.isAvailable(input)) {
+         passOR.push_back(acc_passOR(input));
+      } else {
+         passOR.push_back(-9999);
+      }
+
    }
 
    return;
