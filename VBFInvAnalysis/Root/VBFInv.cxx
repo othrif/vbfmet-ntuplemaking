@@ -53,10 +53,11 @@ ClassImp(VBFInv)
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false),
      doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
-  doContLepDetail(false), doVertexDetail(false), doORDetail(false), savePVOnly(false), JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),
-     PhijjFilter(2.5), getMCChannel(-1), m_isMC(false), m_isAFII(false), m_eventCounter(0),
-     m_determinedDerivation(false), m_isEXOT5(false), m_computeXS(false), m_grl("GoodRunsListSelectionTool/grl", this),
-     m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this), m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
+     doContLepDetail(false), doVertexDetail(false), doORDetail(false), doTTMet(false), savePVOnly(false),
+     JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3), PhijjFilter(2.5), getMCChannel(-1), m_isMC(false),
+     m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false), m_computeXS(false),
+     m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
+     m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
      m_susytools_Tenacious_handle("ST::SUSYObjDef_xAOD/STTenacious", this),
      m_jetFwdJvtTool("JetForwardJvtTool/JetForwardJvtTool_VBF", this),
@@ -150,31 +151,47 @@ EL::StatusCode VBFInv ::fileExecute()
          maxcycle     = cbk->cycle();
          allEventsCBK = cbk;
       }
-      unsigned nbin=0;
-      if(cbk->inputStream() == "StreamAOD" ){
-	if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_All" ){ // should always be the right cycle
-	  nbin=10;
-	}else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_VBFSherpa") nbin=11;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_BFilter") nbin=12;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_CFilter") nbin=13;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_LFFilter") nbin=14;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_SherpaPTV90") nbin=15;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_SherpaPTV100") nbin=16;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_SherpaPTV500") nbin=17;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_JZVBFFilter") nbin=18;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGVBFFilter") nbin=19;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGVBFORFilter") nbin=20;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGZnnNp01ORFilter") nbin=21;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_ZOtherORFilter") nbin=22;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGWFilter") nbin=23;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGWNoFlavFilter") nbin=24;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonFilter") nbin=25;
-	else if(cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonwIsoFilter") nbin=26;
-	if(nbin>0){
-	  m_NumberEvents->SetBinContent(nbin, cbk->sumOfEventWeights());
-	  m_NumberEvents->SetBinError(nbin, cbk->sumOfEventWeightsSquared());
-	}
-      }//end AOD stream
+      unsigned nbin = 0;
+      if (cbk->inputStream() == "StreamAOD") {
+         if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_All") { // should always be the right cycle
+            nbin = 10;
+         } else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_VBFSherpa")
+            nbin = 11;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_BFilter")
+            nbin = 12;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_CFilter")
+            nbin = 13;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_LFFilter")
+            nbin = 14;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_SherpaPTV90")
+            nbin = 15;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_SherpaPTV100")
+            nbin = 16;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_SherpaPTV500")
+            nbin = 17;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_JZVBFFilter")
+            nbin = 18;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGVBFFilter")
+            nbin = 19;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGVBFORFilter")
+            nbin = 20;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGZnnNp01ORFilter")
+            nbin = 21;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_ZOtherORFilter")
+            nbin = 22;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGWFilter")
+            nbin = 23;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_MGWNoFlavFilter")
+            nbin = 24;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonFilter")
+            nbin = 25;
+         else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonwIsoFilter")
+            nbin = 26;
+         if (nbin > 0) {
+            m_NumberEvents->SetBinContent(nbin, cbk->sumOfEventWeights());
+            m_NumberEvents->SetBinError(nbin, cbk->sumOfEventWeightsSquared());
+         }
+      } // end AOD stream
    }
 
    uint64_t nEventsProcessed    = 0;
@@ -261,14 +278,23 @@ EL::StatusCode VBFInv::initialize()
    // GRL
    std::vector<std::string> vecStringGRL;
    if (!m_isMC) {
-      vecStringGRL.push_back(PathResolverFindCalibFile(
-         "GoodRunsLists/data15_13TeV/20170619/physics_25ns_21.0.19.xml")); // 2015 GRL, R21 (3219.56 pb-1)
-      vecStringGRL.push_back(PathResolverFindCalibFile(
-         "GoodRunsLists/data16_13TeV/20180129/physics_25ns_21.0.19.xml")); // 2016 GRL, R21 (32988.1 pb-1)
-      vecStringGRL.push_back(PathResolverFindCalibFile(
-         "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.xml")); // 2017 GRL, R21 (44307.4 pb-1)
-      vecStringGRL.push_back(PathResolverFindCalibFile(
-         "GoodRunsLists/data18_13TeV/20181111/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL, R21 (59937.2 pb-1)
+      if (doTTMet) {
+         vecStringGRL.push_back(PathResolverFindCalibFile(
+            "GoodRunsLists/data16_13TeV/20180129/physics_25ns_21.0.19_BjetHLT.xml")); // 2016 GRL
+         vecStringGRL.push_back(PathResolverFindCalibFile(
+            "GoodRunsLists/data17_13TeV/20180619/physics_25ns_BjetHLT_Normal2017.xml")); // 2017 GRL
+         vecStringGRL.push_back(PathResolverFindCalibFile(
+            "GoodRunsLists/data18_13TeV/20190318/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL
+      } else {
+         vecStringGRL.push_back(PathResolverFindCalibFile(
+            "GoodRunsLists/data15_13TeV/20170619/physics_25ns_21.0.19.xml")); // 2015 GRL, R21 (3219.56 pb-1)
+         vecStringGRL.push_back(PathResolverFindCalibFile(
+            "GoodRunsLists/data16_13TeV/20180129/physics_25ns_21.0.19.xml")); // 2016 GRL, R21 (32988.1 pb-1)
+         vecStringGRL.push_back(PathResolverFindCalibFile(
+            "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.xml")); // 2017 GRL, R21 (44307.4 pb-1)
+         vecStringGRL.push_back(PathResolverFindCalibFile(
+            "GoodRunsLists/data18_13TeV/20181111/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL, R21 (59937.2 pb-1)
+      }
       ANA_CHECK(m_grl.setProperty("GoodRunsListVec", vecStringGRL));
       ANA_CHECK(m_grl.setProperty("PassThrough",
                                   false)); // if true (default) will ignore result of GRL and will just pass all events
@@ -307,12 +333,13 @@ EL::StatusCode VBFInv::initialize()
    ANA_CHECK(m_susytools_Tight_handle.setProperty("DataSource", datasource));
    ANA_CHECK(m_susytools_Tight_handle.setProperty("ConfigFile", ST_config_file.Data()));
    ANA_CHECK(m_susytools_Tight_handle.setProperty("METJetSelection", "Tight"));
-   //ANA_CHECK(m_susytools_Tenacious_handle.setProperty("FwdJetUseTightOP", true)); // for some reason this and setBoolProperty do not work
+   // ANA_CHECK(m_susytools_Tenacious_handle.setProperty("FwdJetUseTightOP", true)); // for some reason this and
+   // setBoolProperty do not work
    ANA_CHECK(m_susytools_Tenacious_handle.setProperty("DataSource", datasource));
    ANA_CHECK(m_susytools_Tenacious_handle.setProperty("ConfigFile", ST_config_file.Data()));
    ANA_CHECK(m_susytools_Tenacious_handle.setProperty("METJetSelection", "Tenacious"));
    ANA_CHECK(m_susytools_Tighter_handle.setProperty("DataSource", datasource));
-   TString newST_config_file = ST_config_file+"tight";
+   TString newST_config_file = ST_config_file + "tight";
    ANA_CHECK(m_susytools_Tighter_handle.setProperty("ConfigFile", newST_config_file.Data()));
    ANA_CHECK(m_susytools_Tighter_handle.setProperty("METJetSelection", "Tighter"));
 
@@ -342,49 +369,83 @@ EL::StatusCode VBFInv::initialize()
       std::string              mc_campaign;
       std::string              simType = (m_isAFII ? "AFII" : "FS");
       uint32_t                 runNum  = eventInfo->runNumber();
-      switch (runNum) {
-      case 284500:
-         mc_campaign = "mc16a";
-         prw_lumicalc.push_back(
-            PathResolverFindCalibFile(
+      if (doTTMet) {
+         switch (runNum) {
+         case 284500:
+            mc_campaign = "mc16a";
+            prw_lumicalc.push_back(PathResolverFindCalibFile(
+               "GoodRunsLists/data16_13TeV/20180129/"
+               "PHYS_StandardGRL_All_Good_25ns_BjetHLT_297730-311481_OflLumi-13TeV-009.root")); // 2016 LumiCalc
+            break;
+         case 300000:
+            if (amiTag.find("r10201") != std::string::npos)
+               mc_campaign = "mc16d";
+            else if (amiTag.find("r9781") != std::string::npos)
+               mc_campaign = "mc16c";
+            else
+               mc_campaign = "mc16d";
+            prw_lumicalc.push_back(PathResolverFindCalibFile(
+               "GoodRunsLists/data17_13TeV/20180619/"
+               "physics_25ns_BjetHLT_Normal2017.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
+            prw_conf.push_back(PathResolverFindCalibFile(
+               "GoodRunsLists/data17_13TeV/20180619/"
+               "physics_25ns_BjetHLT_Normal2017.actualMu.OflLumi-13TeV-010.root")); // 2017 ActualMu
+            break;
+         case 310000:
+            if (amiTag.find("r10724") != std::string::npos) // did not seem to find the right info in mc16e
+               mc_campaign = "mc16e";
+            else {
+               mc_campaign = "mc16f";
+            }
+
+            prw_lumicalc.push_back(PathResolverFindCalibFile(
+               "GoodRunsLists/data18_13TeV/20190318/"
+               "ilumicalc_histograms_None_348885-364292_OflLumi-13TeV-010.root")); // 2018 LumiCalc
+            prw_conf.push_back(
+               PathResolverFindCalibFile(
+                  "GoodRunsLists/data18_13TeV/20190318/"
+                  "physics_25ns_Triggerno17e33prim.actualMu.OflLumi-13TeV-010.root")); // 2018 ActualMu
+            break;
+         }
+      } else {
+         switch (runNum) {
+         case 284500:
+            mc_campaign = "mc16a";
+            prw_lumicalc.push_back(PathResolverFindCalibFile(
                "GoodRunsLists/data15_13TeV/20170619/"
                "PHYS_StandardGRL_All_Good_25ns_276262-284484_OflLumi-13TeV-008.root")); // 2015 LumiCalc
-         prw_lumicalc.push_back(
-            PathResolverFindCalibFile(
+            prw_lumicalc.push_back(PathResolverFindCalibFile(
                "GoodRunsLists/data16_13TeV/20180129/"
                "PHYS_StandardGRL_All_Good_25ns_297730-311481_OflLumi-13TeV-009.root")); // 2016 LumiCalc
-         break;
-      case 300000:
-         if (amiTag.find("r10201") != std::string::npos)
-            mc_campaign = "mc16d";
-         else if (amiTag.find("r9781") != std::string::npos)
-            mc_campaign = "mc16c";
-         else
-            mc_campaign = "mc16d";
-         prw_lumicalc
-            .push_back(
-               PathResolverFindCalibFile(
-                  "GoodRunsLists/data17_13TeV/20180619/"
-                  "physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
-         prw_conf.push_back(PathResolverFindCalibFile(
-            "GoodRunsLists/data17_13TeV/20180619/"
-            "physics_25ns_Triggerno17e33prim.actualMu.OflLumi-13TeV-010.root")); // 2017 ActualMu
-         break;
-      case 310000:
-         if (amiTag.find("r10724") != std::string::npos) // did not seem to find the right info in mc16e
-            mc_campaign = "mc16e";
-         else {
-            mc_campaign = "mc16f";
-         }
+            break;
+         case 300000:
+            if (amiTag.find("r10201") != std::string::npos)
+               mc_campaign = "mc16d";
+            else if (amiTag.find("r9781") != std::string::npos)
+               mc_campaign = "mc16c";
+            else
+               mc_campaign = "mc16d";
+            prw_lumicalc.push_back(PathResolverFindCalibFile(
+               "GoodRunsLists/data17_13TeV/20180619/"
+               "physics_25ns_Triggerno17e33prim.lumicalc.OflLumi-13TeV-010.root")); // 2017 LumiCalc
+            prw_conf.push_back(PathResolverFindCalibFile(
+               "GoodRunsLists/data17_13TeV/20180619/"
+               "physics_25ns_Triggerno17e33prim.actualMu.OflLumi-13TeV-010.root")); // 2017 ActualMu
+            break;
+         case 310000:
+            if (amiTag.find("r10724") != std::string::npos) // did not seem to find the right info in mc16e
+               mc_campaign = "mc16e";
+            else {
+               mc_campaign = "mc16f";
+            }
 
-         prw_lumicalc
-            .push_back(
-               PathResolverFindCalibFile(
-                  "GoodRunsLists/data18_13TeV/20181111/"
-                  "ilumicalc_histograms_None_348885-364292_OflLumi-13TeV-001.root")); // 2018 LumiCalc
-         prw_conf.push_back(
-            PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
-         break;
+            prw_lumicalc.push_back(PathResolverFindCalibFile(
+               "GoodRunsLists/data18_13TeV/20181111/"
+               "ilumicalc_histograms_None_348885-364292_OflLumi-13TeV-001.root")); // 2018 LumiCalc
+            prw_conf.push_back(
+               PathResolverFindCalibFile("GoodRunsLists/data18_13TeV/20181111/purw.actualMu.root")); // 2018 ActualMu
+            break;
+         }
       }
       unsigned mcchannel = runNum;
       if (m_isMC) mcchannel = eventInfo->mcChannelNumber();
@@ -509,7 +570,7 @@ EL::StatusCode VBFInv::initialize()
    }
 
    // if RnS, then add extra detail
-   if(doRnS) doORDetail= true;
+   if (doRnS) doORDetail = true;
 
    // setting up some the details to off for systematics
    bool tmp_doEventDetail    = doEventDetail;
@@ -575,23 +636,28 @@ EL::StatusCode VBFInv::initialize()
       if (doMETDetail) {
          m_cand[thisSyst].met["met_tight_tst"]       = Analysis::outMET("met_tight_tst", (trim && !doMETDetail));
          m_cand[thisSyst].met["met_tight_tst_nolep"] = Analysis::outMET("met_tight_tst_nolep", (trim && !doMETDetail));
-         m_cand[thisSyst].met["met_tenacious_tst"] = Analysis::outMET("met_tenacious_tst", (trim && !doMETDetail));
-         m_cand[thisSyst].met["met_tenacious_tst_nolep"] =Analysis::outMET("met_tenacious_tst_nolep", (trim && !doMETDetail));
-	 
-	 // Only add detail if needed
-	 if(doORDetail){
-	   m_cand[thisSyst].met["met_jet_tst"]    = Analysis::outMET("met_jet_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_ele_tst"]    = Analysis::outMET("met_ele_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_mu_tst"]     = Analysis::outMET("met_mu_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_jet_tight_tst"]       = Analysis::outMET("met_jet_tight_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_ele_tight_tst"]       = Analysis::outMET("met_ele_tight_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_mu_tight_tst"]       = Analysis::outMET("met_mu_tight_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_soft_tight_tst"]       = Analysis::outMET("met_soft_tight_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_jet_tenacious_tst"] = Analysis::outMET("met_jet_tenacious_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_ele_tenacious_tst"] = Analysis::outMET("met_ele_tenacious_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_mu_tenacious_tst"] = Analysis::outMET("met_mu_tenacious_tst", (trim && !doMETDetail));
-	   m_cand[thisSyst].met["met_soft_tenacious_tst"] = Analysis::outMET("met_soft_tenacious_tst", (trim && !doMETDetail));
-	 }
+         m_cand[thisSyst].met["met_tenacious_tst"]   = Analysis::outMET("met_tenacious_tst", (trim && !doMETDetail));
+         m_cand[thisSyst].met["met_tenacious_tst_nolep"] =
+            Analysis::outMET("met_tenacious_tst_nolep", (trim && !doMETDetail));
+
+         // Only add detail if needed
+         if (doORDetail) {
+            m_cand[thisSyst].met["met_jet_tst"]        = Analysis::outMET("met_jet_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_ele_tst"]        = Analysis::outMET("met_ele_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_mu_tst"]         = Analysis::outMET("met_mu_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_jet_tight_tst"]  = Analysis::outMET("met_jet_tight_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_ele_tight_tst"]  = Analysis::outMET("met_ele_tight_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_mu_tight_tst"]   = Analysis::outMET("met_mu_tight_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_soft_tight_tst"] = Analysis::outMET("met_soft_tight_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_jet_tenacious_tst"] =
+               Analysis::outMET("met_jet_tenacious_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_ele_tenacious_tst"] =
+               Analysis::outMET("met_ele_tenacious_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_mu_tenacious_tst"] =
+               Analysis::outMET("met_mu_tenacious_tst", (trim && !doMETDetail));
+            m_cand[thisSyst].met["met_soft_tenacious_tst"] =
+               Analysis::outMET("met_soft_tenacious_tst", (trim && !doMETDetail));
+         }
       }
 
       m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", (trim && !doMETDetail));
@@ -1110,23 +1176,29 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst;
    getMET(content.met_tst, content.met_tstAux,
           content.jets, // use all jets (before OR and after corrections) for MET utility
-          &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning
-          kTRUE,                                             // do TST
-          kTRUE,                                             // do JVT
-          nullptr,                                           // invisible particles
+          &(content.baselineElectrons), &(content.baselineMuons),
+          &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+                                  // Muons do not, but they do have cleaning
+          kTRUE,                  // do TST
+          kTRUE,                  // do JVT
+          nullptr,                // invisible particles
           myMET_tst, myMETsig_tst, 0);
    content.metsig_tst = myMETsig_tst;
 
    TLorentzVector myMET_Tight_tst;
    double         myMETsig_Tight_tst;
-   getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, 
-	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+   getMET(content.met_tight_tst, content.met_tight_tstAux, content.jets, &(content.baselineElectrons),
+          &(content.baselineMuons),
+          &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+                                  // Muons do not, but they do have cleaning
           kTRUE, kTRUE, nullptr, myMET_Tight_tst, myMETsig_Tight_tst, 1);
 
    TLorentzVector myMET_Tenacious_tst;
    double         myMETsig_Tenacious_tst;
-   getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, 
-	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+   getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, &(content.baselineElectrons),
+          &(content.baselineMuons),
+          &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+                                  // Muons do not, but they do have cleaning
           kTRUE, kTRUE, nullptr, myMET_Tenacious_tst, myMETsig_Tenacious_tst, 3);
 
    double met_tst_j1_dphi = -1., met_tst_j2_dphi = -1.;
@@ -1151,22 +1223,28 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_tst_nolep;
    getMET(content.met_tst_nolep, content.met_tst_nolepAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
-          kTRUE,                                             // do TST
-          kTRUE,                                             // do JVT
-          nullptr, // invisible particles - using the old style of object removal here
+          &(content.baselineElectrons), &(content.baselineMuons),
+          &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+                                  // Muons do not, but they do have cleaning
+          kTRUE,                  // do TST
+          kTRUE,                  // do JVT
+          nullptr,                // invisible particles - using the old style of object removal here
           myMET_tst_nolep, myMETsig_tst_nolep, 0);
    content.metsig_tst_nolep = myMETsig_tst_nolep;
 
    TLorentzVector myMET_Tight_tst_nolep;
    double         myMETsig_Tight_tst_nolep;
-   getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets, 
-	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+   getMET(content.met_tight_tst_nolep, content.met_tight_tst_nolepAux, content.jets, &(content.baselineElectrons),
+          &(content.baselineMuons),
+          &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+                                  // Muons do not, but they do have cleaning
           kTRUE, kTRUE, &invis, myMET_Tight_tst_nolep, myMETsig_Tight_tst_nolep, 1);
    TLorentzVector myMET_Tenacious_tst_nolep;
    double         myMETsig_Tenacious_tst_nolep;
-   getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets, 
-	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
+   getMET(content.met_tenacious_tst_nolep, content.met_tenacious_tst_nolepAux, content.jets,
+          &(content.baselineElectrons), &(content.baselineMuons),
+          &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+                                  // Muons do not, but they do have cleaning
           kTRUE, kTRUE, &invis, myMET_Tenacious_tst_nolep, myMETsig_Tenacious_tst_nolep, 3);
    // create sum of muon and electron pts
    {
@@ -1204,10 +1282,12 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    double         myMETsig_cst;
    getMET(content.met_cst, content.met_cstAux,
           content.jets, // use all objects (before OR and after corrections) for MET utility
-	  &(content.baselineElectrons), &(content.baselineMuons), &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied. Muons do not, but they do have cleaning 
-          kFALSE,                                            // do TST
-          kFALSE,                                            // do JVT
-          nullptr,                                           // invisible particles
+          &(content.baselineElectrons), &(content.baselineMuons),
+          &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+                                  // Muons do not, but they do have cleaning
+          kFALSE,                 // do TST
+          kFALSE,                 // do JVT
+          nullptr,                // invisible particles
           myMET_cst, myMETsig_cst, 0);
 
    double met_cst_jet  = -1.;
@@ -1290,8 +1370,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // Jet cleaning
    // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/HowToCleanJets2017
 
-   Bool_t                                passesJetCleanLoose = true;
-   Bool_t                                passesJetCleanTight = true;
+   Bool_t                                passesJetCleanLoose  = true;
+   Bool_t                                passesJetCleanTight  = true;
    Bool_t                                passesBadBatmanClean = true;
    static SG::AuxElement::Accessor<char> acc_eventClean("DFCommonJets_eventClean_LooseBad");
    if (acc_eventClean.isAvailable(*content.eventInfo)) {
@@ -1301,7 +1381,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          return EL::StatusCode::SUCCESS;
       }
    }
-   
+
    // batman cleaning flag
    static SG::AuxElement::Accessor<char> acc_isBadBatman("DFCommonJets_isBadBatman");
    if (acc_isBadBatman.isAvailable(*content.eventInfo)) {
@@ -1468,10 +1548,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    cand.evt.bcid        = content.eventInfo->bcid();
    static SG::AuxElement::Accessor<Int_t> acc_BCIDDistanceFromFront("BCIDDistanceFromFront");
    static SG::AuxElement::Accessor<Int_t> acc_BCIDDistanceFromTail("BCIDDistanceFromTail");
-   if(acc_BCIDDistanceFromFront.isAvailable(*content.eventInfo))
-     cand.evt.BCIDDistanceFromFront = acc_BCIDDistanceFromFront(*content.eventInfo);
-   if(acc_BCIDDistanceFromTail.isAvailable(*content.eventInfo))
-     cand.evt.BCIDDistanceFromTail = acc_BCIDDistanceFromTail(*content.eventInfo);
+   if (acc_BCIDDistanceFromFront.isAvailable(*content.eventInfo))
+      cand.evt.BCIDDistanceFromFront = acc_BCIDDistanceFromFront(*content.eventInfo);
+   if (acc_BCIDDistanceFromTail.isAvailable(*content.eventInfo))
+      cand.evt.BCIDDistanceFromTail = acc_BCIDDistanceFromTail(*content.eventInfo);
    cand.evt.averageIntPerXing    = content.eventInfo->averageInteractionsPerCrossing();
    cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
 
@@ -1520,9 +1600,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"])
              : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"] : cand.evt.trigger["HLT_2e24_lhvloose_nod0"]);
    bool diEleYearlyOpt2 = is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"])
-     : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"]
-	: (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"]
-	   : cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"]));
+                                 : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"]
+                                           : (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"]
+                                                     : cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"]));
    if (diMuon) cand.evt.trigger_lep += 0x10;
    if (diMuonYearlyOpt1L1) cand.evt.trigger_lep += 0x20;
    if (diMuonYearlyOpt2L1) cand.evt.trigger_lep += 0x40;
@@ -1544,13 +1624,22 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    else if ((is2015 || is2016) && cand.evt.trigger["HLT_noalg_L1J400"])
       customMETtrig = kTRUE;
    // 2017
-   if(     is2017 && cand.evt.trigger["HLT_xe90_pufit_L1XE50"]   && cand.evt.randomRunNumber <= 328393 ) customMETtrig = kTRUE;
-   else if(is2017 && cand.evt.trigger["HLT_xe100_pufit_L1XE55"]  && 329385<=cand.evt.randomRunNumber && cand.evt.randomRunNumber<=330470 ) customMETtrig = kTRUE;
-   else if(is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE55"]  && 330857<=cand.evt.randomRunNumber && cand.evt.randomRunNumber<=331975 ) customMETtrig = kTRUE;
-   else if(is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE50"]  && 341649>=cand.evt.randomRunNumber && cand.evt.randomRunNumber>331975) customMETtrig = kTRUE;
+   if (is2017 && cand.evt.trigger["HLT_xe90_pufit_L1XE50"] && cand.evt.randomRunNumber <= 328393)
+      customMETtrig = kTRUE;
+   else if (is2017 && cand.evt.trigger["HLT_xe100_pufit_L1XE55"] && 329385 <= cand.evt.randomRunNumber &&
+            cand.evt.randomRunNumber <= 330470)
+      customMETtrig = kTRUE;
+   else if (is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE55"] && 330857 <= cand.evt.randomRunNumber &&
+            cand.evt.randomRunNumber <= 331975)
+      customMETtrig = kTRUE;
+   else if (is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE50"] && 341649 >= cand.evt.randomRunNumber &&
+            cand.evt.randomRunNumber > 331975)
+      customMETtrig = kTRUE;
    // 2018
-   if(is2018 && cand.evt.trigger["HLT_xe110_pufit_xe70_L1XE50"] && cand.evt.randomRunNumber < 350067 ) customMETtrig = kTRUE;
-   else if(is2018 && cand.evt.trigger["HLT_xe110_pufit_xe65_L1XE50"] && cand.evt.randomRunNumber >= 350067 ) customMETtrig = kTRUE;
+   if (is2018 && cand.evt.trigger["HLT_xe110_pufit_xe70_L1XE50"] && cand.evt.randomRunNumber < 350067)
+      customMETtrig = kTRUE;
+   else if (is2018 && cand.evt.trigger["HLT_xe110_pufit_xe65_L1XE50"] && cand.evt.randomRunNumber >= 350067)
+      customMETtrig = kTRUE;
    cand.evt.trigger_met = customMETtrig;
    // extra trigger info
    if (is2017 && cand.evt.trigger["HLT_xe110_pufit_L1XE55"]) cand.evt.trigger_met += 0x2; // unprescaled
@@ -1601,7 +1690,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
             cand.evt.reco_vtx_z.push_back(thisVertex->z());
             cand.evt.reco_vtx_vertexType.push_back(thisVertex->vertexType());
             if (acc_sumPt2.isAvailable(*thisVertex)) cand.evt.reco_vtx_sumPt2.push_back(acc_sumPt2(*thisVertex));
-            if (acc_chiSquared.isAvailable(*thisVertex)) cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
+            if (acc_chiSquared.isAvailable(*thisVertex))
+               cand.evt.reco_vtx_chiSquared.push_back(thisVertex->chiSquared());
          }
       }
    }
@@ -1641,31 +1731,36 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // GetTotalJetSF(jets, bool btagSF, bool jvtSF)
       // load the leading two jets only, so we turn off the signal less jvt temporily
       static SG::AuxElement::Accessor<char> acc_signal_less_JVT("signal_less_JVT");
-      unsigned ij=0;
-      for (auto jet : content.goodJets) { if(ij<2) acc_signal_less_JVT(*jet)=0; ++ij; }
+      unsigned                              ij = 0;
+      for (auto jet : content.goodJets) {
+         if (ij < 2) acc_signal_less_JVT(*jet) = 0;
+         ++ij;
+      }
       cand.evt.jvtSFWeight         = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
       cand.evt.fjvtSFWeight        = m_susytools_handle->FJVT_SF(&content.goodJets);
       cand.evt.fjvtSFTighterWeight = m_susytools_Tighter_handle->FJVT_SF(&content.goodJets);
-      ij=0;// reset the signal value
-      for (auto jet : content.goodJets) { if(ij<2) acc_signal_less_JVT(*jet)=1; ++ij; }
+      ij                           = 0; // reset the signal value
+      for (auto jet : content.goodJets) {
+         if (ij < 2) acc_signal_less_JVT(*jet) = 1;
+         ++ij;
+      }
 
-      // add the truth filters 
+      // add the truth filters
       static SG::AuxElement::Accessor<int>   acc_FlavourFilter("FlavourFilter");
       static SG::AuxElement::Accessor<float> acc_MGVTruthPt("MGVTruthPt");
       static SG::AuxElement::Accessor<float> acc_SherpaVTruthPt("SherpaVTruthPt");
-      static SG::AuxElement::Accessor<bool> acc_in_vy_overlap("in_vy_overlap");
-      static SG::AuxElement::Accessor<bool> acc_in_vy_overlap_iso("in_vy_overlap_iso");
-      if(acc_FlavourFilter.isAvailable(*content.eventInfo))
-	cand.evt.FlavourFilter = acc_FlavourFilter(*content.eventInfo);
-      if(acc_MGVTruthPt.isAvailable(*content.eventInfo))
-	cand.evt.MGVTruthPt = acc_MGVTruthPt(*content.eventInfo);
-      if(acc_SherpaVTruthPt.isAvailable(*content.eventInfo))
-	cand.evt.SherpaVTruthPt = acc_SherpaVTruthPt(*content.eventInfo);
-      if(acc_in_vy_overlap.isAvailable(*content.eventInfo))
-	cand.evt.in_vy_overlap = acc_in_vy_overlap(*content.eventInfo);
-      if(acc_in_vy_overlap_iso.isAvailable(*content.eventInfo))
-	cand.evt.in_vy_overlap_iso = acc_in_vy_overlap_iso(*content.eventInfo);
-      
+      static SG::AuxElement::Accessor<bool>  acc_in_vy_overlap("in_vy_overlap");
+      static SG::AuxElement::Accessor<bool>  acc_in_vy_overlap_iso("in_vy_overlap_iso");
+      if (acc_FlavourFilter.isAvailable(*content.eventInfo))
+         cand.evt.FlavourFilter = acc_FlavourFilter(*content.eventInfo);
+      if (acc_MGVTruthPt.isAvailable(*content.eventInfo)) cand.evt.MGVTruthPt = acc_MGVTruthPt(*content.eventInfo);
+      if (acc_SherpaVTruthPt.isAvailable(*content.eventInfo))
+         cand.evt.SherpaVTruthPt = acc_SherpaVTruthPt(*content.eventInfo);
+      if (acc_in_vy_overlap.isAvailable(*content.eventInfo))
+         cand.evt.in_vy_overlap = acc_in_vy_overlap(*content.eventInfo);
+      if (acc_in_vy_overlap_iso.isAvailable(*content.eventInfo))
+         cand.evt.in_vy_overlap_iso = acc_in_vy_overlap_iso(*content.eventInfo);
+
       // electron anti-id SF
       // implementing setup
       // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronEfficiencyAntiID#Correlation%20of%20uncertainties
@@ -2070,7 +2165,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    }
    static SG::AuxElement::Accessor<char> acc_baseline("baseline");
    for (auto muon : content.allMuons) {
-     if (acc_baseline(*muon) == 1) ++cand.evt.n_mu_baseline_noOR;
+      if (acc_baseline(*muon) == 1) ++cand.evt.n_mu_baseline_noOR;
    }
    for (auto muon : content.baselineMuons) { // saving leptons failing the signal selection, but still baseline
       if (cand.mu.find("basemu") != cand.mu.end() && !(acc_signal(*muon) == 1)) {
@@ -2083,7 +2178,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // Selected electrons
    //-----------------------------------------------------------------------
    for (auto electron : content.allElectrons) {
-     if (acc_baseline(*electron) == 1) ++cand.evt.n_el_baseline_noOR;
+      if (acc_baseline(*electron) == 1) ++cand.evt.n_el_baseline_noOR;
    }
    cand.evt.n_el = content.goodElectrons.size();
    for (auto electron : content.goodElectrons) {
@@ -2091,7 +2186,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    }
    static SG::AuxElement::Accessor<char> acc_DFCommonCrackVetoCleaning("DFCommonCrackVetoCleaning");
    for (auto electron : content.baselineElectrons) { // saving leptons failing the signal selection, but still baseline
-     if(acc_DFCommonCrackVetoCleaning.isAvailable(*electron) && acc_DFCommonCrackVetoCleaning(*electron)==0) ++cand.evt.n_el_baseline_crackVetoCleaning;
+      if (acc_DFCommonCrackVetoCleaning.isAvailable(*electron) && acc_DFCommonCrackVetoCleaning(*electron) == 0)
+         ++cand.evt.n_el_baseline_crackVetoCleaning;
       if (cand.el.find("baseel") != cand.el.end() && !(acc_signal(*electron) == 1)) cand.el["baseel"].add(*electron);
       ++cand.evt.n_el_baseline;
    }
@@ -2109,7 +2205,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // Selected photons
    ////////////////////////////
    for (auto thisPh : content.goodPhotons) {
-     if(acc_DFCommonCrackVetoCleaning.isAvailable(*thisPh) && acc_DFCommonCrackVetoCleaning(*thisPh)==0) ++cand.evt.n_ph_crackVetoCleaning;
+      if (acc_DFCommonCrackVetoCleaning.isAvailable(*thisPh) && acc_DFCommonCrackVetoCleaning(*thisPh) == 0)
+         ++cand.evt.n_ph_crackVetoCleaning;
       if (cand.ph.find("ph") != cand.ph.end()) {
          cand.ph["ph"].add(*thisPh);
       }
