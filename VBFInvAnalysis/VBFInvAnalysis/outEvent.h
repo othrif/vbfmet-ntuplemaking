@@ -112,7 +112,9 @@ public:
 
    std::map<TString, Float_t> syst_var_map;
    std::map<TString, Int_t>   trigger;
+   Int_t                      lep_trig_match;
    Int_t                      trigger_lep;
+   Int_t                      trigger_lep_OR;
    Int_t                      trigger_met;
 
    Int_t passGRL;
@@ -153,7 +155,6 @@ public:
    Int_t n_mu_baseline_iso;
    Int_t n_el;
    Int_t n_el_z;
-   Int_t n_el_trigMatched;
    Int_t n_el_baseline;
    Int_t n_el_baseline_iso;
    Int_t n_el_baseline_noOR;

@@ -1442,35 +1442,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (acc_sumPt2.isAvailable(*pvD)) cand.evt.vtx_sumpt2 = acc_sumPt2(*pvD);
    } else
       cand.evt.vtx_sumpt2 = -999;
-   // trigger
-   for (auto &kv : cand.evt.trigger) {
-      kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
-   }
-   // encoding the L1 trigger items
-   if (m_susytools_handle->IsTrigPassed("L1_XE50")) cand.evt.l1_met_trig_encoded += 0x1;
-   if (m_susytools_handle->IsTrigPassed("L1_XE55")) cand.evt.l1_met_trig_encoded += 0x2;
-   if (m_susytools_handle->IsTrigPassed("L1_XE60")) cand.evt.l1_met_trig_encoded += 0x4;
-
-   cand.evt.trigger_lep =
-      // el 2015
-      cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] ||
-      cand.evt.trigger["HLT_e120_lhloose"] ||
-      // el 2016+2017+2018
-      cand.evt.trigger["HLT_e24_lhtight_nod0_ivarloose"] || cand.evt.trigger["HLT_e26_lhtight_nod0_ivarloose"] ||
-      cand.evt.trigger["HLT_e60_lhmedium_nod0"] || cand.evt.trigger["HLT_e60_medium"] ||
-      cand.evt.trigger["HLT_e120_lhloose_nod0"] || cand.evt.trigger["HLT_e140_lhloose_nod0"] ||
-      cand.evt.trigger["HLT_e300_etcut"] ||
-      // el added in 2018
-      cand.evt.trigger["HLT_e26_lhtight_nod0"] ||
-      // mu 2015
-      cand.evt.trigger["HLT_mu20_iloose_L1MU15"] || cand.evt.trigger["HLT_mu40"] ||
-      cand.evt.trigger["HLT_mu60_0eta105_msonly"] ||
-      // mu 2016
-      cand.evt.trigger["HLT_mu24_iloose"] || cand.evt.trigger["HLT_mu24_ivarloose"] || cand.evt.trigger["HLT_mu40"] ||
-      cand.evt.trigger["HLT_mu24_iloose_L1MU15"] ||
-      cand.evt.trigger["HLT_mu24_ivarloose_L1MU15"] || // adding the MC triggers, which were named differently
-      cand.evt.trigger["HLT_mu50"] || cand.evt.trigger["HLT_mu24_ivarmedium"] || cand.evt.trigger["HLT_mu24_imedium"] ||
-      cand.evt.trigger["HLT_mu26_ivarmedium"] || cand.evt.trigger["HLT_mu26_imedium"];
 
    // raw event info
    unsigned mcchannel = m_isMC ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
@@ -1505,6 +1476,89 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       is2017 = kTRUE; // data2017
    if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197 && cand.evt.runNumber <= 364485) || cand.evt.year == 2018)
       is2018 = kTRUE; // data2018
+   
+   //
+   // trigger. Loading the trigger decisions
+   //
+   for (auto &kv : cand.evt.trigger) {
+      kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
+   }
+   // encoding the L1 trigger items for future checks
+   if (m_susytools_handle->IsTrigPassed("L1_XE50")) cand.evt.l1_met_trig_encoded += 0x1;
+   if (m_susytools_handle->IsTrigPassed("L1_XE55")) cand.evt.l1_met_trig_encoded += 0x2;
+   if (m_susytools_handle->IsTrigPassed("L1_XE60")) cand.evt.l1_met_trig_encoded += 0x4;
+
+   // Trigger matching for single lepton variables
+   //for (auto electron : content.zElectrons) 
+   const static SG::AuxElement::ConstAccessor<char> acc_trigmatched("trigmatched");
+
+   // Single lepton triggers by year
+   cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : cand.evt.runNumber;
+   std::vector<std::string> single_lep_2015 = {"HLT_e24_lhmedium_L1EM20VH","HLT_e60_lhmedium", "HLT_e120_lhloose","HLT_mu20_iloose_L1MU15","HLT_mu40","HLT_mu60_0eta105_msonly"};
+   std::vector<std::string> single_muo_2016_perA = {"HLT_mu24_iloose","HLT_mu24_ivarloose","HLT_mu40","HLT_mu50","HLT_mu24_iloose_L1MU15","HLT_mu24_ivarloose_L1MU15"};
+   std::vector<std::string> single_muo_2016_perBD3 = {"HLT_mu24_ivarmedium","HLT_mu24_imedium","HLT_mu50"};
+   std::vector<std::string> single_muo_2016_perD4L = {"HLT_mu26_ivarmedium","HLT_mu50"};
+   std::vector<std::string> single_ele_2016_perAD3 = {"HLT_e24_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e60_medium","HLT_e140_lhloose_nod0","HLT_e300_etcut"};
+   std::vector<std::string> single_ele_2016_run298687 = {"HLT_e24_lhmedium_nod0_L1EM20VH","HLT_e24_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e60_medium","HLT_e140_lhloose_nod0","HLT_e300_etcut"};
+   std::vector<std::string> single_ele_2016_perD4L = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e60_medium","HLT_e140_lhloose_nod0","HLT_e300_etcut"};
+   std::vector<std::string> single_lep_2017 = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e140_lhloose_nod0","HLT_e300_etcut","HLT_mu26_ivarmedium","HLT_mu50","HLT_mu60_0eta105_msonly"};
+   std::vector<std::string> single_lep_2018 = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e26_lhtight_nod0","HLT_e60_lhmedium_nod0","HLT_e140_lhloose_nod0","HLT_e300_etcut", // HLT_e26_lhtight_nod0 - Unprescaled since run 349169 
+					       "HLT_mu26_ivarmedium","HLT_mu50","HLT_mu60_0eta105_msonly"};
+
+   //
+   // Fill the single lepton triggers with periods
+   //
+   if(is2015){ 
+     for(unsigned i=0; i<single_lep_2015.size(); ++i) if(cand.evt.trigger[single_lep_2015.at(i)]) cand.evt.trigger_lep = 1; 
+     m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2015); 
+     m_susytools_handle->TrigMatch(&(content.zMuons), single_lep_2015);
+   }
+   if(is2016){ 
+     if     (cand.evt.randomRunNumber<=300287){ for(unsigned i=0; i<single_muo_2016_perA.size(); ++i)      if(cand.evt.trigger[single_muo_2016_perA.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zMuons), single_muo_2016_perA); }
+     else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_muo_2016_perBD3.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perBD3.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zMuons), single_muo_2016_perBD3); }
+     if     (cand.evt.randomRunNumber==298687){ for(unsigned i=0; i<single_ele_2016_run298687.size(); ++i) if(cand.evt.trigger[single_ele_2016_run298687.at(i)]) cand.evt.trigger_lep = 1;  m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_run298687); }
+     else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_ele_2016_perAD3.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perAD3.at(i)])    cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_perAD3); }
+     else                                     { 
+       for(unsigned i=0; i<single_ele_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1; 
+       for(unsigned i=0; i<single_muo_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1; 
+       m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_perD4L); 
+       m_susytools_handle->TrigMatch(&(content.zMuons),     single_muo_2016_perD4L);
+     }
+   }
+   if(is2017){ 
+     for(unsigned i=0; i<single_lep_2017.size(); ++i) if(cand.evt.trigger[single_lep_2017.at(i)]) cand.evt.trigger_lep = 1; 
+       m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2017); 
+       m_susytools_handle->TrigMatch(&(content.zMuons),     single_lep_2017);     
+   }
+   if(is2018){ 
+     for(unsigned i=0; i<single_lep_2018.size(); ++i) if(cand.evt.trigger[single_lep_2018.at(i)]) cand.evt.trigger_lep = 1; 
+       m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2018); 
+       m_susytools_handle->TrigMatch(&(content.zMuons),     single_lep_2018);
+   }
+
+   // fill the trigger matching
+   for (auto electron : content.zElectrons) { if(acc_trigmatched.isAvailable(*electron) && acc_trigmatched(*electron)) cand.evt.lep_trig_match=1; }
+   for (auto muon : content.zMuons) {         if(acc_trigmatched.isAvailable(*muon) && acc_trigmatched(*muon))         cand.evt.lep_trig_match=1; }
+   cand.evt.trigger_lep_OR =
+      // el 2015
+      cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] ||
+      cand.evt.trigger["HLT_e120_lhloose"] ||
+      // el 2016+2017+2018
+      cand.evt.trigger["HLT_e24_lhtight_nod0_ivarloose"] || cand.evt.trigger["HLT_e26_lhtight_nod0_ivarloose"] ||
+      cand.evt.trigger["HLT_e60_lhmedium_nod0"] || cand.evt.trigger["HLT_e60_medium"] ||
+      cand.evt.trigger["HLT_e120_lhloose_nod0"] || cand.evt.trigger["HLT_e140_lhloose_nod0"] ||
+      cand.evt.trigger["HLT_e300_etcut"] || cand.evt.trigger["HLT_e24_lhmedium_nod0_L1EM20VH"] ||
+      // el added in 2018
+      cand.evt.trigger["HLT_e26_lhtight_nod0"] ||
+      // mu 2015
+      cand.evt.trigger["HLT_mu20_iloose_L1MU15"] || cand.evt.trigger["HLT_mu40"] ||
+      cand.evt.trigger["HLT_mu60_0eta105_msonly"] ||
+      // mu 2016
+      cand.evt.trigger["HLT_mu24_iloose"] || cand.evt.trigger["HLT_mu24_ivarloose"] || cand.evt.trigger["HLT_mu40"] ||
+      cand.evt.trigger["HLT_mu24_iloose_L1MU15"] ||
+      cand.evt.trigger["HLT_mu24_ivarloose_L1MU15"] || // adding the MC triggers, which were named differently
+      cand.evt.trigger["HLT_mu50"] || cand.evt.trigger["HLT_mu24_ivarmedium"] || cand.evt.trigger["HLT_mu24_imedium"] ||
+      cand.evt.trigger["HLT_mu26_ivarmedium"] || cand.evt.trigger["HLT_mu26_imedium"];
 
    //
    // trigger logic implemented by year
@@ -1545,8 +1599,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if (diEleYearlyOpt2) cand.evt.trigger_lep += 0x400;
    if (muonTrig) cand.evt.trigger_lep += 0x2;
    if (elecTrig) cand.evt.trigger_lep += 0x4;
-
-   cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : cand.evt.runNumber;
 
    Bool_t customMETtrig(kFALSE);
    if (is2015 && cand.evt.trigger["HLT_xe70_mht"])
@@ -1738,16 +1790,13 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // You can modify it in the ST config under Trigger SFs configuration
       // Total Electron SF: GetTotalElectronSF(const xAOD::ElectronContainer& electrons, const bool recoSF, const bool
       // idSF, const bool triggerSF, const bool isoSF, const std::string& trigExpr, const bool chfSF)
-      const static SG::AuxElement::ConstAccessor<char> acc_trigmatched("trigmatched");
       if((cand.evt.n_el_z==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu_z==0){
 	cand.evt.elSFWeight     = m_susytools_Tighter_handle->GetTotalElectronSF(content.zElectrons, true, true, false, true, "");
 	cand.evt.elSFTrigWeight = m_susytools_Tighter_handle->GetTotalElectronSF(content.zElectrons, false, false, true, false, "singleLepton");
-	for (auto electron : content.zElectrons) { if(acc_trigmatched.isAvailable(*electron) && acc_trigmatched(*electron)) ++cand.evt.n_el_trigMatched; }
       }else{
 	cand.evt.elSFWeight = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
 	cand.evt.elSFTrigWeight =
 	  m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
-	for (auto electron : content.goodElectrons) { if(acc_trigmatched.isAvailable(*electron) && acc_trigmatched(*electron)) ++cand.evt.n_el_trigMatched; }
       }
       // Total Muon SF: GetTotalMuonTriggerSF(const xAOD::MuonContainer& sfmuons, const std::string& trigExpr)
       if((cand.evt.n_el_z==0) && (cand.evt.n_mu_z==2 || cand.evt.n_mu_baseline>1)){
