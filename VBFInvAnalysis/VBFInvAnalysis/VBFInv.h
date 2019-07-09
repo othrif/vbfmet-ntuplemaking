@@ -119,6 +119,7 @@ public:
    Double_t MjjFilter;
    Double_t PhijjFilter;
    Int_t    getMCChannel;
+   Bool_t   computeXS;
 
 private:
    // Configuration, and any other types of variables go here.
@@ -135,7 +136,6 @@ private:
    Int_t  m_eventCounter;         //!
    Bool_t m_determinedDerivation; //!
    Bool_t m_isEXOT5;              //!
-   Bool_t m_computeXS;            //!
 
    asg::AnaToolHandle<IGoodRunsListSelectionTool>           m_grl;                           //!
    asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool>             m_susytools_handle;              //!

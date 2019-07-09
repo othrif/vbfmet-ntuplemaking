@@ -54,8 +54,8 @@ ClassImp(VBFInv)
      doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
      doContLepDetail(false), doVertexDetail(false), doORDetail(false), doTTMet(false), savePVOnly(false),
-     JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3), PhijjFilter(2.5), getMCChannel(-1), m_isMC(false),
-     m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false), m_computeXS(false),
+     JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3), PhijjFilter(2.5), getMCChannel(-1), computeXS(false), m_isMC(false),
+     m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false),
      m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
      m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
@@ -261,13 +261,13 @@ EL::StatusCode VBFInv::initialize()
    ANA_MSG_INFO("  - skip_syst = " << skip_syst);
    ANA_MSG_INFO("  - trigger_list = " << trigger_list);
    ANA_MSG_INFO("  - showerType = " << showerType);
-   ANA_MSG_INFO("  - computeXS = " << m_computeXS);
+   ANA_MSG_INFO("  - computeXS = " << computeXS);
    ANA_MSG_INFO("  - debug = " << debug);
 
    // Event counter
    m_eventCounter = 0;
 
-   if (m_isMC && m_computeXS) {
+   if (m_isMC && computeXS) {
       std::string xSecFilePath = "dev/PMGTools/PMGxsecDB_mc15.txt";
       // xSecFilePath             = "";//PathResolverFindCalibFile(xSecFilePath);
       my_XsecDB = new SUSY::CrossSectionDB(xSecFilePath);
