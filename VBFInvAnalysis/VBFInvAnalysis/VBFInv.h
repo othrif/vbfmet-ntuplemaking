@@ -112,6 +112,7 @@ public:
    Bool_t   doContLepDetail;
    Bool_t   doVertexDetail;
    Bool_t   doORDetail;
+   Bool_t   doTTMet;
    Bool_t   savePVOnly;
    Double_t JetEtaFilter;
    Double_t JetpTFilter;
