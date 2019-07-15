@@ -44,6 +44,7 @@ void Analysis::outEvent::reset()
    elSFTrigWeight = 1.0;
    muSFTrigWeight = 1.0;
    eleANTISF      = 1.0;
+   dilepTrigSFWeight =1.0;
 
    // truth filters
    FlavourFilter=-9999;
@@ -209,6 +210,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "elSFTrigWeight", &elSFTrigWeight);
    tree->Branch(prefix + "muSFTrigWeight", &muSFTrigWeight);
    tree->Branch(prefix + "eleANTISF", &eleANTISF);
+   tree->Branch(prefix + "dilepTrigSFWeight", &dilepTrigSFWeight);
 
    tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
    tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);

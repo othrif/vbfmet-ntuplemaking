@@ -40,6 +40,7 @@ public:
    Float_t              fjvtSFWeight;
    Float_t              fjvtSFTighterWeight;
    Float_t              eleANTISF;
+   Float_t              dilepTrigSFWeight;
 
    Int_t FlavourFilter;
    Float_t MGVTruthPt;

@@ -1505,6 +1505,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    std::vector<std::string> single_lep_2018 = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e26_lhtight_nod0","HLT_e60_lhmedium_nod0","HLT_e140_lhloose_nod0","HLT_e300_etcut", // HLT_e26_lhtight_nod0 - Unprescaled since run 349169 
 					       "HLT_mu26_ivarmedium","HLT_mu50","HLT_mu60_0eta105_msonly"};
 
+   std::string str_muon_trigger_OR="";
    //
    // Fill the single lepton triggers with periods
    //
@@ -1512,9 +1513,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
      for(unsigned i=0; i<single_lep_2015.size(); ++i) if(cand.evt.trigger[single_lep_2015.at(i)]) cand.evt.trigger_lep = 1; 
      m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2015); 
      m_susytools_handle->TrigMatch(&(content.zMuons), single_lep_2015);
+     str_muon_trigger_OR="HLT_mu20_iloose_L1MU15_OR_HLT_mu50";
    }
    if(is2016){ 
-     if     (cand.evt.randomRunNumber<=300287){ for(unsigned i=0; i<single_muo_2016_perA.size(); ++i)      if(cand.evt.trigger[single_muo_2016_perA.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zMuons), single_muo_2016_perA); }
+     str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
+     if     (cand.evt.randomRunNumber<=300287){ for(unsigned i=0; i<single_muo_2016_perA.size(); ++i)      if(cand.evt.trigger[single_muo_2016_perA.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zMuons), single_muo_2016_perA);      }
      else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_muo_2016_perBD3.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perBD3.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zMuons), single_muo_2016_perBD3); }
      if     (cand.evt.randomRunNumber==298687){ for(unsigned i=0; i<single_ele_2016_run298687.size(); ++i) if(cand.evt.trigger[single_ele_2016_run298687.at(i)]) cand.evt.trigger_lep = 1;  m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_run298687); }
      else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_ele_2016_perAD3.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perAD3.at(i)])    cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_perAD3); }
@@ -1526,14 +1529,17 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
      }
    }
    if(is2017){ 
+     str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
      for(unsigned i=0; i<single_lep_2017.size(); ++i) if(cand.evt.trigger[single_lep_2017.at(i)]) cand.evt.trigger_lep = 1; 
        m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2017); 
        m_susytools_handle->TrigMatch(&(content.zMuons),     single_lep_2017);     
    }
    if(is2018){ 
+     str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
      for(unsigned i=0; i<single_lep_2018.size(); ++i) if(cand.evt.trigger[single_lep_2018.at(i)]) cand.evt.trigger_lep = 1; 
        m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2018); 
        m_susytools_handle->TrigMatch(&(content.zMuons),     single_lep_2018);
+
    }
 
    // fill the trigger matching
@@ -1586,14 +1592,14 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                 cand.evt.trigger["HLT_2e24_lhvloose_nod0"]; // 2017+2018
    bool diEleYearlyOpt1 =
       is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"])
-             : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"] : cand.evt.trigger["HLT_2e24_lhvloose_nod0"]);
+     : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"] : cand.evt.trigger["HLT_2e24_lhvloose_nod0"]); // recovers 0.9%, but is partially prescaled in 1 run
    bool diEleYearlyOpt2 = is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"])
      : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"]
-	: (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"]
+	: (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"] // prefer this one because it isn't accidently prescaled. also recovers 1.2% 
 	   : cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"]));
    if (diMuon) cand.evt.trigger_lep += 0x10;
-   if (diMuonYearlyOpt1L1) cand.evt.trigger_lep += 0x20;
-   if (diMuonYearlyOpt2L1) cand.evt.trigger_lep += 0x40;
+   if (diMuonYearlyOpt1L1) cand.evt.trigger_lep += 0x20; // this one is preferred. 5% unique rate
+   if (diMuonYearlyOpt2L1) cand.evt.trigger_lep += 0x40; // only 1% unique rate
    if (diEle) cand.evt.trigger_lep += 0x100;
    if (diEleYearlyOpt1) cand.evt.trigger_lep += 0x200;
    if (diEleYearlyOpt2) cand.evt.trigger_lep += 0x400;
@@ -1801,14 +1807,21 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // Total Muon SF: GetTotalMuonTriggerSF(const xAOD::MuonContainer& sfmuons, const std::string& trigExpr)
       if((cand.evt.n_el_z==0) && (cand.evt.n_mu_z==2 || cand.evt.n_mu_baseline>1)){
 	cand.evt.muSFWeight     = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
-	cand.evt.muSFTrigWeight = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, false, false,
-								     is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
-								     : "HLT_mu26_ivarmedium_OR_HLT_mu50");
+	cand.evt.muSFTrigWeight = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
+									     //is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
+									     //: "HLT_mu26_ivarmedium_OR_HLT_mu50");
       }else{
 	cand.evt.muSFWeight     = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
-	cand.evt.muSFTrigWeight = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,
-								     is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
-								     : "HLT_mu26_ivarmedium_OR_HLT_mu50");
+	cand.evt.muSFTrigWeight = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
+      }
+
+      // dilepton trigger SFs
+      if(content.zElectrons.size()>1 || content.zMuons.size()>1){
+	// need to label these as signal leptons
+	const static SG::AuxElement::Decorator<char> dec_signal("signal");
+	for (auto electron : content.zElectrons) { dec_signal(*electron)=1; }
+	for (auto muon : content.zMuons) { dec_signal(*muon)=1; }
+	cand.evt.dilepTrigSFWeight = m_susytools_handle->GetTriggerGlobalEfficiencySF(content.zElectrons,content.zMuons,"diLepton");
       }
 
       if (debug) {
@@ -1817,6 +1830,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          print("Muon SF", cand.evt.muSFWeight);
          print("Muon Trig SF", cand.evt.muSFTrigWeight);
       }
+
 
       // add the weight systematics
       if (content.isNominal) { // only run for the nominal
@@ -1843,14 +1857,20 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                float &sysSF2 = cand.evt.GetSystVar("elSFTrigWeight", thisSyst, m_tree[""]);
                sysSF2        = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false,
                                                                "singleLepton");
+               float &sysSF3 = cand.evt.GetSystVar("dilepTrigSFWeight", thisSyst, m_tree[""]);
+	       if(content.zElectrons.size()>1 || content.zMuons.size()>1){
+		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.zElectrons,content.zMuons, sysWeight,"diLepton");		 
+	       }
             } else if (thisSyst.Contains("EL_EFF")) {
                float &sysSF = cand.evt.GetSystVar("elSFWeight", thisSyst, m_tree[""]);
                sysSF = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
             } else if (thisSyst.Contains("MUON_EFF_Trig")) {
                float &sysSF2 = cand.evt.GetSystVar("muSFTrigWeight", thisSyst, m_tree[""]);
-               sysSF2        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,
-                                                           is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
-                                                                  : "HLT_mu26_ivarmedium_OR_HLT_mu50");
+               sysSF2        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
+               float &sysSF3 = cand.evt.GetSystVar("dilepTrigSFWeight", thisSyst, m_tree[""]);
+	       if(content.zElectrons.size()>1 || content.zMuons.size()>1){
+		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.zElectrons,content.zMuons,sysWeight,"diLepton");		 
+	       }
             } else if (thisSyst.Contains("MUON_EFF")) {
                float &sysSF = cand.evt.GetSystVar("muSFWeight", thisSyst, m_tree[""]);
                sysSF        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
