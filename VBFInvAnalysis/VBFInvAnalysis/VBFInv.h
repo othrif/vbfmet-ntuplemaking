@@ -113,6 +113,7 @@ public:
    Bool_t   doVertexDetail;
    Bool_t   doORDetail;
    Bool_t   savePVOnly;
+   Bool_t   copyEMTopoFJVT;
    Double_t JetEtaFilter;
    Double_t JetpTFilter;
    Double_t MjjFilter;

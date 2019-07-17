@@ -53,7 +53,7 @@ ClassImp(VBFInv)
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false),
      doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
-  doContLepDetail(false), doVertexDetail(false), doORDetail(false), savePVOnly(false), JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),
+  doContLepDetail(false), doVertexDetail(false), doORDetail(false), savePVOnly(false), copyEMTopoFJVT(false), JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),
      PhijjFilter(2.5), getMCChannel(-1), m_isMC(false), m_isAFII(false), m_eventCounter(0),
      m_determinedDerivation(false), m_isEXOT5(false), m_computeXS(false), m_grl("GoodRunsListSelectionTool/grl", this),
      m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this), m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
@@ -915,6 +915,26 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          }
       }
       content.allJets.sort(&HelperFunctions::comparePt); // sort by Pt
+
+      // read in emtopo jets to get the fjvt
+      if(copyEMTopoFJVT){
+	static SG::AuxElement::ConstAccessor<float> acc_fjvt("fJvt");
+	static SG::AuxElement::Decorator<float> dec_fjvt("fJvt");
+	content.jetsEM    = nullptr;
+	content.jetsEMAux = nullptr;
+	content.allEMJets.clear(SG::VIEW_ELEMENTS);
+	ANA_CHECK(m_susytools_Tighter_handle->GetJets(content.jetsEM, content.jetsEMAux, false));
+	m_jetFwdJvtTool->modify(*content.jetsEM); // add fjvt
+	for (auto jet : content.allJets) {
+	  float minDR=999.0;
+	  dec_fjvt(*jet)=0.0;
+	  for (auto jetEM : *content.jetsEM) {
+	    // if close then copy the fjvt score
+	    float dr=jet->p4().DeltaR(jetEM->p4());
+	    if(dr<minDR && dr<0.6){ minDR=dr;  dec_fjvt(*jet) = acc_fjvt(*jetEM); }
+	  }
+	}
+      }      
    }                                                     // done with jets
 
    //-- FatJETS --

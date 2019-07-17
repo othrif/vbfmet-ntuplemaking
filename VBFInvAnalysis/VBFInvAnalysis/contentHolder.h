@@ -92,6 +92,8 @@ public:
    xAOD::ShallowAuxContainer *electronsAux; //!
    xAOD::JetContainer *       jets;         //!
    xAOD::ShallowAuxContainer *jetsAux;      //!
+   xAOD::JetContainer *       jetsEM;       //!
+   xAOD::ShallowAuxContainer *jetsEMAux;    //!
    xAOD::JetContainer *       fatjets;      //!
    xAOD::ShallowAuxContainer *fatjetsAux;   //!
    xAOD::JetContainer *       trackjets;    //!
@@ -113,6 +115,7 @@ public:
    xAOD::ElectronContainer zElectrons;        //!
    xAOD::ElectronContainer goodElectrons;     //!
    xAOD::JetContainer      allJets;           //!
+   xAOD::JetContainer      allEMJets;         //!
    xAOD::JetContainer      goodJets;          //!
    xAOD::JetContainer      allFatJets;        //!
    xAOD::JetContainer      goodFatJets;       //!
