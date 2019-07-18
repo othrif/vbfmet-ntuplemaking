@@ -681,6 +681,9 @@ EL::StatusCode VBFInv::initialize()
       m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail && !doRnS));
       m_cand[thisSyst].evt.setDoExtraTrim(doTrimSyst);
       m_cand[thisSyst].evt.setDoVertexDetail(doVertexDetail);
+      m_cand[thisSyst].evt.setComputeXS(computeXS);
+      m_cand[thisSyst].evt.setIsMC(m_isMC);
+      m_cand[thisSyst].evt.setDoORDetail(doORDetail);
       m_cand[thisSyst].rns.setDoTrim((trim && !doRnS));
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
    }

@@ -74,25 +74,26 @@ void Analysis::outJet::attachToTree(TTree *tree)
    tree->Branch(prefix + "m", &m);
    tree->Branch(prefix + "timing", &timing);
    tree->Branch(prefix + "jvt", &jvt);
-   tree->Branch(prefix + "jvfcorr", &jvfcorr);
-   tree->Branch(prefix + "jvtrpt", &jvtrpt);
    tree->Branch(prefix + "fjvt", &fjvt);
-   tree->Branch(prefix + "isbjet", &isbjet);
+   // qg variables
+   tree->Branch(prefix + "NTracks", &NTracks);
+   tree->Branch(prefix + "TrackWidth", &TrackWidth); // could remove and use width
+   tree->Branch(prefix + "TracksC1", &TracksC1);
 
    if (!doTrim()) {
-      tree->Branch(prefix + "raw_pt", &raw_pt);
-      tree->Branch(prefix + "raw_eta", &raw_eta);
-      tree->Branch(prefix + "raw_phi", &raw_phi);
-      tree->Branch(prefix + "raw_m", &raw_m);
+      tree->Branch(prefix + "jvfcorr", &jvfcorr);
+      tree->Branch(prefix + "jvtrpt", &jvtrpt);
+      tree->Branch(prefix + "isbjet", &isbjet);
+      //tree->Branch(prefix + "raw_pt", &raw_pt); // do we need these
+      //tree->Branch(prefix + "raw_eta", &raw_eta);
+      //tree->Branch(prefix + "raw_phi", &raw_phi);
+      //tree->Branch(prefix + "raw_m", &raw_m);
       tree->Branch(prefix + "passJvt", &passJvt);           // not needed with signal jets
-      tree->Branch(prefix + "passOR", &passOR);             // not needed with signal jets
+      if(doORDetail()) tree->Branch(prefix + "passOR", &passOR);             // not needed with signal jets
       tree->Branch(prefix + "passJetLoose", &passJetLoose); // not needed with signal jets
       tree->Branch(prefix + "passJetTight", &passJetTight); // not needed with signal jets
       tree->Branch(prefix + "btag_weight", &btag_weight);
-      tree->Branch(prefix + "NTracks", &NTracks);
       tree->Branch(prefix + "SumPtTracks", &SumPtTracks);
-      tree->Branch(prefix + "TrackWidth", &TrackWidth); // could remove and use width
-      tree->Branch(prefix + "TracksC1", &TracksC1);
       tree->Branch(prefix + "HighestJVFVtx", &HighestJVFVtx);
       tree->Branch(prefix + "HECFrac", &HECFrac);
       tree->Branch(prefix + "EMFrac", &EMFrac);

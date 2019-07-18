@@ -25,7 +25,7 @@ void Analysis::outPhoton::attachToTree(TTree *tree)
    tree->Branch(prefix + "eta", &eta);
    tree->Branch(prefix + "phi", &phi);
    if (!doTrim()) {
-      tree->Branch(prefix + "passOR", &passOR);
+     if(doORDetail()) tree->Branch(prefix + "passOR", &passOR);
    }
 }
 

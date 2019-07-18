@@ -24,7 +24,7 @@ void Analysis::outMET::attachToTree(TTree *tree)
 
    tree->Branch(prefix + "et", &et);
    tree->Branch(prefix + "phi", &phi);
-   tree->Branch(prefix + "sumet", &sumet);
+   if(!doTrim()) tree->Branch(prefix + "sumet", &sumet);
 
    return;
 }

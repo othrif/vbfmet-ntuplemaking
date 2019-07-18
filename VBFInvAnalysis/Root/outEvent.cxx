@@ -196,7 +196,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "corAverageIntPerXing", &corAverageIntPerXing);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
    if (!doTrim()) tree->Branch(prefix + "vtx_sumpt2", &vtx_sumpt2);
-   if (!doTrim()) tree->Branch(prefix + "mcEventWeightXsec", &mcEventWeightXsec);
+   if (!doTrim() && doComputeXS()) tree->Branch(prefix + "mcEventWeightXsec", &mcEventWeightXsec);
    if (!doTrim()) tree->Branch(prefix + "mcEventWeights", &mcEventWeights);
    if (!doTrim()) tree->Branch("l1_met_trig_encoded", &l1_met_trig_encoded);
 
@@ -212,12 +212,13 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "eleANTISF", &eleANTISF);
    tree->Branch(prefix + "dilepTrigSFWeight", &dilepTrigSFWeight);
 
-   tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
-   tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);
-   tree->Branch(prefix + "SherpaVTruthPt", &SherpaVTruthPt);
-   tree->Branch(prefix + "in_vy_overlap", &in_vy_overlap);
-   tree->Branch(prefix + "in_vy_overlap_iso", &in_vy_overlap_iso);
-
+   if(isMC()){
+     tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
+     tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);
+     tree->Branch(prefix + "SherpaVTruthPt", &SherpaVTruthPt);
+     tree->Branch(prefix + "in_vy_overlap", &in_vy_overlap);
+     tree->Branch(prefix + "in_vy_overlap_iso", &in_vy_overlap_iso);
+   }
    for (auto &itrig : trigger) {
       const TString trigName = itrig.first;
       // std::cout << "Trigger: " << itrig.first << std::endl;
@@ -248,7 +249,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
        tree->Branch(prefix + "pdf_pdf2", &pdf_pdf2);
        tree->Branch(prefix + "pdf_scale", &pdf_scale);
    */
-   if (!doTrim()) {
+   if (!doTrim() && isMC()) {
       tree->Branch(prefix + "n_jet_truth", &n_jet_truth);
       tree->Branch(prefix + "truth_jet_pt", &truth_jet_pt);
       tree->Branch(prefix + "truth_jet_eta", &truth_jet_eta);
@@ -338,12 +339,15 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "metsig_tst", &metsig_tst);
    tree->Branch(prefix + "metsig_tst_nolep", &metsig_tst_nolep);
 
-   tree->Branch(prefix + "truthF_jj_mass", &truthF_jj_mass);
-   tree->Branch(prefix + "truthF_jj_deta", &truthF_jj_deta);
-   tree->Branch(prefix + "truthF_jj_dphi", &truthF_jj_dphi);
-
+   if(isMC()){
+     tree->Branch(prefix + "truthF_jj_mass", &truthF_jj_mass);
+     tree->Branch(prefix + "truthF_jj_deta", &truthF_jj_deta);
+     tree->Branch(prefix + "truthF_jj_dphi", &truthF_jj_dphi);
+   }
    if (!doTrim() && doVertexDetail()) {
-      tree->Branch(prefix + "truth_vtx_z", &truth_vtx_z);
+      if(isMC()){
+        tree->Branch(prefix + "truth_vtx_z", &truth_vtx_z);
+      }
       tree->Branch(prefix + "reco_vtx_ntrk", &reco_vtx_ntrk);
       tree->Branch(prefix + "reco_vtx_x", &reco_vtx_x);
       tree->Branch(prefix + "reco_vtx_y", &reco_vtx_y);

@@ -68,10 +68,10 @@ void Analysis::outElectron::attachToTree(TTree *tree)
       tree->Branch(prefix + "d0", &d0);
       tree->Branch(prefix + "d0sig", &d0sig);
       tree->Branch(prefix + "z0", &z0);
-      tree->Branch(prefix + "z0sig", &z0sig);
-      tree->Branch(prefix + "truthType", &truthType);
-      tree->Branch(prefix + "truthOrigin", &truthOrigin);
-      tree->Branch(prefix + "passOR", &passOR);
+      //tree->Branch(prefix + "z0sig", &z0sig);
+      if(isMC()) tree->Branch(prefix + "truthType", &truthType);
+      if(isMC()) tree->Branch(prefix + "truthOrigin", &truthOrigin);
+      if(doORDetail()) tree->Branch(prefix + "passOR", &passOR);
    }
    return;
 }
