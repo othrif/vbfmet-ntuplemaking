@@ -44,6 +44,7 @@ void Analysis::outEvent::reset()
    elSFTrigWeight = 1.0;
    muSFTrigWeight = 1.0;
    eleANTISF      = 1.0;
+   dilepTrigSFWeight =1.0;
 
    // truth filters
    FlavourFilter=-9999;
@@ -113,7 +114,9 @@ void Analysis::outEvent::reset()
    for (auto &kv : trigger) {
       kv.second = -9999;
    }
-   trigger_lep = -9999;
+   lep_trig_match = 0;
+   trigger_lep = 0;
+   trigger_lep_OR = -9999;
    trigger_met = -9999;
 
    passGRL           = -9999;
@@ -130,11 +133,17 @@ void Analysis::outEvent::reset()
    n_bjet        = -9999;
    n_el          = -9999;
    n_el_baseline = 0;
+   n_el_z        = 0;
+   n_el_baseline_iso= 0;
    n_el_baseline_noOR = 0;
    n_el_baseline_crackVetoCleaning = 0;
    n_mu          = -9999;
+   n_mu_z        = 0;
    n_mu_baseline_noOR = 0;
    n_mu_baseline = 0;
+   n_mu_baseline_loose = 0;
+   n_mu_baseline_loose_noOR = 0;
+   n_mu_baseline_iso = 0;
    n_ph          = 0;
    n_ph_crackVetoCleaning          = 0;
 
@@ -201,6 +210,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "elSFTrigWeight", &elSFTrigWeight);
    tree->Branch(prefix + "muSFTrigWeight", &muSFTrigWeight);
    tree->Branch(prefix + "eleANTISF", &eleANTISF);
+   tree->Branch(prefix + "dilepTrigSFWeight", &dilepTrigSFWeight);
 
    tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
    tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);
@@ -224,7 +234,9 @@ void Analysis::outEvent::attachToTree(TTree *tree)
                         trigName == "HLT_2j35_bmv2c1060_split_2j35_L14J15.0ETA25"))
          tree->Branch(prefix + "trigger_" + trigName, &itrig.second);
    }
+   tree->Branch(prefix + "lep_trig_match", &lep_trig_match);
    tree->Branch(prefix + "trigger_lep", &trigger_lep);
+   tree->Branch(prefix + "trigger_lep_OR", &trigger_lep_OR);
    tree->Branch(prefix + "trigger_met", &trigger_met);
 
    /*
@@ -301,11 +313,17 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "n_bjet", &n_bjet);
    tree->Branch(prefix + "n_el", &n_el);
    tree->Branch(prefix + "n_mu", &n_mu);
+   tree->Branch(prefix + "n_el_z", &n_el_z);
+   tree->Branch(prefix + "n_mu_z", &n_mu_z);
    tree->Branch(prefix + "n_el_baseline", &n_el_baseline);
+   tree->Branch(prefix + "n_el_baseline_iso", &n_el_baseline_iso);
    tree->Branch(prefix + "n_el_baseline_noOR", &n_el_baseline_noOR);
    tree->Branch(prefix + "n_el_baseline_crackVetoCleaning", &n_el_baseline_crackVetoCleaning);
    tree->Branch(prefix + "n_mu_baseline_noOR", &n_mu_baseline_noOR);
    tree->Branch(prefix + "n_mu_baseline", &n_mu_baseline);
+   tree->Branch(prefix + "n_mu_baseline_loose", &n_mu_baseline_loose);
+   tree->Branch(prefix + "n_mu_baseline_loose_noOR", &n_mu_baseline_loose_noOR);
+   tree->Branch(prefix + "n_mu_baseline_iso", &n_mu_baseline_iso);
    tree->Branch(prefix + "n_ph", &n_ph);
    tree->Branch(prefix + "n_ph_crackVetoCleaning", &n_ph_crackVetoCleaning);
 

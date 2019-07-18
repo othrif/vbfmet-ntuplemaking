@@ -13,7 +13,9 @@ Analysis::outMuon::~outMuon() {}
 void Analysis::outMuon::reset()
 {
 
+   iso.clear();
    charge.clear();
+   quality.clear();
    pt.clear();
    eta.clear();
    phi.clear();
@@ -48,11 +50,13 @@ void Analysis::outMuon::attachToTree(TTree *tree)
    const TString prefix = name() + "_";
 
    tree->Branch(prefix + "charge", &charge);
+   tree->Branch(prefix + "quality", &quality);
    tree->Branch(prefix + "pt", &pt);
    tree->Branch(prefix + "eta", &eta);
    tree->Branch(prefix + "phi", &phi);
    tree->Branch(prefix + "m", &m);
    if (!doTrim()) {
+      tree->Branch(prefix + "iso", &iso);
       tree->Branch(prefix + "type", &type);
       tree->Branch(prefix + "d0", &d0);
       tree->Branch(prefix + "d0sig", &d0sig);
@@ -81,8 +85,11 @@ void Analysis::outMuon::attachToTree(TTree *tree)
 
 void Analysis::outMuon::add(const xAOD::Muon &input)
 {
-
+  const static SG::AuxElement::ConstAccessor<char> acc_isol("isol");
+  const static SG::AuxElement::ConstAccessor<char> acc_isolHighPt("isolHighPt"); // use different WPs for low-pt and high-pt. split at 200 GeV.
+   iso.push_back(input.pt()<200.0e3 ? (acc_isol(input) ? 1: 0) : (acc_isolHighPt(input) ? 1:0));
    charge.push_back(input.charge());
+   quality.push_back(input.quality());
    pt.push_back(input.pt());
    eta.push_back(input.eta());
    phi.push_back(input.phi());

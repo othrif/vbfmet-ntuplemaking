@@ -53,11 +53,11 @@ ClassImp(VBFInv)
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false),
      doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
-     doContLepDetail(false), doVertexDetail(false), doORDetail(false), doTTMet(false), savePVOnly(false),
-     JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3), PhijjFilter(2.5), getMCChannel(-1), computeXS(false), m_isMC(false),
-     m_isAFII(false), m_eventCounter(0), m_determinedDerivation(false), m_isEXOT5(false),
-     m_grl("GoodRunsListSelectionTool/grl", this), m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this),
-     m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
+     doContLepDetail(false), doVertexDetail(false), doORDetail(false), doTTMet(false), savePVOnly(false), 
+     copyEMTopoFJVT(false), JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),
+     PhijjFilter(2.5), getMCChannel(-1), computeXS(false), m_isMC(false), m_isAFII(false), m_eventCounter(0),
+     m_determinedDerivation(false), m_isEXOT5(false), m_grl("GoodRunsListSelectionTool/grl", this),
+     m_susytools_handle("ST::SUSYObjDef_xAOD/ST", this), m_susytools_Tight_handle("ST::SUSYObjDef_xAOD/STTight", this),
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
      m_susytools_Tenacious_handle("ST::SUSYObjDef_xAOD/STTenacious", this),
      m_jetFwdJvtTool("JetForwardJvtTool/JetForwardJvtTool_VBF", this),
@@ -963,6 +963,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    static SG::AuxElement::Accessor<char> acc_passFJvt("passFJvt");
    static SG::AuxElement::Accessor<char> acc_bad("bad");
    static SG::AuxElement::Accessor<char> acc_cosmic("cosmic");
+   const static SG::AuxElement::ConstAccessor<char> acc_isol("isol");
+   const static SG::AuxElement::ConstAccessor<char> acc_isolHighPt("isolHighPt"); // use different WPs for low-pt and high-pt. split at 200 GeV.
+   const static SG::AuxElement::ConstAccessor<float> acc_d0sig("d0sig");
+   const static SG::AuxElement::ConstAccessor<float> acc_z0sinTheta("z0sinTheta");
 
    //-- JETS --
    if (content.doJets) {
@@ -977,6 +981,26 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          }
       }
       content.allJets.sort(&HelperFunctions::comparePt); // sort by Pt
+
+      // read in emtopo jets to get the fjvt
+      if(copyEMTopoFJVT){
+	static SG::AuxElement::ConstAccessor<float> acc_fjvt("fJvt");
+	static SG::AuxElement::Decorator<float> dec_fjvt("fJvt");
+	content.jetsEM    = nullptr;
+	content.jetsEMAux = nullptr;
+	content.allEMJets.clear(SG::VIEW_ELEMENTS);
+	ANA_CHECK(m_susytools_Tighter_handle->GetJets(content.jetsEM, content.jetsEMAux, false));
+	m_jetFwdJvtTool->modify(*content.jetsEM); // add fjvt
+	for (auto jet : content.allJets) {
+	  float minDR=999.0;
+	  dec_fjvt(*jet)=0.0;
+	  for (auto jetEM : *content.jetsEM) {
+	    // if close then copy the fjvt score
+	    float dr=jet->p4().DeltaR(jetEM->p4());
+	    if(dr<minDR && dr<0.6){ minDR=dr;  dec_fjvt(*jet) = acc_fjvt(*jetEM); }
+	  }
+	}
+      }      
    }                                                     // done with jets
 
    //-- FatJETS --
@@ -1098,8 +1122,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // Good objects containers clear
    content.goodMuons.clear(SG::VIEW_ELEMENTS);
    content.baselineMuons.clear(SG::VIEW_ELEMENTS);
+   content.zMuons.clear(SG::VIEW_ELEMENTS);
    content.goodElectrons.clear(SG::VIEW_ELEMENTS);
    content.baselineElectrons.clear(SG::VIEW_ELEMENTS);
+   content.zElectrons.clear(SG::VIEW_ELEMENTS);
    content.goodJets.clear(SG::VIEW_ELEMENTS);
    content.goodPhotons.clear(SG::VIEW_ELEMENTS);
    content.baselinePhotons.clear(SG::VIEW_ELEMENTS);
@@ -1138,6 +1164,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto muon : content.allMuons) {
       if (acc_baseline(*muon) == 1 && acc_passOR(*muon) == 1) { // cosmic, baseline, bad muon already applied
          content.baselineMuons.push_back(muon);
+         if(muon->quality()<3 && (muon->pt()<200.0e3 ? acc_isol(*muon) : acc_isolHighPt(*muon)) && 
+	    fabs(acc_z0sinTheta(*muon))<0.5 && 
+	    fabs(acc_d0sig(*muon))<3.0) content.zMuons.push_back(muon); // add iso, impact parameter cuts and Loose PID
          if (acc_signal(*muon) == 1) {
             content.goodMuons.push_back(muon); // CR muons
          }
@@ -1148,6 +1177,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto electron : content.allElectrons) {
       if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) { // baseline is already applied
          content.baselineElectrons.push_back(electron);
+         if((electron->pt()<200.0e3 ? acc_isol(*electron) : acc_isolHighPt(*electron)) && 
+	    fabs(acc_z0sinTheta(*electron))<0.5 && 
+	    fabs(acc_d0sig(*electron))<5.0) content.zElectrons.push_back(electron); // add iso, impact parameter cuts
          if (acc_signal(*electron) == 1) content.goodElectrons.push_back(electron); // CR electrons
       }
    }
@@ -1337,11 +1369,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       //-- MUONS --
       printObjects(content.allMuons, "allMuons");
       printObjects(content.baselineMuons, "baselineMuons");
+      printObjects(content.zMuons, "zMuons");
       printObjects(content.contMuons, "contMuons");
       printObjects(content.goodMuons, "goodMuons");
       //-- ELECTRONS --
       printObjects(content.allElectrons, "allElectrons");
       printObjects(content.baselineElectrons, "baselineElectrons");
+      printObjects(content.baselineElectrons, "zElectrons");
       printObjects(content.contElectrons, "contElectrons");
       printObjects(content.goodElectrons, "goodElectrons");
       //-- MET --
@@ -1508,35 +1542,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (acc_sumPt2.isAvailable(*pvD)) cand.evt.vtx_sumpt2 = acc_sumPt2(*pvD);
    } else
       cand.evt.vtx_sumpt2 = -999;
-   // trigger
-   for (auto &kv : cand.evt.trigger) {
-      kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
-   }
-   // encoding the L1 trigger items
-   if (m_susytools_handle->IsTrigPassed("L1_XE50")) cand.evt.l1_met_trig_encoded += 0x1;
-   if (m_susytools_handle->IsTrigPassed("L1_XE55")) cand.evt.l1_met_trig_encoded += 0x2;
-   if (m_susytools_handle->IsTrigPassed("L1_XE60")) cand.evt.l1_met_trig_encoded += 0x4;
-
-   cand.evt.trigger_lep =
-      // el 2015
-      cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] ||
-      cand.evt.trigger["HLT_e120_lhloose"] ||
-      // el 2016+2017+2018
-      cand.evt.trigger["HLT_e24_lhtight_nod0_ivarloose"] || cand.evt.trigger["HLT_e26_lhtight_nod0_ivarloose"] ||
-      cand.evt.trigger["HLT_e60_lhmedium_nod0"] || cand.evt.trigger["HLT_e60_medium"] ||
-      cand.evt.trigger["HLT_e120_lhloose_nod0"] || cand.evt.trigger["HLT_e140_lhloose_nod0"] ||
-      cand.evt.trigger["HLT_e300_etcut"] ||
-      // el added in 2018
-      cand.evt.trigger["HLT_e26_lhtight_nod0"] ||
-      // mu 2015
-      cand.evt.trigger["HLT_mu20_iloose_L1MU15"] || cand.evt.trigger["HLT_mu40"] ||
-      cand.evt.trigger["HLT_mu60_0eta105_msonly"] ||
-      // mu 2016
-      cand.evt.trigger["HLT_mu24_iloose"] || cand.evt.trigger["HLT_mu24_ivarloose"] || cand.evt.trigger["HLT_mu40"] ||
-      cand.evt.trigger["HLT_mu24_iloose_L1MU15"] ||
-      cand.evt.trigger["HLT_mu24_ivarloose_L1MU15"] || // adding the MC triggers, which were named differently
-      cand.evt.trigger["HLT_mu50"] || cand.evt.trigger["HLT_mu24_ivarmedium"] || cand.evt.trigger["HLT_mu24_imedium"] ||
-      cand.evt.trigger["HLT_mu26_ivarmedium"] || cand.evt.trigger["HLT_mu26_imedium"];
 
    // raw event info
    unsigned mcchannel = m_isMC ? content.eventInfo->mcChannelNumber() : content.eventInfo->runNumber();
@@ -1571,6 +1576,95 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       is2017 = kTRUE; // data2017
    if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197 && cand.evt.runNumber <= 364485) || cand.evt.year == 2018)
       is2018 = kTRUE; // data2018
+   
+   //
+   // trigger. Loading the trigger decisions
+   //
+   for (auto &kv : cand.evt.trigger) {
+      kv.second = m_susytools_handle->IsTrigPassed(kv.first.Data());
+   }
+   // encoding the L1 trigger items for future checks
+   if (m_susytools_handle->IsTrigPassed("L1_XE50")) cand.evt.l1_met_trig_encoded += 0x1;
+   if (m_susytools_handle->IsTrigPassed("L1_XE55")) cand.evt.l1_met_trig_encoded += 0x2;
+   if (m_susytools_handle->IsTrigPassed("L1_XE60")) cand.evt.l1_met_trig_encoded += 0x4;
+
+   // Trigger matching for single lepton variables
+   //for (auto electron : content.zElectrons) 
+   const static SG::AuxElement::ConstAccessor<char> acc_trigmatched("trigmatched");
+
+   // Single lepton triggers by year
+   cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : cand.evt.runNumber;
+   std::vector<std::string> single_lep_2015 = {"HLT_e24_lhmedium_L1EM20VH","HLT_e60_lhmedium", "HLT_e120_lhloose","HLT_mu20_iloose_L1MU15","HLT_mu40","HLT_mu60_0eta105_msonly"};
+   std::vector<std::string> single_muo_2016_perA = {"HLT_mu24_iloose","HLT_mu24_ivarloose","HLT_mu40","HLT_mu50","HLT_mu24_iloose_L1MU15","HLT_mu24_ivarloose_L1MU15"};
+   std::vector<std::string> single_muo_2016_perBD3 = {"HLT_mu24_ivarmedium","HLT_mu24_imedium","HLT_mu50"};
+   std::vector<std::string> single_muo_2016_perD4L = {"HLT_mu26_ivarmedium","HLT_mu50"};
+   std::vector<std::string> single_ele_2016_perAD3 = {"HLT_e24_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e60_medium","HLT_e140_lhloose_nod0","HLT_e300_etcut"};
+   std::vector<std::string> single_ele_2016_run298687 = {"HLT_e24_lhmedium_nod0_L1EM20VH","HLT_e24_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e60_medium","HLT_e140_lhloose_nod0","HLT_e300_etcut"};
+   std::vector<std::string> single_ele_2016_perD4L = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e60_medium","HLT_e140_lhloose_nod0","HLT_e300_etcut"};
+   std::vector<std::string> single_lep_2017 = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e140_lhloose_nod0","HLT_e300_etcut","HLT_mu26_ivarmedium","HLT_mu50","HLT_mu60_0eta105_msonly"};
+   std::vector<std::string> single_lep_2018 = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e26_lhtight_nod0","HLT_e60_lhmedium_nod0","HLT_e140_lhloose_nod0","HLT_e300_etcut", // HLT_e26_lhtight_nod0 - Unprescaled since run 349169 
+					       "HLT_mu26_ivarmedium","HLT_mu50","HLT_mu60_0eta105_msonly"};
+
+   std::string str_muon_trigger_OR="";
+   //
+   // Fill the single lepton triggers with periods
+   //
+   if(is2015){ 
+     for(unsigned i=0; i<single_lep_2015.size(); ++i) if(cand.evt.trigger[single_lep_2015.at(i)]) cand.evt.trigger_lep = 1; 
+     m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2015); 
+     m_susytools_handle->TrigMatch(&(content.zMuons), single_lep_2015);
+     str_muon_trigger_OR="HLT_mu20_iloose_L1MU15_OR_HLT_mu50";
+   }
+   if(is2016){ 
+     str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
+     if     (cand.evt.randomRunNumber<=300287){ for(unsigned i=0; i<single_muo_2016_perA.size(); ++i)      if(cand.evt.trigger[single_muo_2016_perA.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zMuons), single_muo_2016_perA);      }
+     else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_muo_2016_perBD3.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perBD3.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zMuons), single_muo_2016_perBD3); }
+     if     (cand.evt.randomRunNumber==298687){ for(unsigned i=0; i<single_ele_2016_run298687.size(); ++i) if(cand.evt.trigger[single_ele_2016_run298687.at(i)]) cand.evt.trigger_lep = 1;  m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_run298687); }
+     else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_ele_2016_perAD3.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perAD3.at(i)])    cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_perAD3); }
+     else                                     { 
+       for(unsigned i=0; i<single_ele_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1; 
+       for(unsigned i=0; i<single_muo_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1; 
+       m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_perD4L); 
+       m_susytools_handle->TrigMatch(&(content.zMuons),     single_muo_2016_perD4L);
+     }
+   }
+   if(is2017){ 
+     str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
+     for(unsigned i=0; i<single_lep_2017.size(); ++i) if(cand.evt.trigger[single_lep_2017.at(i)]) cand.evt.trigger_lep = 1; 
+       m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2017); 
+       m_susytools_handle->TrigMatch(&(content.zMuons),     single_lep_2017);     
+   }
+   if(is2018){ 
+     str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
+     for(unsigned i=0; i<single_lep_2018.size(); ++i) if(cand.evt.trigger[single_lep_2018.at(i)]) cand.evt.trigger_lep = 1; 
+       m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2018); 
+       m_susytools_handle->TrigMatch(&(content.zMuons),     single_lep_2018);
+
+   }
+
+   // fill the trigger matching
+   for (auto electron : content.zElectrons) { if(acc_trigmatched.isAvailable(*electron) && acc_trigmatched(*electron)) cand.evt.lep_trig_match=1; }
+   for (auto muon : content.zMuons) {         if(acc_trigmatched.isAvailable(*muon) && acc_trigmatched(*muon))         cand.evt.lep_trig_match=1; }
+   cand.evt.trigger_lep_OR =
+      // el 2015
+      cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] ||
+      cand.evt.trigger["HLT_e120_lhloose"] ||
+      // el 2016+2017+2018
+      cand.evt.trigger["HLT_e24_lhtight_nod0_ivarloose"] || cand.evt.trigger["HLT_e26_lhtight_nod0_ivarloose"] ||
+      cand.evt.trigger["HLT_e60_lhmedium_nod0"] || cand.evt.trigger["HLT_e60_medium"] ||
+      cand.evt.trigger["HLT_e120_lhloose_nod0"] || cand.evt.trigger["HLT_e140_lhloose_nod0"] ||
+      cand.evt.trigger["HLT_e300_etcut"] || cand.evt.trigger["HLT_e24_lhmedium_nod0_L1EM20VH"] ||
+      // el added in 2018
+      cand.evt.trigger["HLT_e26_lhtight_nod0"] ||
+      // mu 2015
+      cand.evt.trigger["HLT_mu20_iloose_L1MU15"] || cand.evt.trigger["HLT_mu40"] ||
+      cand.evt.trigger["HLT_mu60_0eta105_msonly"] ||
+      // mu 2016
+      cand.evt.trigger["HLT_mu24_iloose"] || cand.evt.trigger["HLT_mu24_ivarloose"] || cand.evt.trigger["HLT_mu40"] ||
+      cand.evt.trigger["HLT_mu24_iloose_L1MU15"] ||
+      cand.evt.trigger["HLT_mu24_ivarloose_L1MU15"] || // adding the MC triggers, which were named differently
+      cand.evt.trigger["HLT_mu50"] || cand.evt.trigger["HLT_mu24_ivarmedium"] || cand.evt.trigger["HLT_mu24_imedium"] ||
+      cand.evt.trigger["HLT_mu26_ivarmedium"] || cand.evt.trigger["HLT_mu26_imedium"];
 
    //
    // trigger logic implemented by year
@@ -1598,21 +1692,19 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                 cand.evt.trigger["HLT_2e24_lhvloose_nod0"]; // 2017+2018
    bool diEleYearlyOpt1 =
       is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"])
-             : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"] : cand.evt.trigger["HLT_2e24_lhvloose_nod0"]);
+     : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"] : cand.evt.trigger["HLT_2e24_lhvloose_nod0"]); // recovers 0.9%, but is partially prescaled in 1 run
    bool diEleYearlyOpt2 = is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"])
-                                 : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"]
-                                           : (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"]
-                                                     : cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"]));
+     : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"]
+	: (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"] // prefer this one because it isn't accidently prescaled. also recovers 1.2% 
+	   : cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"]));
    if (diMuon) cand.evt.trigger_lep += 0x10;
-   if (diMuonYearlyOpt1L1) cand.evt.trigger_lep += 0x20;
-   if (diMuonYearlyOpt2L1) cand.evt.trigger_lep += 0x40;
+   if (diMuonYearlyOpt1L1) cand.evt.trigger_lep += 0x20; // this one is preferred. 5% unique rate
+   if (diMuonYearlyOpt2L1) cand.evt.trigger_lep += 0x40; // only 1% unique rate
    if (diEle) cand.evt.trigger_lep += 0x100;
    if (diEleYearlyOpt1) cand.evt.trigger_lep += 0x200;
    if (diEleYearlyOpt2) cand.evt.trigger_lep += 0x400;
    if (muonTrig) cand.evt.trigger_lep += 0x2;
    if (elecTrig) cand.evt.trigger_lep += 0x4;
-
-   cand.evt.randomRunNumber = (m_isMC) ? m_susytools_handle->GetRandomRunNumber() : cand.evt.runNumber;
 
    Bool_t customMETtrig(kFALSE);
    if (is2015 && cand.evt.trigger["HLT_xe70_mht"])
@@ -1819,14 +1911,33 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // You can modify it in the ST config under Trigger SFs configuration
       // Total Electron SF: GetTotalElectronSF(const xAOD::ElectronContainer& electrons, const bool recoSF, const bool
       // idSF, const bool triggerSF, const bool isoSF, const std::string& trigExpr, const bool chfSF)
-      cand.evt.elSFWeight = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
-      cand.evt.elSFTrigWeight =
-         m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
+      if((cand.evt.n_el_z==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu_z==0){
+	cand.evt.elSFWeight     = m_susytools_Tighter_handle->GetTotalElectronSF(content.zElectrons, true, true, false, true, "");
+	cand.evt.elSFTrigWeight = m_susytools_Tighter_handle->GetTotalElectronSF(content.zElectrons, false, false, true, false, "singleLepton");
+      }else{
+	cand.evt.elSFWeight = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
+	cand.evt.elSFTrigWeight =
+	  m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
+      }
       // Total Muon SF: GetTotalMuonTriggerSF(const xAOD::MuonContainer& sfmuons, const std::string& trigExpr)
-      cand.evt.muSFWeight     = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
-      cand.evt.muSFTrigWeight = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,
-                                                                   is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
-                                                                          : "HLT_mu26_ivarmedium_OR_HLT_mu50");
+      if((cand.evt.n_el_z==0) && (cand.evt.n_mu_z==2 || cand.evt.n_mu_baseline>1)){
+	cand.evt.muSFWeight     = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
+	cand.evt.muSFTrigWeight = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
+									     //is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
+									     //: "HLT_mu26_ivarmedium_OR_HLT_mu50");
+      }else{
+	cand.evt.muSFWeight     = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
+	cand.evt.muSFTrigWeight = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
+      }
+
+      // dilepton trigger SFs
+      if(content.zElectrons.size()>1 || content.zMuons.size()>1){
+	// need to label these as signal leptons
+	const static SG::AuxElement::Decorator<char> dec_signal("signal");
+	for (auto electron : content.zElectrons) { dec_signal(*electron)=1; }
+	for (auto muon : content.zMuons) { dec_signal(*muon)=1; }
+	cand.evt.dilepTrigSFWeight = m_susytools_handle->GetTriggerGlobalEfficiencySF(content.zElectrons,content.zMuons,"diLepton");
+      }
 
       if (debug) {
          print("Electron SF", cand.evt.elSFWeight);
@@ -1834,6 +1945,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          print("Muon SF", cand.evt.muSFWeight);
          print("Muon Trig SF", cand.evt.muSFTrigWeight);
       }
+
 
       // add the weight systematics
       if (content.isNominal) { // only run for the nominal
@@ -1860,14 +1972,20 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                float &sysSF2 = cand.evt.GetSystVar("elSFTrigWeight", thisSyst, m_tree[""]);
                sysSF2        = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false,
                                                                "singleLepton");
+               float &sysSF3 = cand.evt.GetSystVar("dilepTrigSFWeight", thisSyst, m_tree[""]);
+	       if(content.zElectrons.size()>1 || content.zMuons.size()>1){
+		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.zElectrons,content.zMuons, sysWeight,"diLepton");		 
+	       }
             } else if (thisSyst.Contains("EL_EFF")) {
                float &sysSF = cand.evt.GetSystVar("elSFWeight", thisSyst, m_tree[""]);
                sysSF = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
             } else if (thisSyst.Contains("MUON_EFF_Trig")) {
                float &sysSF2 = cand.evt.GetSystVar("muSFTrigWeight", thisSyst, m_tree[""]);
-               sysSF2        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,
-                                                           is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
-                                                                  : "HLT_mu26_ivarmedium_OR_HLT_mu50");
+               sysSF2        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
+               float &sysSF3 = cand.evt.GetSystVar("dilepTrigSFWeight", thisSyst, m_tree[""]);
+	       if(content.zElectrons.size()>1 || content.zMuons.size()>1){
+		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.zElectrons,content.zMuons,sysWeight,"diLepton");		 
+	       }
             } else if (thisSyst.Contains("MUON_EFF")) {
                float &sysSF = cand.evt.GetSystVar("muSFWeight", thisSyst, m_tree[""]);
                sysSF        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
@@ -2145,10 +2263,14 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // Selected muons
    //-----------------------------------------------------------------------
    cand.evt.n_mu = content.goodMuons.size();
+   cand.evt.n_mu_z = content.zMuons.size();
    // if( cand.evt.n_mu_baseline != 0)
    // std::cout << "Number of muons in event=" << cand.evt.n_mu << ", baseline=" << cand.evt.n_mu_baseline << std::endl;
    static SG::AuxElement::Accessor<char> acc_signal("signal");
    static SG::AuxElement::Accessor<char> acc_bad("bad");
+  const static SG::AuxElement::ConstAccessor<char> acc_isol("isol");
+  const static SG::AuxElement::ConstAccessor<char> acc_isolHighPt("isolHighPt"); // use different WPs for low-pt and high-pt. split at 200 GeV.
+
    for (auto muon : content.goodMuons) {
       cand.mu["mu"].add(*muon);
       /* Isolation investigations
@@ -2165,12 +2287,15 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    }
    static SG::AuxElement::Accessor<char> acc_baseline("baseline");
    for (auto muon : content.allMuons) {
-      if (acc_baseline(*muon) == 1) ++cand.evt.n_mu_baseline_noOR;
+     if (acc_baseline(*muon) == 1) ++cand.evt.n_mu_baseline_noOR;
+     if(muon->quality()<3 && (acc_baseline(*muon) == 1))  ++cand.evt.n_mu_baseline_loose_noOR;
    }
    for (auto muon : content.baselineMuons) { // saving leptons failing the signal selection, but still baseline
       if (cand.mu.find("basemu") != cand.mu.end() && !(acc_signal(*muon) == 1)) {
          cand.mu["basemu"].add(*muon);
       }
+      if(muon->pt()<200.0e3 ? acc_isol(*muon) : acc_isolHighPt(*muon))  ++cand.evt.n_mu_baseline_iso;
+      if(muon->quality()<3)  ++cand.evt.n_mu_baseline_loose;
       ++cand.evt.n_mu_baseline;
    }
 
@@ -2181,6 +2306,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (acc_baseline(*electron) == 1) ++cand.evt.n_el_baseline_noOR;
    }
    cand.evt.n_el = content.goodElectrons.size();
+   cand.evt.n_el_z = content.zElectrons.size();
    for (auto electron : content.goodElectrons) {
       cand.el["el"].add(*electron);
    }
@@ -2190,6 +2316,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          ++cand.evt.n_el_baseline_crackVetoCleaning;
       if (cand.el.find("baseel") != cand.el.end() && !(acc_signal(*electron) == 1)) cand.el["baseel"].add(*electron);
       ++cand.evt.n_el_baseline;
+      if(electron->pt()<200.0e3 ? acc_isol(*electron) : acc_isolHighPt(*electron))  ++cand.evt.n_el_baseline_iso;
    }
    // add the container leptons for lepton veto studies
    if (doContLepDetail) {

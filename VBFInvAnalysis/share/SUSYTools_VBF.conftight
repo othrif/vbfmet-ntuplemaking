@@ -6,12 +6,12 @@ EleBaseline.Eta: 2.47
 EleBaseline.Id: LooseAndBLayerLLH
 EleBaseline.CrackVeto: false
 #
-Ele.Et: 7000.
+Ele.Et: 4500.
 Ele.Eta: 2.47
 Ele.CrackVeto: false
 Ele.Iso: Gradient
 Ele.IsoHighPt: FCHighPtCaloOnly # tight iso required for electrons pt > 200 GeV
-Ele.Id: TightLLH
+Ele.Id: LooseAndBLayerLLH
 Ele.d0sig: 5.
 Ele.z0: 0.5
 # ChargeIDSelector WP
@@ -21,9 +21,9 @@ MuonBaseline.Pt: 4000.
 MuonBaseline.Eta: 2.7
 MuonBaseline.Id: 3 # Very Loose
 #
-Muon.Pt: 7000.
+Muon.Pt: 4000.
 Muon.Eta: 2.7
-Muon.Id: 1 # Medium
+Muon.Id: 2  #Loose
 Muon.Iso: FCLoose
 Muon.IsoHighPt: FCLoose # change WP if you want 
 Muon.d0sig: 3.

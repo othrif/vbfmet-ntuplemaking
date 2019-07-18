@@ -114,6 +114,7 @@ public:
    Bool_t   doORDetail;
    Bool_t   doTTMet;
    Bool_t   savePVOnly;
+   Bool_t   copyEMTopoFJVT;
    Double_t JetEtaFilter;
    Double_t JetpTFilter;
    Double_t MjjFilter;

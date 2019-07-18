@@ -40,6 +40,7 @@ public:
    Float_t              fjvtSFWeight;
    Float_t              fjvtSFTighterWeight;
    Float_t              eleANTISF;
+   Float_t              dilepTrigSFWeight;
 
    Int_t FlavourFilter;
    Float_t MGVTruthPt;
@@ -112,7 +113,9 @@ public:
 
    std::map<TString, Float_t> syst_var_map;
    std::map<TString, Int_t>   trigger;
+   Int_t                      lep_trig_match;
    Int_t                      trigger_lep;
+   Int_t                      trigger_lep_OR;
    Int_t                      trigger_met;
 
    Int_t passGRL;
@@ -145,10 +148,16 @@ public:
 
    Int_t n_bjet;
    Int_t n_mu;
+   Int_t n_mu_z;
    Int_t n_mu_baseline_noOR;
    Int_t n_mu_baseline;
+   Int_t n_mu_baseline_loose;
+   Int_t n_mu_baseline_loose_noOR;
+   Int_t n_mu_baseline_iso;
    Int_t n_el;
+   Int_t n_el_z;
    Int_t n_el_baseline;
+   Int_t n_el_baseline_iso;
    Int_t n_el_baseline_noOR;
    Int_t n_el_baseline_crackVetoCleaning;
    Int_t n_ph;

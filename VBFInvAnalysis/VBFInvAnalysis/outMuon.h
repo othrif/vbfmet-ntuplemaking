@@ -7,7 +7,9 @@
 namespace Analysis {
 class outMuon : public outObject {
 public:
+   std::vector<Int_t>   quality;
    std::vector<Int_t>   charge;
+   std::vector<Int_t>   iso;
    std::vector<Float_t> pt;
    std::vector<Float_t> eta;
    std::vector<Float_t> phi;
