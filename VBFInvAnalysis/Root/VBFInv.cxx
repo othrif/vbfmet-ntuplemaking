@@ -660,7 +660,7 @@ EL::StatusCode VBFInv::initialize()
          }
       }
 
-      m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", (trim && !doMETDetail));
+      //m_cand[thisSyst].met["met_track"] = Analysis::outMET("met_track", (trim && !doMETDetail));
       m_cand[thisSyst].met["met_truth"] = Analysis::outMET("met_truth", (trim && !doMETDetail));
       m_cand[thisSyst].mu["mu"]         = Analysis::outMuon("mu", (trim && !doMuonDetail));
       if (doMuonDetail) m_cand[thisSyst].mu["basemu"] = Analysis::outMuon("basemu", (trim && !doMuonDetail));
@@ -1125,10 +1125,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // Good objects containers clear
    content.goodMuons.clear(SG::VIEW_ELEMENTS);
    content.baselineMuons.clear(SG::VIEW_ELEMENTS);
-   content.zMuons.clear(SG::VIEW_ELEMENTS);
+   content.wMuons.clear(SG::VIEW_ELEMENTS);
    content.goodElectrons.clear(SG::VIEW_ELEMENTS);
    content.baselineElectrons.clear(SG::VIEW_ELEMENTS);
-   content.zElectrons.clear(SG::VIEW_ELEMENTS);
+   content.wElectrons.clear(SG::VIEW_ELEMENTS);
    content.goodJets.clear(SG::VIEW_ELEMENTS);
    content.goodPhotons.clear(SG::VIEW_ELEMENTS);
    content.baselinePhotons.clear(SG::VIEW_ELEMENTS);
@@ -1169,9 +1169,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          content.baselineMuons.push_back(muon);
          if(muon->quality()<3 && (muon->pt()<200.0e3 ? acc_isol(*muon) : acc_isolHighPt(*muon)) && 
 	    fabs(acc_z0sinTheta(*muon))<0.5 && 
-	    fabs(acc_d0sig(*muon))<3.0) content.zMuons.push_back(muon); // add iso, impact parameter cuts and Loose PID
+	    fabs(acc_d0sig(*muon))<3.0) content.goodMuons.push_back(muon); // add iso, impact parameter cuts and Loose PID
+	 else if(acc_signal(*muon) == 1) content.goodMuons.push_back(muon); // make sure we don't miss a signal muon. shouldn't happen ever.
          if (acc_signal(*muon) == 1) {
-            content.goodMuons.push_back(muon); // CR muons
+	   content.wMuons.push_back(muon); // CR muons
          }
       }
    }
@@ -1182,10 +1183,16 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          content.baselineElectrons.push_back(electron);
          if((electron->pt()<200.0e3 ? acc_isol(*electron) : acc_isolHighPt(*electron)) && 
 	    fabs(acc_z0sinTheta(*electron))<0.5 && 
-	    fabs(acc_d0sig(*electron))<5.0) content.zElectrons.push_back(electron); // add iso, impact parameter cuts
-         if (acc_signal(*electron) == 1) content.goodElectrons.push_back(electron); // CR electrons
+	    fabs(acc_d0sig(*electron))<5.0) content.goodElectrons.push_back(electron); // add iso, impact parameter cuts
+	 else if(acc_signal(*electron) == 1) content.goodElectrons.push_back(electron); // make sure we don't miss a signal electron. shouldn't happen ever. 
+         if (acc_signal(*electron) == 1) content.wElectrons.push_back(electron); // CR electrons
       }
    }
+
+   // need to label these as signal leptons for the later SF treatment
+   const static SG::AuxElement::Decorator<char> dec_signal("signal");
+   for (auto electron : content.goodElectrons) { dec_signal(*electron)=1; }
+   for (auto muon : content.goodMuons) { dec_signal(*muon)=1; }
 
    //-- PHOTONS --
    for (auto photon : content.allPhotons) {
@@ -1285,12 +1292,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    {
       Float_t px = 0;
       Float_t py = 0;
-      // for (auto muon : content.goodMuons) {
       for (auto muon : content.baselineMuons) {
          px += muon->pt() * TMath::Cos(muon->phi());
          py += muon->pt() * TMath::Sin(muon->phi());
       }
-      // for (auto electron : content.goodElectrons) {
       for (auto electron : content.baselineElectrons) {
          px += electron->pt() * TMath::Cos(electron->phi());
          py += electron->pt() * TMath::Sin(electron->phi());
@@ -1335,9 +1340,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    }
 
    // track MET
-   getTrackMET(content.met_track, content.met_trackAux,
-               content.jets, // use all objects (before OR and after corrections) for MET utility
-               content.electrons, content.muons);
+   //getTrackMET(content.met_track, content.met_trackAux,
+   //            content.jets, // use all objects (before OR and after corrections) for MET utility
+   //            content.electrons, content.muons);
 
    // truth MET
    TLorentzVector myTruthMET;
@@ -1372,13 +1377,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       //-- MUONS --
       printObjects(content.allMuons, "allMuons");
       printObjects(content.baselineMuons, "baselineMuons");
-      printObjects(content.zMuons, "zMuons");
+      printObjects(content.wMuons, "wMuons");
       printObjects(content.contMuons, "contMuons");
       printObjects(content.goodMuons, "goodMuons");
       //-- ELECTRONS --
       printObjects(content.allElectrons, "allElectrons");
       printObjects(content.baselineElectrons, "baselineElectrons");
-      printObjects(content.baselineElectrons, "zElectrons");
+      printObjects(content.wElectrons, "wElectrons");
       printObjects(content.contElectrons, "contElectrons");
       printObjects(content.goodElectrons, "goodElectrons");
       //-- MET --
@@ -1386,7 +1391,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       printMET(content.met_tst_nolep, "MET no leptons");
       //    printMET(content.met_tst_noelectron, "MET no electrons");
       //    printMET(content.met_tst_nomuon, "MET no muons");
-      printTrackMET(content.met_track, "track MET");
+      //printTrackMET(content.met_track, "track MET");
       //-- PHOTONS --
       printObjects(content.allPhotons, "photons");
    }
@@ -1592,7 +1597,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if (m_susytools_handle->IsTrigPassed("L1_XE60")) cand.evt.l1_met_trig_encoded += 0x4;
 
    // Trigger matching for single lepton variables
-   //for (auto electron : content.zElectrons) 
    const static SG::AuxElement::ConstAccessor<char> acc_trigmatched("trigmatched");
 
    // Single lepton triggers by year
@@ -1614,40 +1618,40 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    //
    if(is2015){ 
      for(unsigned i=0; i<single_lep_2015.size(); ++i) if(cand.evt.trigger[single_lep_2015.at(i)]) cand.evt.trigger_lep = 1; 
-     m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2015); 
-     m_susytools_handle->TrigMatch(&(content.zMuons), single_lep_2015);
+     m_susytools_handle->TrigMatch(&(content.goodElectrons), single_lep_2015); 
+     m_susytools_handle->TrigMatch(&(content.goodMuons), single_lep_2015);
      str_muon_trigger_OR="HLT_mu20_iloose_L1MU15_OR_HLT_mu50";
    }
    if(is2016){ 
      str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
-     if     (cand.evt.randomRunNumber<=300287){ for(unsigned i=0; i<single_muo_2016_perA.size(); ++i)      if(cand.evt.trigger[single_muo_2016_perA.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zMuons), single_muo_2016_perA);      }
-     else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_muo_2016_perBD3.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perBD3.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zMuons), single_muo_2016_perBD3); }
-     if     (cand.evt.randomRunNumber==298687){ for(unsigned i=0; i<single_ele_2016_run298687.size(); ++i) if(cand.evt.trigger[single_ele_2016_run298687.at(i)]) cand.evt.trigger_lep = 1;  m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_run298687); }
-     else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_ele_2016_perAD3.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perAD3.at(i)])    cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_perAD3); }
+     if     (cand.evt.randomRunNumber<=300287){ for(unsigned i=0; i<single_muo_2016_perA.size(); ++i)      if(cand.evt.trigger[single_muo_2016_perA.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.goodMuons), single_muo_2016_perA);      }
+     else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_muo_2016_perBD3.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perBD3.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.goodMuons), single_muo_2016_perBD3); }
+     if     (cand.evt.randomRunNumber==298687){ for(unsigned i=0; i<single_ele_2016_run298687.size(); ++i) if(cand.evt.trigger[single_ele_2016_run298687.at(i)]) cand.evt.trigger_lep = 1;  m_susytools_handle->TrigMatch(&(content.goodElectrons), single_ele_2016_run298687); }
+     else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_ele_2016_perAD3.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perAD3.at(i)])    cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.goodElectrons), single_ele_2016_perAD3); }
      else                                     { 
        for(unsigned i=0; i<single_ele_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1; 
        for(unsigned i=0; i<single_muo_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1; 
-       m_susytools_handle->TrigMatch(&(content.zElectrons), single_ele_2016_perD4L); 
-       m_susytools_handle->TrigMatch(&(content.zMuons),     single_muo_2016_perD4L);
+       m_susytools_handle->TrigMatch(&(content.goodElectrons), single_ele_2016_perD4L); 
+       m_susytools_handle->TrigMatch(&(content.goodMuons),     single_muo_2016_perD4L);
      }
    }
    if(is2017){ 
      str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
      for(unsigned i=0; i<single_lep_2017.size(); ++i) if(cand.evt.trigger[single_lep_2017.at(i)]) cand.evt.trigger_lep = 1; 
-       m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2017); 
-       m_susytools_handle->TrigMatch(&(content.zMuons),     single_lep_2017);     
+       m_susytools_handle->TrigMatch(&(content.goodElectrons), single_lep_2017); 
+       m_susytools_handle->TrigMatch(&(content.goodMuons),     single_lep_2017);     
    }
    if(is2018){ 
      str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
      for(unsigned i=0; i<single_lep_2018.size(); ++i) if(cand.evt.trigger[single_lep_2018.at(i)]) cand.evt.trigger_lep = 1; 
-       m_susytools_handle->TrigMatch(&(content.zElectrons), single_lep_2018); 
-       m_susytools_handle->TrigMatch(&(content.zMuons),     single_lep_2018);
+       m_susytools_handle->TrigMatch(&(content.goodElectrons), single_lep_2018); 
+       m_susytools_handle->TrigMatch(&(content.goodMuons),     single_lep_2018);
 
    }
 
    // fill the trigger matching
-   for (auto electron : content.zElectrons) { if(acc_trigmatched.isAvailable(*electron) && acc_trigmatched(*electron)) cand.evt.lep_trig_match=1; }
-   for (auto muon : content.zMuons) {         if(acc_trigmatched.isAvailable(*muon) && acc_trigmatched(*muon))         cand.evt.lep_trig_match=1; }
+   for (auto electron : content.goodElectrons) { if(acc_trigmatched.isAvailable(*electron) && acc_trigmatched(*electron)) cand.evt.lep_trig_match=1; }
+   for (auto muon : content.goodMuons) {         if(acc_trigmatched.isAvailable(*muon) && acc_trigmatched(*muon))         cand.evt.lep_trig_match=1; }
    cand.evt.trigger_lep_OR =
       // el 2015
       cand.evt.trigger["HLT_e24_lhmedium_L1EM20VH"] || cand.evt.trigger["HLT_e60_lhmedium"] ||
@@ -1914,33 +1918,27 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       // You can modify it in the ST config under Trigger SFs configuration
       // Total Electron SF: GetTotalElectronSF(const xAOD::ElectronContainer& electrons, const bool recoSF, const bool
       // idSF, const bool triggerSF, const bool isoSF, const std::string& trigExpr, const bool chfSF)
-      if((cand.evt.n_el_z==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu_z==0){
-	cand.evt.elSFWeight     = m_susytools_Tighter_handle->GetTotalElectronSF(content.zElectrons, true, true, false, true, "");
-	cand.evt.elSFTrigWeight = m_susytools_Tighter_handle->GetTotalElectronSF(content.zElectrons, false, false, true, false, "singleLepton");
-      }else{
-	cand.evt.elSFWeight = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
-	cand.evt.elSFTrigWeight =
-	  m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
+      if((cand.evt.n_el==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu==0){
+	cand.evt.elSFWeight     = m_susytools_Tighter_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
+	cand.evt.elSFTrigWeight = m_susytools_Tighter_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
+      }else{ // for the tigher lepton selection  
+	cand.evt.elSFWeight = m_susytools_handle->GetTotalElectronSF(content.wElectrons, true, true, false, true, "");
+	cand.evt.elSFTrigWeight = m_susytools_handle->GetTotalElectronSF(content.wElectrons, false, false, true, false, "singleLepton");
       }
       // Total Muon SF: GetTotalMuonTriggerSF(const xAOD::MuonContainer& sfmuons, const std::string& trigExpr)
-      if((cand.evt.n_el_z==0) && (cand.evt.n_mu_z==2 || cand.evt.n_mu_baseline>1)){
+      if((cand.evt.n_el==0) && (cand.evt.n_mu==2 || cand.evt.n_mu_baseline>1)){
 	cand.evt.muSFWeight     = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
 	cand.evt.muSFTrigWeight = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
-									     //is2015 ? "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"
-									     //: "HLT_mu26_ivarmedium_OR_HLT_mu50");
-      }else{
-	cand.evt.muSFWeight     = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
-	cand.evt.muSFTrigWeight = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
+      }else{ // for the tigher lepton selection
+	cand.evt.muSFWeight     = m_susytools_handle->GetTotalMuonSF(content.wMuons, true, true, "");
+	cand.evt.muSFTrigWeight = m_susytools_handle->GetTotalMuonSF(content.wMuons, false, false,str_muon_trigger_OR);
       }
-
       // dilepton trigger SFs
-      if(content.zElectrons.size()>1 || content.zMuons.size()>1){
-	// need to label these as signal leptons
-	const static SG::AuxElement::Decorator<char> dec_signal("signal");
-	for (auto electron : content.zElectrons) { dec_signal(*electron)=1; }
-	for (auto muon : content.zMuons) { dec_signal(*muon)=1; }
-	cand.evt.dilepTrigSFWeight = m_susytools_handle->GetTriggerGlobalEfficiencySF(content.zElectrons,content.zMuons,"diLepton");
+      if(content.goodElectrons.size()>1 || content.goodMuons.size()>1){
+	cand.evt.dilepTrigSFWeight = m_susytools_handle->GetTriggerGlobalEfficiencySF(content.goodElectrons,content.goodMuons,"diLepton");
       }
+      // photon efficiency SF
+      cand.evt.phSFWeight     = m_susytools_handle->GetTotalPhotonSF(content.goodPhotons,true,true,false);
 
       if (debug) {
          print("Electron SF", cand.evt.elSFWeight);
@@ -1973,27 +1971,38 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                sysSF        = m_susytools_handle->FJVT_SF(content.jets);
             } else if (thisSyst.Contains("EL_EFF_Trigger")) {
                float &sysSF2 = cand.evt.GetSystVar("elSFTrigWeight", thisSyst, m_tree[""]);
-               sysSF2        = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false,
-                                                               "singleLepton");
+	       if((cand.evt.n_el==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu==0)
+		 sysSF2        = m_susytools_Tighter_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false,"singleLepton");
+	       else
+		 sysSF2        = m_susytools_handle->GetTotalElectronSF(content.wElectrons, false, false, true, false,"singleLepton");
                float &sysSF3 = cand.evt.GetSystVar("dilepTrigSFWeight", thisSyst, m_tree[""]);
-	       if(content.zElectrons.size()>1 || content.zMuons.size()>1){
-		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.zElectrons,content.zMuons, sysWeight,"diLepton");		 
+	       if(content.goodElectrons.size()>1 || content.goodMuons.size()>1){
+		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.goodElectrons,content.goodMuons, sysWeight,"diLepton");		 
 	       }
             } else if (thisSyst.Contains("EL_EFF")) {
                float &sysSF = cand.evt.GetSystVar("elSFWeight", thisSyst, m_tree[""]);
-               sysSF = m_susytools_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
+	       if((cand.evt.n_el==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu==0)
+		 sysSF = m_susytools_Tighter_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
+	       else
+		 sysSF = m_susytools_handle->GetTotalElectronSF(content.wElectrons, true, true, false, true, "");
             } else if (thisSyst.Contains("MUON_EFF_Trig")) {
                float &sysSF2 = cand.evt.GetSystVar("muSFTrigWeight", thisSyst, m_tree[""]);
-               sysSF2        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
+	       if((cand.evt.n_el==0) && (cand.evt.n_mu==2 || cand.evt.n_mu_baseline>1))
+		 sysSF2        = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, false, false,str_muon_trigger_OR);
+	       else sysSF2        = m_susytools_handle->GetTotalMuonSF(content.wMuons, false, false,str_muon_trigger_OR);
                float &sysSF3 = cand.evt.GetSystVar("dilepTrigSFWeight", thisSyst, m_tree[""]);
-	       if(content.zElectrons.size()>1 || content.zMuons.size()>1){
-		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.zElectrons,content.zMuons,sysWeight,"diLepton");		 
+	       if(content.goodElectrons.size()>1 || content.goodMuons.size()>1){
+		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.goodElectrons,content.goodMuons,sysWeight,"diLepton");		 
 	       }
             } else if (thisSyst.Contains("MUON_EFF")) {
                float &sysSF = cand.evt.GetSystVar("muSFWeight", thisSyst, m_tree[""]);
-               sysSF        = m_susytools_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
-            } else if (thisSyst.Contains("TAUS_EFF")) { // not implemented!! we do not use photons
-            } else if (thisSyst.Contains("PH_EFF")) {   // not implemented!! we do not use photons
+	       if((cand.evt.n_el==0) && (cand.evt.n_mu==2 || cand.evt.n_mu_baseline>1))
+		 sysSF        = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
+	       else sysSF        = m_susytools_handle->GetTotalMuonSF(content.wMuons, true, true, "");
+            } else if (thisSyst.Contains("TAUS_EFF")) { // not implemented!! we do not use taus
+            } else if (thisSyst.Contains("PH_EFF")) {   // photon efficiency SF 
+	      float &sysSF = cand.evt.GetSystVar("phSFWeight", thisSyst, m_tree[""]);
+	      sysSF = m_susytools_handle->GetTotalPhotonSF(content.goodPhotons,true,true,false);
             } else {
                ANA_MSG_INFO("Not configured to save this weight systematic var. " << sysWeight.name().c_str());
             }
@@ -2266,7 +2275,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // Selected muons
    //-----------------------------------------------------------------------
    cand.evt.n_mu = content.goodMuons.size();
-   cand.evt.n_mu_z = content.zMuons.size();
+   cand.evt.n_mu_w = content.wMuons.size();
    // if( cand.evt.n_mu_baseline != 0)
    // std::cout << "Number of muons in event=" << cand.evt.n_mu << ", baseline=" << cand.evt.n_mu_baseline << std::endl;
    static SG::AuxElement::Accessor<char> acc_signal("signal");
@@ -2309,7 +2318,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (acc_baseline(*electron) == 1) ++cand.evt.n_el_baseline_noOR;
    }
    cand.evt.n_el = content.goodElectrons.size();
-   cand.evt.n_el_z = content.zElectrons.size();
+   cand.evt.n_el_w = content.wElectrons.size();
    for (auto electron : content.goodElectrons) {
       cand.el["el"].add(*electron);
    }
@@ -2383,7 +2392,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    //  cand.met["met_tst_noelectron"].add(*((*content.met_tst_noelectron)["Final"]));
    cand.met["met_tst_nolep"].add(*((*content.met_tst_nolep)["Final"]));
 
-   cand.met["met_track"].add(*((*content.met_track)["Track"]));
+   //cand.met["met_track"].add(*((*content.met_track)["Track"]));
    if (m_isMC) cand.met["met_truth"].add(*((*content.met_truth)["NonInt"]));
    //-----------------------------------------------------------------------
    // write tree
