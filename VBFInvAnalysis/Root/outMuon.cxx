@@ -61,7 +61,7 @@ void Analysis::outMuon::attachToTree(TTree *tree)
       tree->Branch(prefix + "d0", &d0);
       tree->Branch(prefix + "d0sig", &d0sig);
       tree->Branch(prefix + "z0", &z0);
-      tree->Branch(prefix + "z0sig", &z0sig);
+      //tree->Branch(prefix + "z0sig", &z0sig);
       // tree->Branch(prefix + "ptcone20", &ptcone20);
       tree->Branch(prefix + "ptvarcone20", &ptvarcone20);
       // tree->Branch(prefix + "etcone20", &etcone20);
@@ -75,9 +75,9 @@ void Analysis::outMuon::attachToTree(TTree *tree)
       // tree->Branch(prefix + "ptvarcone40", &ptvarcone40);
       // tree->Branch(prefix + "etcone40", &etcone40);
       // tree->Branch(prefix + "topoetcone40", &topoetcone40);
-      tree->Branch(prefix + "truthType", &truthType);
-      tree->Branch(prefix + "truthOrigin", &truthOrigin);
-      tree->Branch(prefix + "passOR", &passOR);
+      if(isMC()) tree->Branch(prefix + "truthType", &truthType);
+      if(isMC()) tree->Branch(prefix + "truthOrigin", &truthOrigin);
+      if(doORDetail()) tree->Branch(prefix + "passOR", &passOR);
    }
 
    return;

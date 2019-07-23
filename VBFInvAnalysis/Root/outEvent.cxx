@@ -41,6 +41,7 @@ void Analysis::outEvent::reset()
    fjvtSFTighterWeight   = 1.0;
    elSFWeight     = 1.0;
    muSFWeight     = 1.0;
+   phSFWeight     = 1.0;
    elSFTrigWeight = 1.0;
    muSFTrigWeight = 1.0;
    eleANTISF      = 1.0;
@@ -133,12 +134,12 @@ void Analysis::outEvent::reset()
    n_bjet        = -9999;
    n_el          = -9999;
    n_el_baseline = 0;
-   n_el_z        = 0;
+   n_el_w        = 0;
    n_el_baseline_iso= 0;
    n_el_baseline_noOR = 0;
    n_el_baseline_crackVetoCleaning = 0;
    n_mu          = -9999;
-   n_mu_z        = 0;
+   n_mu_w        = 0;
    n_mu_baseline_noOR = 0;
    n_mu_baseline = 0;
    n_mu_baseline_loose = 0;
@@ -196,7 +197,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "corAverageIntPerXing", &corAverageIntPerXing);
    tree->Branch(prefix + "mcEventWeight", &mcEventWeight);
    if (!doTrim()) tree->Branch(prefix + "vtx_sumpt2", &vtx_sumpt2);
-   if (!doTrim()) tree->Branch(prefix + "mcEventWeightXsec", &mcEventWeightXsec);
+   if (!doTrim() && doComputeXS()) tree->Branch(prefix + "mcEventWeightXsec", &mcEventWeightXsec);
    if (!doTrim()) tree->Branch(prefix + "mcEventWeights", &mcEventWeights);
    if (!doTrim()) tree->Branch("l1_met_trig_encoded", &l1_met_trig_encoded);
 
@@ -207,17 +208,19 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "fjvtSFTighterWeight", &fjvtSFTighterWeight);
    tree->Branch(prefix + "elSFWeight", &elSFWeight);
    tree->Branch(prefix + "muSFWeight", &muSFWeight);
+   tree->Branch(prefix + "phSFWeight", &phSFWeight);
    tree->Branch(prefix + "elSFTrigWeight", &elSFTrigWeight);
    tree->Branch(prefix + "muSFTrigWeight", &muSFTrigWeight);
    tree->Branch(prefix + "eleANTISF", &eleANTISF);
    tree->Branch(prefix + "dilepTrigSFWeight", &dilepTrigSFWeight);
 
-   tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
-   tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);
-   tree->Branch(prefix + "SherpaVTruthPt", &SherpaVTruthPt);
-   tree->Branch(prefix + "in_vy_overlap", &in_vy_overlap);
-   tree->Branch(prefix + "in_vy_overlap_iso", &in_vy_overlap_iso);
-
+   if(isMC()){
+     tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
+     tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);
+     tree->Branch(prefix + "SherpaVTruthPt", &SherpaVTruthPt);
+     tree->Branch(prefix + "in_vy_overlap", &in_vy_overlap);
+     tree->Branch(prefix + "in_vy_overlap_iso", &in_vy_overlap_iso);
+   }
    for (auto &itrig : trigger) {
       const TString trigName = itrig.first;
       // std::cout << "Trigger: " << itrig.first << std::endl;
@@ -248,7 +251,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
        tree->Branch(prefix + "pdf_pdf2", &pdf_pdf2);
        tree->Branch(prefix + "pdf_scale", &pdf_scale);
    */
-   if (!doTrim()) {
+   if (!doTrim() && isMC()) {
       tree->Branch(prefix + "n_jet_truth", &n_jet_truth);
       tree->Branch(prefix + "truth_jet_pt", &truth_jet_pt);
       tree->Branch(prefix + "truth_jet_eta", &truth_jet_eta);
@@ -313,8 +316,8 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "n_bjet", &n_bjet);
    tree->Branch(prefix + "n_el", &n_el);
    tree->Branch(prefix + "n_mu", &n_mu);
-   tree->Branch(prefix + "n_el_z", &n_el_z);
-   tree->Branch(prefix + "n_mu_z", &n_mu_z);
+   tree->Branch(prefix + "n_el_w", &n_el_w);
+   tree->Branch(prefix + "n_mu_w", &n_mu_w);
    tree->Branch(prefix + "n_el_baseline", &n_el_baseline);
    tree->Branch(prefix + "n_el_baseline_iso", &n_el_baseline_iso);
    tree->Branch(prefix + "n_el_baseline_noOR", &n_el_baseline_noOR);
@@ -338,12 +341,15 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "metsig_tst", &metsig_tst);
    tree->Branch(prefix + "metsig_tst_nolep", &metsig_tst_nolep);
 
-   tree->Branch(prefix + "truthF_jj_mass", &truthF_jj_mass);
-   tree->Branch(prefix + "truthF_jj_deta", &truthF_jj_deta);
-   tree->Branch(prefix + "truthF_jj_dphi", &truthF_jj_dphi);
-
+   if(isMC()){
+     tree->Branch(prefix + "truthF_jj_mass", &truthF_jj_mass);
+     tree->Branch(prefix + "truthF_jj_deta", &truthF_jj_deta);
+     tree->Branch(prefix + "truthF_jj_dphi", &truthF_jj_dphi);
+   }
    if (!doTrim() && doVertexDetail()) {
-      tree->Branch(prefix + "truth_vtx_z", &truth_vtx_z);
+      if(isMC()){
+        tree->Branch(prefix + "truth_vtx_z", &truth_vtx_z);
+      }
       tree->Branch(prefix + "reco_vtx_ntrk", &reco_vtx_ntrk);
       tree->Branch(prefix + "reco_vtx_x", &reco_vtx_x);
       tree->Branch(prefix + "reco_vtx_y", &reco_vtx_y);

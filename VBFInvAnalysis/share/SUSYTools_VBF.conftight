@@ -9,7 +9,8 @@ EleBaseline.CrackVeto: false
 Ele.Et: 4500.
 Ele.Eta: 2.47
 Ele.CrackVeto: false
-Ele.Iso: Gradient
+#Ele.Iso: Gradient
+Ele.Iso: FCLoose
 Ele.IsoHighPt: FCHighPtCaloOnly # tight iso required for electrons pt > 200 GeV
 Ele.Id: LooseAndBLayerLLH
 Ele.d0sig: 5.

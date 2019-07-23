@@ -107,12 +107,12 @@ public:
    xAOD::MuonContainer     allMuons;          //!
    xAOD::MuonContainer     contMuons;         //!
    xAOD::MuonContainer     baselineMuons;     //!
-   xAOD::MuonContainer     zMuons;            //!
+   xAOD::MuonContainer     wMuons;            //!
    xAOD::MuonContainer     goodMuons;         //!
    xAOD::ElectronContainer allElectrons;      //!
    xAOD::ElectronContainer contElectrons;     //!
    xAOD::ElectronContainer baselineElectrons; //!
-   xAOD::ElectronContainer zElectrons;        //!
+   xAOD::ElectronContainer wElectrons;        //!
    xAOD::ElectronContainer goodElectrons;     //!
    xAOD::JetContainer      allJets;           //!
    xAOD::JetContainer      allEMJets;         //!

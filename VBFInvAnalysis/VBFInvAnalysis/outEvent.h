@@ -33,6 +33,7 @@ public:
    Float_t              puWeight;
    Float_t              elSFWeight;
    Float_t              muSFWeight;
+   Float_t              phSFWeight;
    Float_t              elSFTrigWeight;
    Float_t              muSFTrigWeight;
    Float_t              btagSFWeight;
@@ -148,14 +149,14 @@ public:
 
    Int_t n_bjet;
    Int_t n_mu;
-   Int_t n_mu_z;
+   Int_t n_mu_w;
    Int_t n_mu_baseline_noOR;
    Int_t n_mu_baseline;
    Int_t n_mu_baseline_loose;
    Int_t n_mu_baseline_loose_noOR;
    Int_t n_mu_baseline_iso;
    Int_t n_el;
-   Int_t n_el_z;
+   Int_t n_el_w;
    Int_t n_el_baseline;
    Int_t n_el_baseline_iso;
    Int_t n_el_baseline_noOR;
