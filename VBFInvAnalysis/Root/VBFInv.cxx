@@ -188,8 +188,10 @@ EL::StatusCode VBFInv ::fileExecute()
          else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonwIsoFilter")
             nbin = 26;
          if (nbin > 0) {
-            m_NumberEvents->SetBinContent(nbin, cbk->sumOfEventWeights());
-            m_NumberEvents->SetBinError(nbin, cbk->sumOfEventWeightsSquared());
+	   double tmp_sumEVT    = m_NumberEvents->GetBinContent(nbin);
+	   double tmp_sumEVTtwo = m_NumberEvents->GetBinError(nbin);
+	   m_NumberEvents->SetBinContent(nbin, cbk->sumOfEventWeights()+tmp_sumEVT);// keep a running sum
+	   m_NumberEvents->SetBinError(nbin, cbk->sumOfEventWeightsSquared()+tmp_sumEVTtwo); // keep a running sum
          }
       } // end AOD stream
    }

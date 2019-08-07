@@ -275,7 +275,7 @@ elif (args.driver == 'prun'):
       driver.options().setString('nc_optGridNfilesPerJob', '5')
       #--nGBPerJob=10
     driver.options().setString('nc_outputSampleName', dset_name_mask)
-    driver.options().setString('osMatching','true')
+    #driver.options().setString('osMatching','true')
     #driver.options().setString("nc_optGridDestSE","DESY-HH_LOCALGROUPDISK")
     driver.options().setString("nc_optGridDestSE","MWT2_UC_LOCALGROUPDISK")
     if args.replicationSite != None:
