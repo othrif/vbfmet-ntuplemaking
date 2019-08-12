@@ -128,6 +128,7 @@ public:
 
    Bool_t passBatman;
    Bool_t passVjetsFilter;
+   Bool_t passVjetsFilterTauEl;
    Bool_t passVjetsPTV;
 
    Int_t    n_vx;

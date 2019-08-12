@@ -344,6 +344,7 @@ EL::StatusCode VBFInv::initialize()
    TString newST_config_file = ST_config_file + "tight";
    ANA_CHECK(m_susytools_Tighter_handle.setProperty("ConfigFile", newST_config_file.Data()));
    ANA_CHECK(m_susytools_Tighter_handle.setProperty("METJetSelection", "Tighter"));
+   ANA_CHECK(m_susytools_Tighter_handle.setProperty("JetInputType", 1));//emtopo
 
    if (verbose) {
       ANA_CHECK(m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
@@ -857,6 +858,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       ANA_MSG_ERROR("Cannot configure SUSYTools for systematic var. " << sys.name().c_str());
       return EL::StatusCode::FAILURE;
    }
+   if (m_susytools_Tighter_handle->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+      ANA_MSG_ERROR("Cannot configure SUSYTools alternate for systematic var. " << sys.name().c_str());
+      return EL::StatusCode::FAILURE;
+   }
 
    // determine which objects should be retrieved
    content.doElectrons      = (syst_affectsElectrons || content.isNominal);
@@ -994,7 +999,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	content.jetsEM    = nullptr;
 	content.jetsEMAux = nullptr;
 	content.allEMJets.clear(SG::VIEW_ELEMENTS);
-	ANA_CHECK(m_susytools_Tighter_handle->GetJets(content.jetsEM, content.jetsEMAux, false));
+	ANA_CHECK(m_susytools_Tighter_handle->GetJets(content.jetsEM, content.jetsEMAux, true, "AntiKt4EMTopoJets"));
 	m_jetFwdJvtTool->modify(*content.jetsEM); // add fjvt
 	for (auto jet : content.allJets) {
 	  float minDR=999.0;
@@ -1883,6 +1888,12 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          ANA_MSG_ERROR("Failed to retrieve TruthElectrons container");
          return EL::StatusCode::FAILURE;
       }
+      //-- TAUS --
+      const xAOD::TruthParticleContainer *truthTaus = nullptr;
+      if (!event->retrieve(truthTaus, "TruthTaus").isSuccess()) { // retrieve arguments: container type, container key
+         ANA_MSG_ERROR("Failed to retrieve TruthTaus container");
+         return EL::StatusCode::FAILURE;
+      }
 
       // apply antiID SF
       cand.evt.eleANTISF = 1.0;
@@ -1967,10 +1978,12 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                sysSF        = m_susytools_handle->BtagSF(&content.goodJets);
             } else if (thisSyst.Contains("JET_JvtEfficiency")) {
                float &sysSF = cand.evt.GetSystVar("jvtSFWeight", thisSyst, m_tree[""]);
-               sysSF        = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
+               sysSF        = m_susytools_handle->GetTotalJetSF(&content.goodJets, false, true);
             } else if (thisSyst.Contains("JET_fJvtEfficiency")) {
                float &sysSF = cand.evt.GetSystVar("fjvtSFWeight", thisSyst, m_tree[""]);
-               sysSF        = m_susytools_handle->FJVT_SF(content.jets);
+               sysSF        = m_susytools_handle->FJVT_SF(&content.goodJets);
+               float &sysSF2 = cand.evt.GetSystVar("fjvtSFTighterWeight", thisSyst, m_tree[""]);
+               sysSF2        = m_susytools_Tighter_handle->FJVT_SF(&content.goodJets);
             } else if (thisSyst.Contains("EL_EFF_Trigger")) {
                float &sysSF2 = cand.evt.GetSystVar("elSFTrigWeight", thisSyst, m_tree[""]);
 	       if((cand.evt.n_el==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu==0)
@@ -2125,6 +2138,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
             double tmp_mjj, tmp_detajj, tmp_dphijj;
             cand.evt.passVjetsFilter = VBFInvAnalysis::passTruthFilter(truthJets, JetEtaFilter, JetpTFilter, MjjFilter,
                                                                        PhijjFilter, tmp_mjj, tmp_detajj, tmp_dphijj);
+            cand.evt.passVjetsFilterTauEl = VBFInvAnalysis::passTruthFilter(truthJets, JetEtaFilter, JetpTFilter, MjjFilter,
+									    PhijjFilter, tmp_mjj, tmp_detajj, tmp_dphijj, truthElectrons, truthTaus);
             cand.evt.truthF_jj_mass  = tmp_mjj;
             cand.evt.truthF_jj_deta  = tmp_detajj;
             cand.evt.truthF_jj_dphi  = tmp_dphijj;
@@ -2173,11 +2188,13 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_mu_status.push_back(part->status());
       }
 
+      static SG::AuxElement::Accessor<unsigned int> acc_classifierParticleOrigin("classifierParticleOrigin");
       //-- ELECTRONS --
       cand.evt.n_el_truth = truthElectrons->size();
       for (const auto &part : *truthElectrons) {
          if (part->pt() < 4.0e3) continue;
          if (part->status() != 1) continue;
+	 //std::cout << "origin ele: " << acc_classifierParticleOrigin(*part) <<std::endl;
          cand.evt.truth_el_pt.push_back(part->pt());
          cand.evt.truth_el_eta.push_back(part->eta());
          cand.evt.truth_el_phi.push_back(part->phi());
@@ -2186,15 +2203,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       }
 
       //-- TAUS --
-      const xAOD::TruthParticleContainer *truthTaus = nullptr;
-      if (!event->retrieve(truthTaus, "TruthTaus").isSuccess()) { // retrieve arguments: container type, container key
-         ANA_MSG_ERROR("Failed to retrieve TruthTaus container");
-         return EL::StatusCode::FAILURE;
-      }
       cand.evt.n_tau_truth = truthTaus->size();
       for (const auto &part : *truthTaus) {
          if (part->pt() < 4.0e3) continue;
          // if(part->status()!=1) continue;
+	 //std::cout << "origin tau: " << acc_classifierParticleOrigin(*part) <<std::endl;
          cand.evt.truth_tau_pt.push_back(part->pt());
          cand.evt.truth_tau_eta.push_back(part->eta());
          cand.evt.truth_tau_phi.push_back(part->phi());

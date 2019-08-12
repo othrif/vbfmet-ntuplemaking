@@ -127,6 +127,7 @@ void Analysis::outEvent::reset()
    passDetErr        = -9999;
    passBatman        = false;
    passVjetsFilter   = false;
+   passVjetsFilterTauEl = false;
    passVjetsPTV      = false;
 
    n_vx          = -9999;
@@ -309,6 +310,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
 
    if (!doTrim()) tree->Branch(prefix + "passBatman", &passBatman);
    tree->Branch(prefix + "passVjetsFilter", &passVjetsFilter);
+   tree->Branch(prefix + "passVjetsFilterTauEl", &passVjetsFilterTauEl);
    tree->Branch(prefix + "passVjetsPTV", &passVjetsPTV);
 
    tree->Branch(prefix + "n_vx", &n_vx);
