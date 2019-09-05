@@ -994,6 +994,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	ANA_CHECK(m_susytools_Tighter_handle->GetJets(content.jetsEM, content.jetsEMAux, true, "AntiKt4EMTopoJets"));
 	m_jetFwdJvtTool->modify(*content.jetsEM); // add fjvt
 	for (auto jet : content.allJets) {
+	  // set the defaults
+	  dec_fjvt(*jet) = 0.0;
+	  dec_jetCleanTight(*jet) = 1;
 	  float minDR=999.0;
 	  dec_fjvt(*jet)=0.0;
 	  for (auto jetEM : *content.jetsEM) {
