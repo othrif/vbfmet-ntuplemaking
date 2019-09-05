@@ -116,7 +116,6 @@ EL::StatusCode VBFInv ::histInitialize()
    m_CutFlow.addCut("Processed");
    m_CutFlow.addCut("GRL");
    m_CutFlow.addCut("Vertex");
-   // m_CutFlow.addCut("Trigger");
    m_CutFlow.addCut("Detector cleaning");
    m_CutFlow.addCut("Jet cleaning");
    m_CutFlow.addCut("MET skim");
@@ -938,15 +937,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    m_CutFlow.hasPassed(VBFInvCuts::Vertex, event_weight);
    content.passPV = passesVertex;
 
-   // Trigger
-   /*
-   Bool_t passesTrigger(kTRUE);
-   if (!passesTrigger && doSkim)
-     return EL::StatusCode::SUCCESS;
-   m_CutFlow.hasPassed(VBFInvCuts::Trigger, event_weight);
-   content.passTrigger = passesTrigger;
-   */
-
    // detector cleaning
    // https://twiki.cern.ch/twiki/bin/viewauth/Atlas/DataPreparationCheckListForPhysicsAnalysis
    Bool_t passesDetErr =
@@ -996,6 +986,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       if(copyEMTopoFJVT){
 	static SG::AuxElement::ConstAccessor<float> acc_fjvt("fJvt");
 	static SG::AuxElement::Decorator<float> dec_fjvt("fJvt");
+	static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
+	static SG::AuxElement::Decorator<char> dec_jetCleanTight("DFCommonJets_jetClean_TightBad");
 	content.jetsEM    = nullptr;
 	content.jetsEMAux = nullptr;
 	content.allEMJets.clear(SG::VIEW_ELEMENTS);
@@ -1005,12 +997,12 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	  float minDR=999.0;
 	  dec_fjvt(*jet)=0.0;
 	  for (auto jetEM : *content.jetsEM) {
-	    // if close then copy the fjvt score
+	    // if close then copy the fjvt score & tight jet cleaning
 	    float dr=jet->p4().DeltaR(jetEM->p4());
-	    if(dr<minDR && dr<0.6){ minDR=dr;  dec_fjvt(*jet) = acc_fjvt(*jetEM); }
+	    if(dr<minDR && dr<0.6){ minDR=dr;  dec_fjvt(*jet) = acc_fjvt(*jetEM); dec_jetCleanTight(*jet) = acc_jetCleanTight(*jetEM);  }
 	  }
 	}
-      }      
+      }// end copy fjvt score
    }                                                     // done with jets
 
    //-- FatJETS --
@@ -1217,7 +1209,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          if (acc_signal(*tau) == 1) content.goodTaus.push_back(tau);
       }
    }
-
    //-- MET --
 
    // real MET, with el mu ph soft
@@ -1445,12 +1436,12 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          if (debug) print("jetClean_TightBad", (bool)acc_jetCleanTight(*jet));
          if (acc_jetCleanTight(*jet) == 0) {
             passesJetCleanTight = false;
+	    break;
          }
       }
    }
 
    // Tight cleaning for PFlow
-   /*
    Bool_t passesJetCleanTightCustom = true;
    for (auto jet : content.goodJets) {
       std::vector<float> SumTrkPt500vec;
@@ -1461,26 +1452,19 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       float fmax = jet->auxdata<float>("FracSamplingMax");
       if (std::fabs(jet->eta()) < 2.4 && chf / fmax < 0.1) {
          passesJetCleanTightCustom = false;
+	 break;
       }
    }
-   */
 
    m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
    content.passJetCleanLoose = passesJetCleanLoose;
    content.passJetCleanTight = passesJetCleanTight;
+   content.passJetCleanTightEM = passesJetCleanTightCustom;
+   if(copyEMTopoFJVT){
+     content.passJetCleanTight   = passesJetCleanTightCustom;
+     content.passJetCleanTightEM = passesJetCleanTight;
+   }
    content.passBatman        = passesBadBatmanClean;
-
-   // Investigating jet cleaning
-   /*
-   int val = 0;
-   if(passesJetCleanLoose)
-     val += 1;
-   if(passesJetCleanTight)
-     val += 2;
-     if(passesJetCleanTightCustom)
-     val += 3;
-   content.passJetCleanLoose = passesJetCleanLoose;
-   */
 
    //-----------------------------------------------------------------------
    // Fill tree
@@ -1771,11 +1755,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // pass event flags
    cand.evt.passGRL = content.passGRL;
    cand.evt.passPV  = content.passPV;
-   //   cand.evt.passTrigger = content.passTrigger;
-   cand.evt.passDetErr        = content.passDetErr;
-   cand.evt.passJetCleanLoose = content.passJetCleanLoose;
-   cand.evt.passJetCleanTight = content.passJetCleanTight;
-   cand.evt.passBatman        = content.passBatman;
+   cand.evt.passDetErr          = content.passDetErr;
+   cand.evt.passJetCleanLoose   = content.passJetCleanLoose;
+   cand.evt.passJetCleanTight   = content.passJetCleanTight;
+   cand.evt.passJetCleanTightEM = content.passJetCleanTightEM;
+   cand.evt.passBatman          = content.passBatman;
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
@@ -2071,6 +2055,18 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
             Int_t                               nTruthJets(0);
             const xAOD::TruthParticleContainer *truthP(0);
             ANA_CHECK(event->retrieve(truthP, "TruthParticles"));
+	    // count the number partons. many for madgraph
+	    cand.evt.nParton=0;
+	    for (const auto &truthP_itr : *truthP) {
+	      if(truthP_itr->status()==23 && (truthP_itr->pdgId()==21 || fabs(truthP_itr->pdgId())<7)) cand.evt.nParton+=1;
+	      //std::cout << "   part: " << truthP_itr->status() << " pt: " << truthP_itr->pt() << " eta " << truthP_itr->eta() << " id: " << truthP_itr->pdgId() << std::endl;
+	    }
+	    if(false && cand.evt.nParton!=4){
+	      std::cout << "Event with nparton: " << cand.evt.nParton <<std::endl;
+	      for (const auto &truthP_itr : *truthP) {
+		std::cout << "   part: " << truthP_itr->status() << " pt: " << truthP_itr->pt() << " eta " << truthP_itr->eta() << " id: " << truthP_itr->pdgId() << std::endl;
+	      }	      
+	    }
             for (const auto &truthJ_itr : *truthJets) {
                if (truthJ_itr->pt() > 20000.) { // no eta cut
                   float minDR2 = 9999999.;

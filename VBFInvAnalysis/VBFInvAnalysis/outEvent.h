@@ -44,6 +44,7 @@ public:
    Float_t              dilepTrigSFWeight;
 
    Int_t FlavourFilter;
+   Int_t   nParton;
    Float_t MGVTruthPt;
    Float_t SherpaVTruthPt;
    Bool_t in_vy_overlap;
@@ -124,6 +125,7 @@ public:
    Int_t passPV;
    Int_t passJetCleanLoose;
    Int_t passJetCleanTight;
+   Int_t passJetCleanTightEM;
    Int_t passDetErr;
 
    Bool_t passBatman;

@@ -49,6 +49,7 @@ void Analysis::outEvent::reset()
 
    // truth filters
    FlavourFilter=-9999;
+   nParton=-9999;
    MGVTruthPt=-9999;
    SherpaVTruthPt=-9999;
    in_vy_overlap=false;
@@ -124,6 +125,7 @@ void Analysis::outEvent::reset()
    passPV            = -9999;
    passJetCleanLoose = -9999;
    passJetCleanTight = -9999;
+   passJetCleanTightEM = -9999;
    passDetErr        = -9999;
    passBatman        = false;
    passVjetsFilter   = false;
@@ -217,6 +219,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
 
    if(isMC()){
      tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
+     tree->Branch(prefix + "nParton", &nParton);
      tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);
      tree->Branch(prefix + "SherpaVTruthPt", &SherpaVTruthPt);
      tree->Branch(prefix + "in_vy_overlap", &in_vy_overlap);
@@ -306,6 +309,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "passPV", &passPV);
    tree->Branch(prefix + "passJetCleanLoose", &passJetCleanLoose);
    tree->Branch(prefix + "passJetCleanTight", &passJetCleanTight);
+   tree->Branch(prefix + "passJetCleanTightEM", &passJetCleanTightEM);
    tree->Branch(prefix + "passDetErr", &passDetErr);
 
    if (!doTrim()) tree->Branch(prefix + "passBatman", &passBatman);

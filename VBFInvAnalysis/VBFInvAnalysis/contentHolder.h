@@ -36,6 +36,7 @@ public:
    Bool_t passPV;
    Bool_t passJetCleanLoose;
    Bool_t passJetCleanTight;
+   Bool_t passJetCleanTightEM;
    Bool_t passDetErr;
    Bool_t passBatman;
 
