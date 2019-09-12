@@ -51,7 +51,7 @@ ClassImp(VBFInv)
      MC_campaign(""), skip_syst(""), trigger_list(""), pt1Skim(0), pt1SkimForSyst(0), pt2Skim(0), pt2SkimForSyst(0),
      metSkim(0), metSkimForSyst(0), mjjSkim(0), mjjSkimForSyst(0), detajjSkim(0), detajjSkimForSyst(0),
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false),
-     doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false),
+     doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doTrackMET(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
      doContLepDetail(false), doVertexDetail(false), doORDetail(false), doTTMet(false), savePVOnly(false), 
      copyEMTopoFJVT(false), JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),
@@ -674,6 +674,9 @@ EL::StatusCode VBFInv::initialize()
       if (doFatJetDetail) m_cand[thisSyst].fatjet["fatjet"] = Analysis::outFatJet("fatjet", (trim && !doFatJetDetail));
       if (doTrackJetDetail)
          m_cand[thisSyst].trackjet["trackjet"] = Analysis::outTrackJet("trackjet", (trim && !doTrackJetDetail));
+      if (doTrackMET) {
+         m_cand[thisSyst].track_met["track_met"]       = Analysis::outTrackMET("track_met", (trim && !doTrackMET));
+      }
       if (doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim && !doTauDetail);
       if (doPhotonDetail) m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim && !doPhotonDetail);
 
@@ -862,6 +865,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    content.doJets           = (syst_affectsJets || content.isNominal);
    content.doFatJets        = (syst_affectsFatJets || content.isNominal) && doFatJetDetail;
    content.doTrackJets      = (syst_affectsTrackJets || content.isNominal) && doTrackJetDetail;
+   content.doTrackMET       = content.isNominal && doTrackMET;
    content.doPhotons        = (syst_affectsPhotons || content.isNominal); // needed for overlap removal
    content.doTaus           = (syst_affectsTaus || content.isNominal);
    content.doMET            = kTRUE;
@@ -1340,9 +1344,16 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    }
 
    // track MET
-   //getTrackMET(content.met_track, content.met_trackAux,
-   //            content.jets, // use all objects (before OR and after corrections) for MET utility
-   //            content.electrons, content.muons);
+   if (content.doTrackMET) {
+      /*
+      getTrackMET(content.met_track, content.met_trackAux, 
+                  content.jets, // use all objects (before OR and after corrections) for MET utility
+                  content.electrons, content.muons);
+      */
+      if( evtStore()->retrieve(content.track_met, "MET_Track").isFailure()) {
+         ATH_MSG_WARNING("Unable to retrieve MET_Track container");
+      }
+   }
 
    // truth MET
    TLorentzVector myTruthMET;
@@ -2392,7 +2403,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    //  cand.met["met_tst_noelectron"].add(*((*content.met_tst_noelectron)["Final"]));
    cand.met["met_tst_nolep"].add(*((*content.met_tst_nolep)["Final"]));
 
-   //cand.met["met_track"].add(*((*content.met_track)["Track"]));
+   // TrackMET
+   if (content.doTrackMET) {
+      cand.track_met["track_met"].add(content.track_met);
+   }
    if (m_isMC) cand.met["met_truth"].add(*((*content.met_truth)["NonInt"]));
    //-----------------------------------------------------------------------
    // write tree
@@ -2473,6 +2487,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
    return EL::StatusCode::SUCCESS;
 }
 
+/*
 EL::StatusCode VBFInv::getTrackMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
                                    std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet,
                                    xAOD::ElectronContainer *el, xAOD::MuonContainer *mu)
@@ -2493,6 +2508,7 @@ EL::StatusCode VBFInv::getTrackMET(std::shared_ptr<xAOD::MissingETContainer> &  
 
    return EL::StatusCode::SUCCESS;
 }
+*/
 
 void VBFInv::GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthParticleContainer *truthElectrons,
                          float &antiIdSF)

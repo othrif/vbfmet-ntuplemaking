@@ -68,6 +68,7 @@ parser.add_argument("--noTruthBoson", dest="noTruthBoson",action='store_true', d
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
 parser.add_argument("--doFatJetDetail", dest="doFatJetDetail", action="store_true", default=False, help="store detailed branches for FatJet")
 parser.add_argument("--doTrackJetDetail", dest="doTrackJetDetail", action="store_true", default=False, help="store detailed branches for TrackJets")
+parser.add_argument("--doTrackMET", dest="doTrackMET", action="store_true", default=False, help="store branches for TrackMET")
 parser.add_argument("--getMCChannel", dest="getMCChannel", type=int, default=-1, help="specify the MC Channel number")
 parser.add_argument("--savePVOnly", dest="savePVOnly", action="store_true", default=False, help="saves only the PV value for the jets when True")
 parser.add_argument("--copyEMTopoFJVT", dest="copyEMTopoFJVT", action="store_true", default=False, help="saves only the emtopo fjvt for pflow jets when True")
@@ -209,6 +210,7 @@ if( args.algoName == "VBFInv" ):
   alg.doRnS = args.doRnS
   alg.doFatJetDetail = args.doFatJetDetail
   alg.doTrackJetDetail = args.doTrackJetDetail
+  alg.doTrackMET = args.doTrackMET
   alg.doTTMet = args.doTTMet
 elif ( args.algoName == "VBFInvTruth"):
   alg.skipCBK = args.skipCutBookKeper

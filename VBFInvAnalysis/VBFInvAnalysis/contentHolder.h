@@ -26,6 +26,7 @@ public:
    Bool_t doJets;
    Bool_t doFatJets;
    Bool_t doTrackJets;
+   Bool_t doTrackMET;
    Bool_t doPhotons;
    Bool_t doTaus;
    Bool_t doOverlapRemoval;
@@ -77,8 +78,9 @@ public:
    std::shared_ptr<xAOD::MissingETAuxContainer> met_cstAux;                 //!
    std::shared_ptr<xAOD::MissingETContainer>    met_tst_nophoton;    //!
    std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nophotonAux; //!
-   std::shared_ptr<xAOD::MissingETContainer>    met_track;           //!
-   std::shared_ptr<xAOD::MissingETAuxContainer> met_trackAux;        //!
+   //std::shared_ptr<xAOD::MissingETContainer>    met_track;           //!
+   //std::shared_ptr<xAOD::MissingETAuxContainer> met_trackAux;        //!
+   const xAOD::MissingETContainer *             track_met;           //!
    const xAOD::MissingETContainer *             met_truth;           //! // we do not own it!!!
 
    //

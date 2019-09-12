@@ -9,6 +9,7 @@
 #include <VBFInvAnalysis/outJet.h>
 #include <VBFInvAnalysis/outFatJet.h>
 #include <VBFInvAnalysis/outTrackJet.h>
+#include <VBFInvAnalysis/outTrackMET.h>
 #include <VBFInvAnalysis/outPhoton.h>
 #include <VBFInvAnalysis/outTau.h>
 
@@ -30,6 +31,7 @@ public:
    std::map<TString, outJet>      jet;
    std::map<TString, outFatJet>   fatjet;
    std::map<TString, outTrackJet> trackjet;
+   std::map<TString, outTrackMET> track_met;
    std::map<TString, outPhoton>   ph;
    std::map<TString, outTau>      tau;
 
