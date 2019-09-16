@@ -106,6 +106,11 @@ public:
    std::vector<Float_t> truth_mu_m;
    std::vector<Int_t>   truth_mu_status;
 
+   Int_t                n_ph_truth;
+   std::vector<Float_t> truth_ph_pt;
+   std::vector<Float_t> truth_ph_eta;
+   std::vector<Float_t> truth_ph_phi;
+
    Int_t                n_tau_truth;
    std::vector<Float_t> truth_tau_pt;
    std::vector<Float_t> truth_tau_eta;

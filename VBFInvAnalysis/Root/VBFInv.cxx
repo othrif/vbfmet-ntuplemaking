@@ -1196,11 +1196,36 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto electron : content.goodElectrons) { dec_signal(*electron)=1; }
    for (auto muon : content.goodMuons) { dec_signal(*muon)=1; }
 
+   static const SG::AuxElement::Accessor<uint8_t> acc_ambiguityType("ambiguityType");  
+   static const SG::AuxElement::Accessor<ElementLink<xAOD::EgammaContainer> > acc_ambiguityLink("ambiguityLink");
    //-- PHOTONS --
    for (auto photon : content.allPhotons) {
-      if (acc_baseline(*photon) == 1 && acc_passOR(*photon) == 1) { // baseline already applied
-         content.baselinePhotons.push_back(photon);
-         if (acc_signal(*photon) == 1 && acc_passOR(*photon) == 1) content.goodPhotons.push_back(photon);
+     if (acc_baseline(*photon) == 1 && acc_passOR(*photon) == 1) { // baseline already applied
+	content.baselinePhotons.push_back(photon);
+	//content.goodPhotons.push_back(photon);
+	//std::cout << "pt: " << photon->pt() << " amb: " << (acc_ambiguityType(*photon)==0) << " 1: " << (acc_ambiguityType(*photon)==1) 
+	//	  << " 2: " << (acc_ambiguityType(*photon)==2) 
+	//	  << " 3: " << (acc_ambiguityType(*photon)==3) 
+	//	  << " 4: " << (acc_ambiguityType(*photon)==4) 
+	//	  << " 5: " << (acc_ambiguityType(*photon)==5) 
+	//	  << " 6: " << (acc_ambiguityType(*photon)==6) 
+	//	  << " 7: " << (acc_ambiguityType(*photon)==7) 
+	//	  << std::endl;
+	//if( acc_ambiguityLink.isAvailable(*photon) && acc_ambiguityLink(*photon).isValid() ){
+	//  uint8_t ambType = acc_ambiguityType(*dynamic_cast<const xAOD::Electron*>(*acc_ambiguityLink(*photon)));
+	//  std::cout << "Egamma pt: " << " amb: " << (ambType==0) 
+	//          << " 1: " << (ambType==1) 
+	//	  << " 2: " << (ambType==2) 
+	//	  << " 3: " << (ambType==3) 
+	//	  << " 4: " << (ambType==4) 
+	//	  << " 5: " << (ambType==5) 
+	//	  << " 6: " << (ambType==6) 
+	//	  << " 7: " << (ambType==7) 
+	//	  << std::endl;
+	//}
+	//if (acc_signal(*photon) == 1 && acc_passOR(*photon) == 1) content.goodPhotons.push_back(photon);
+	if  ( fabs( photon->caloCluster()->etaBE(2) ) >1.37 &&  fabs( photon->caloCluster()->etaBE(2) ) <1.52) continue;
+	if (acc_isol(*photon) && acc_passOR(*photon) == 1){ content.goodPhotons.push_back(photon); dec_signal(*photon)=1; }
       }
    }
 
@@ -1703,7 +1728,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if (diMuonYearlyOpt2L1) cand.evt.trigger_lep += 0x40; // only 1% unique rate
    if (diEle) cand.evt.trigger_lep += 0x100;
    if (diEleYearlyOpt1) cand.evt.trigger_lep += 0x200;
-   if (diEleYearlyOpt2) cand.evt.trigger_lep += 0x400;
+   if (diEleYearlyOpt2) cand.evt.trigger_lep += 0x400;// prefered
    if (muonTrig) cand.evt.trigger_lep += 0x2;
    if (elecTrig) cand.evt.trigger_lep += 0x4;
 
@@ -1875,6 +1900,14 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          ANA_MSG_ERROR("Failed to retrieve TruthElectrons container");
          return EL::StatusCode::FAILURE;
       }
+      //-- PHOTONS --
+      //const xAOD::TruthParticleContainer *truthPhotons = nullptr;
+      //const TString ph_container = (m_isEXOT5) ? "EXOT5TruthPhotons" : "TruthPhotons";
+      //if (!event->retrieve(truthPhotons, ph_container.Data())
+      //        .isSuccess()) { // retrieve arguments: container type, container key
+      //   ANA_MSG_ERROR("Failed to retrieve TruthPhotons container");
+      //   return EL::StatusCode::FAILURE;
+      //}
       //-- TAUS --
       const xAOD::TruthParticleContainer *truthTaus = nullptr;
       if (!event->retrieve(truthTaus, "TruthTaus").isSuccess()) { // retrieve arguments: container type, container key
@@ -2200,6 +2233,20 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_el_m.push_back(part->m());
          cand.evt.truth_el_status.push_back(part->status());
       }
+      //-- PHOTONS --
+      const xAOD::TruthParticleContainer *truthParticles(nullptr);
+      ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
+      cand.evt.n_ph_truth = 0; //truthPhotons->size();
+      for (const auto &part : *truthParticles) {
+         if (part->pdgId() != 22) continue;
+         if (part->pt() < 10.0e3) continue;
+         if (part->status() != 1) continue;
+	 //if( part->pt() >20.0e3) std::cout << "origin ph: " << acc_classifierParticleOrigin(*part) << " pt: " << part->pt() << " eta: " << part->eta() <<std::endl;
+         cand.evt.truth_ph_pt.push_back(part->pt());
+         cand.evt.truth_ph_eta.push_back(part->eta());
+         cand.evt.truth_ph_phi.push_back(part->phi());
+	 ++cand.evt.n_ph_truth;
+      }
 
       //-- TAUS --
       cand.evt.n_tau_truth = truthTaus->size();
@@ -2215,8 +2262,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       }
 
       //-- BOSONS --
-      const xAOD::TruthParticleContainer *truthParticles(nullptr);
-      ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
       // Dressed
       const TLorentzVector truth_V_dressed =
          VBFInvAnalysis::getTruthBosonP4(truthParticles, truthElectrons, truthMuons, truthParticles);

@@ -106,6 +106,10 @@ void Analysis::outEvent::reset()
    truth_el_phi.clear();
    truth_el_m.clear();
    truth_el_status.clear();
+   n_ph_truth = -9999;
+   truth_ph_pt.clear();
+   truth_ph_eta.clear();
+   truth_ph_phi.clear();
    n_tau_truth = -9999;
    truth_tau_pt.clear();
    truth_tau_eta.clear();
@@ -289,6 +293,10 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "truth_el_phi", &truth_el_phi);
       tree->Branch(prefix + "truth_el_m", &truth_el_m);
       tree->Branch(prefix + "truth_el_status", &truth_el_status);
+      tree->Branch(prefix + "n_ph_truth", &n_ph_truth);
+      tree->Branch(prefix + "truth_ph_pt", &truth_ph_pt);
+      tree->Branch(prefix + "truth_ph_eta", &truth_ph_eta);
+      tree->Branch(prefix + "truth_ph_phi", &truth_ph_phi);
       tree->Branch(prefix + "n_tau_truth", &n_tau_truth);
       tree->Branch(prefix + "truth_tau_pt", &truth_tau_pt);
       tree->Branch(prefix + "truth_tau_eta", &truth_tau_eta);
