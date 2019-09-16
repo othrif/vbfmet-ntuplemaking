@@ -12,7 +12,7 @@
 #
 
 # Set up which image we base the analysis repository's image on.
-FROM atlas/analysisbase:21.2.80
+FROM atlas/analysisbase:21.2.83
 
 # Copy everything into the image.
 COPY . /home/atlas/source/

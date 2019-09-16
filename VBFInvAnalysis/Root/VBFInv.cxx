@@ -116,7 +116,6 @@ EL::StatusCode VBFInv ::histInitialize()
    m_CutFlow.addCut("Processed");
    m_CutFlow.addCut("GRL");
    m_CutFlow.addCut("Vertex");
-   // m_CutFlow.addCut("Trigger");
    m_CutFlow.addCut("Detector cleaning");
    m_CutFlow.addCut("Jet cleaning");
    m_CutFlow.addCut("MET skim");
@@ -188,8 +187,10 @@ EL::StatusCode VBFInv ::fileExecute()
          else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonwIsoFilter")
             nbin = 26;
          if (nbin > 0) {
-            m_NumberEvents->SetBinContent(nbin, cbk->sumOfEventWeights());
-            m_NumberEvents->SetBinError(nbin, cbk->sumOfEventWeightsSquared());
+	   double tmp_sumEVT    = m_NumberEvents->GetBinContent(nbin);
+	   double tmp_sumEVTtwo = m_NumberEvents->GetBinError(nbin);
+	   m_NumberEvents->SetBinContent(nbin, cbk->sumOfEventWeights()+tmp_sumEVT);// keep a running sum
+	   m_NumberEvents->SetBinError(nbin, cbk->sumOfEventWeightsSquared()+tmp_sumEVTtwo); // keep a running sum
          }
       } // end AOD stream
    }
@@ -342,6 +343,7 @@ EL::StatusCode VBFInv::initialize()
    TString newST_config_file = ST_config_file + "tight";
    ANA_CHECK(m_susytools_Tighter_handle.setProperty("ConfigFile", newST_config_file.Data()));
    ANA_CHECK(m_susytools_Tighter_handle.setProperty("METJetSelection", "Tighter"));
+   ANA_CHECK(m_susytools_Tighter_handle.setProperty("JetInputType", 1));//emtopo
 
    if (verbose) {
       ANA_CHECK(m_susytools_handle.setProperty("outLevel", MSG::VERBOSE));
@@ -618,7 +620,7 @@ EL::StatusCode VBFInv::initialize()
 
       m_tree[thisSyst] = new TTree(treeName, treeTitle);
       m_tree[thisSyst]->SetDirectory(outputFile);
-      m_tree[thisSyst]->SetAutoFlush(-500000); // lower to 0.5MB before writing
+      m_tree[thisSyst]->SetAutoFlush(-250000); // lower to 0.5MB before writing
 
       // save, in all trees, the trigger decision
       std::vector<std::string> triggersToSave = getTokens(trigger_list, ",");
@@ -858,6 +860,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       ANA_MSG_ERROR("Cannot configure SUSYTools for systematic var. " << sys.name().c_str());
       return EL::StatusCode::FAILURE;
    }
+   if (m_susytools_Tighter_handle->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+      ANA_MSG_ERROR("Cannot configure SUSYTools alternate for systematic var. " << sys.name().c_str());
+      return EL::StatusCode::FAILURE;
+   }
 
    // determine which objects should be retrieved
    content.doElectrons      = (syst_affectsElectrons || content.isNominal);
@@ -935,15 +941,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    m_CutFlow.hasPassed(VBFInvCuts::Vertex, event_weight);
    content.passPV = passesVertex;
 
-   // Trigger
-   /*
-   Bool_t passesTrigger(kTRUE);
-   if (!passesTrigger && doSkim)
-     return EL::StatusCode::SUCCESS;
-   m_CutFlow.hasPassed(VBFInvCuts::Trigger, event_weight);
-   content.passTrigger = passesTrigger;
-   */
-
    // detector cleaning
    // https://twiki.cern.ch/twiki/bin/viewauth/Atlas/DataPreparationCheckListForPhysicsAnalysis
    Bool_t passesDetErr =
@@ -993,21 +990,26 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       if(copyEMTopoFJVT){
 	static SG::AuxElement::ConstAccessor<float> acc_fjvt("fJvt");
 	static SG::AuxElement::Decorator<float> dec_fjvt("fJvt");
+	static SG::AuxElement::Accessor<char> acc_jetCleanTight("DFCommonJets_jetClean_TightBad");
+	static SG::AuxElement::Decorator<char> dec_jetCleanTight("DFCommonJets_jetClean_TightBad");
 	content.jetsEM    = nullptr;
 	content.jetsEMAux = nullptr;
 	content.allEMJets.clear(SG::VIEW_ELEMENTS);
-	ANA_CHECK(m_susytools_Tighter_handle->GetJets(content.jetsEM, content.jetsEMAux, false));
+	ANA_CHECK(m_susytools_Tighter_handle->GetJets(content.jetsEM, content.jetsEMAux, true, "AntiKt4EMTopoJets"));
 	m_jetFwdJvtTool->modify(*content.jetsEM); // add fjvt
 	for (auto jet : content.allJets) {
+	  // set the defaults
+	  dec_fjvt(*jet) = 0.0;
+	  dec_jetCleanTight(*jet) = 1;
 	  float minDR=999.0;
 	  dec_fjvt(*jet)=0.0;
 	  for (auto jetEM : *content.jetsEM) {
-	    // if close then copy the fjvt score
+	    // if close then copy the fjvt score & tight jet cleaning
 	    float dr=jet->p4().DeltaR(jetEM->p4());
-	    if(dr<minDR && dr<0.6){ minDR=dr;  dec_fjvt(*jet) = acc_fjvt(*jetEM); }
+	    if(dr<minDR && dr<0.6){ minDR=dr;  dec_fjvt(*jet) = acc_fjvt(*jetEM); dec_jetCleanTight(*jet) = acc_jetCleanTight(*jetEM);  }
 	  }
 	}
-      }      
+      }// end copy fjvt score
    }                                                     // done with jets
 
    //-- FatJETS --
@@ -1198,11 +1200,36 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto electron : content.goodElectrons) { dec_signal(*electron)=1; }
    for (auto muon : content.goodMuons) { dec_signal(*muon)=1; }
 
+   static const SG::AuxElement::Accessor<uint8_t> acc_ambiguityType("ambiguityType");  
+   static const SG::AuxElement::Accessor<ElementLink<xAOD::EgammaContainer> > acc_ambiguityLink("ambiguityLink");
    //-- PHOTONS --
    for (auto photon : content.allPhotons) {
-      if (acc_baseline(*photon) == 1 && acc_passOR(*photon) == 1) { // baseline already applied
-         content.baselinePhotons.push_back(photon);
-         if (acc_signal(*photon) == 1 && acc_passOR(*photon) == 1) content.goodPhotons.push_back(photon);
+     if (acc_baseline(*photon) == 1 && acc_passOR(*photon) == 1) { // baseline already applied
+	content.baselinePhotons.push_back(photon);
+	//content.goodPhotons.push_back(photon);
+	//std::cout << "pt: " << photon->pt() << " amb: " << (acc_ambiguityType(*photon)==0) << " 1: " << (acc_ambiguityType(*photon)==1) 
+	//	  << " 2: " << (acc_ambiguityType(*photon)==2) 
+	//	  << " 3: " << (acc_ambiguityType(*photon)==3) 
+	//	  << " 4: " << (acc_ambiguityType(*photon)==4) 
+	//	  << " 5: " << (acc_ambiguityType(*photon)==5) 
+	//	  << " 6: " << (acc_ambiguityType(*photon)==6) 
+	//	  << " 7: " << (acc_ambiguityType(*photon)==7) 
+	//	  << std::endl;
+	//if( acc_ambiguityLink.isAvailable(*photon) && acc_ambiguityLink(*photon).isValid() ){
+	//  uint8_t ambType = acc_ambiguityType(*dynamic_cast<const xAOD::Electron*>(*acc_ambiguityLink(*photon)));
+	//  std::cout << "Egamma pt: " << " amb: " << (ambType==0) 
+	//          << " 1: " << (ambType==1) 
+	//	  << " 2: " << (ambType==2) 
+	//	  << " 3: " << (ambType==3) 
+	//	  << " 4: " << (ambType==4) 
+	//	  << " 5: " << (ambType==5) 
+	//	  << " 6: " << (ambType==6) 
+	//	  << " 7: " << (ambType==7) 
+	//	  << std::endl;
+	//}
+	//if (acc_signal(*photon) == 1 && acc_passOR(*photon) == 1) content.goodPhotons.push_back(photon);
+	if  ( fabs( photon->caloCluster()->etaBE(2) ) >1.37 &&  fabs( photon->caloCluster()->etaBE(2) ) <1.52) continue;
+	if (acc_isol(*photon) && acc_passOR(*photon) == 1){ content.goodPhotons.push_back(photon); dec_signal(*photon)=1; }
       }
    }
 
@@ -1214,7 +1241,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          if (acc_signal(*tau) == 1) content.goodTaus.push_back(tau);
       }
    }
-
    //-- MET --
 
    // real MET, with el mu ph soft
@@ -1449,12 +1475,12 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
          if (debug) print("jetClean_TightBad", (bool)acc_jetCleanTight(*jet));
          if (acc_jetCleanTight(*jet) == 0) {
             passesJetCleanTight = false;
+	    break;
          }
       }
    }
 
    // Tight cleaning for PFlow
-   /*
    Bool_t passesJetCleanTightCustom = true;
    for (auto jet : content.goodJets) {
       std::vector<float> SumTrkPt500vec;
@@ -1465,26 +1491,19 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       float fmax = jet->auxdata<float>("FracSamplingMax");
       if (std::fabs(jet->eta()) < 2.4 && chf / fmax < 0.1) {
          passesJetCleanTightCustom = false;
+	 break;
       }
    }
-   */
 
    m_CutFlow.hasPassed(VBFInvCuts::JetBad, event_weight);
    content.passJetCleanLoose = passesJetCleanLoose;
    content.passJetCleanTight = passesJetCleanTight;
+   content.passJetCleanTightEM = passesJetCleanTightCustom;
+   if(copyEMTopoFJVT){
+     content.passJetCleanTight   = passesJetCleanTightCustom;
+     content.passJetCleanTightEM = passesJetCleanTight;
+   }
    content.passBatman        = passesBadBatmanClean;
-
-   // Investigating jet cleaning
-   /*
-   int val = 0;
-   if(passesJetCleanLoose)
-     val += 1;
-   if(passesJetCleanTight)
-     val += 2;
-     if(passesJetCleanTightCustom)
-     val += 3;
-   content.passJetCleanLoose = passesJetCleanLoose;
-   */
 
    //-----------------------------------------------------------------------
    // Fill tree
@@ -1720,7 +1739,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if (diMuonYearlyOpt2L1) cand.evt.trigger_lep += 0x40; // only 1% unique rate
    if (diEle) cand.evt.trigger_lep += 0x100;
    if (diEleYearlyOpt1) cand.evt.trigger_lep += 0x200;
-   if (diEleYearlyOpt2) cand.evt.trigger_lep += 0x400;
+   if (diEleYearlyOpt2) cand.evt.trigger_lep += 0x400;// prefered
    if (muonTrig) cand.evt.trigger_lep += 0x2;
    if (elecTrig) cand.evt.trigger_lep += 0x4;
 
@@ -1775,11 +1794,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // pass event flags
    cand.evt.passGRL = content.passGRL;
    cand.evt.passPV  = content.passPV;
-   //   cand.evt.passTrigger = content.passTrigger;
-   cand.evt.passDetErr        = content.passDetErr;
-   cand.evt.passJetCleanLoose = content.passJetCleanLoose;
-   cand.evt.passJetCleanTight = content.passJetCleanTight;
-   cand.evt.passBatman        = content.passBatman;
+   cand.evt.passDetErr          = content.passDetErr;
+   cand.evt.passJetCleanLoose   = content.passJetCleanLoose;
+   cand.evt.passJetCleanTight   = content.passJetCleanTight;
+   cand.evt.passJetCleanTightEM = content.passJetCleanTightEM;
+   cand.evt.passBatman          = content.passBatman;
 
    // vertex information
    cand.evt.n_vx = content.vertices->size(); // absolute number of PV's (i.e. no track cut)
@@ -1892,6 +1911,20 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          ANA_MSG_ERROR("Failed to retrieve TruthElectrons container");
          return EL::StatusCode::FAILURE;
       }
+      //-- PHOTONS --
+      //const xAOD::TruthParticleContainer *truthPhotons = nullptr;
+      //const TString ph_container = (m_isEXOT5) ? "EXOT5TruthPhotons" : "TruthPhotons";
+      //if (!event->retrieve(truthPhotons, ph_container.Data())
+      //        .isSuccess()) { // retrieve arguments: container type, container key
+      //   ANA_MSG_ERROR("Failed to retrieve TruthPhotons container");
+      //   return EL::StatusCode::FAILURE;
+      //}
+      //-- TAUS --
+      const xAOD::TruthParticleContainer *truthTaus = nullptr;
+      if (!event->retrieve(truthTaus, "TruthTaus").isSuccess()) { // retrieve arguments: container type, container key
+         ANA_MSG_ERROR("Failed to retrieve TruthTaus container");
+         return EL::StatusCode::FAILURE;
+      }
 
       // apply antiID SF
       cand.evt.eleANTISF = 1.0;
@@ -1976,10 +2009,12 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                sysSF        = m_susytools_handle->BtagSF(&content.goodJets);
             } else if (thisSyst.Contains("JET_JvtEfficiency")) {
                float &sysSF = cand.evt.GetSystVar("jvtSFWeight", thisSyst, m_tree[""]);
-               sysSF        = m_susytools_handle->GetTotalJetSF(content.jets, false, true);
+               sysSF        = m_susytools_handle->GetTotalJetSF(&content.goodJets, false, true);
             } else if (thisSyst.Contains("JET_fJvtEfficiency")) {
                float &sysSF = cand.evt.GetSystVar("fjvtSFWeight", thisSyst, m_tree[""]);
-               sysSF        = m_susytools_handle->FJVT_SF(content.jets);
+               sysSF        = m_susytools_handle->FJVT_SF(&content.goodJets);
+               float &sysSF2 = cand.evt.GetSystVar("fjvtSFTighterWeight", thisSyst, m_tree[""]);
+               sysSF2        = m_susytools_Tighter_handle->FJVT_SF(&content.goodJets);
             } else if (thisSyst.Contains("EL_EFF_Trigger")) {
                float &sysSF2 = cand.evt.GetSystVar("elSFTrigWeight", thisSyst, m_tree[""]);
 	       if((cand.evt.n_el==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu==0)
@@ -2067,6 +2102,18 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
             Int_t                               nTruthJets(0);
             const xAOD::TruthParticleContainer *truthP(0);
             ANA_CHECK(event->retrieve(truthP, "TruthParticles"));
+	    // count the number partons. many for madgraph
+	    cand.evt.nParton=0;
+	    for (const auto &truthP_itr : *truthP) {
+	      if(truthP_itr->status()==23 && (truthP_itr->pdgId()==21 || fabs(truthP_itr->pdgId())<7)) cand.evt.nParton+=1;
+	      //std::cout << "   part: " << truthP_itr->status() << " pt: " << truthP_itr->pt() << " eta " << truthP_itr->eta() << " id: " << truthP_itr->pdgId() << std::endl;
+	    }
+	    if(false && cand.evt.nParton!=4){
+	      std::cout << "Event with nparton: " << cand.evt.nParton <<std::endl;
+	      for (const auto &truthP_itr : *truthP) {
+		std::cout << "   part: " << truthP_itr->status() << " pt: " << truthP_itr->pt() << " eta " << truthP_itr->eta() << " id: " << truthP_itr->pdgId() << std::endl;
+	      }	      
+	    }
             for (const auto &truthJ_itr : *truthJets) {
                if (truthJ_itr->pt() > 20000.) { // no eta cut
                   float minDR2 = 9999999.;
@@ -2134,6 +2181,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
             double tmp_mjj, tmp_detajj, tmp_dphijj;
             cand.evt.passVjetsFilter = VBFInvAnalysis::passTruthFilter(truthJets, JetEtaFilter, JetpTFilter, MjjFilter,
                                                                        PhijjFilter, tmp_mjj, tmp_detajj, tmp_dphijj);
+            cand.evt.passVjetsFilterTauEl = VBFInvAnalysis::passTruthFilter(truthJets, JetEtaFilter, JetpTFilter, MjjFilter,
+									    PhijjFilter, tmp_mjj, tmp_detajj, tmp_dphijj, truthElectrons, truthTaus);
             cand.evt.truthF_jj_mass  = tmp_mjj;
             cand.evt.truthF_jj_deta  = tmp_detajj;
             cand.evt.truthF_jj_dphi  = tmp_dphijj;
@@ -2182,28 +2231,40 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_mu_status.push_back(part->status());
       }
 
+      static SG::AuxElement::Accessor<unsigned int> acc_classifierParticleOrigin("classifierParticleOrigin");
       //-- ELECTRONS --
       cand.evt.n_el_truth = truthElectrons->size();
       for (const auto &part : *truthElectrons) {
          if (part->pt() < 4.0e3) continue;
          if (part->status() != 1) continue;
+	 //std::cout << "origin ele: " << acc_classifierParticleOrigin(*part) <<std::endl;
          cand.evt.truth_el_pt.push_back(part->pt());
          cand.evt.truth_el_eta.push_back(part->eta());
          cand.evt.truth_el_phi.push_back(part->phi());
          cand.evt.truth_el_m.push_back(part->m());
          cand.evt.truth_el_status.push_back(part->status());
       }
+      //-- PHOTONS --
+      const xAOD::TruthParticleContainer *truthParticles(nullptr);
+      ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
+      cand.evt.n_ph_truth = 0; //truthPhotons->size();
+      for (const auto &part : *truthParticles) {
+         if (part->pdgId() != 22) continue;
+         if (part->pt() < 10.0e3) continue;
+         if (part->status() != 1) continue;
+	 //if( part->pt() >20.0e3) std::cout << "origin ph: " << acc_classifierParticleOrigin(*part) << " pt: " << part->pt() << " eta: " << part->eta() <<std::endl;
+         cand.evt.truth_ph_pt.push_back(part->pt());
+         cand.evt.truth_ph_eta.push_back(part->eta());
+         cand.evt.truth_ph_phi.push_back(part->phi());
+	 ++cand.evt.n_ph_truth;
+      }
 
       //-- TAUS --
-      const xAOD::TruthParticleContainer *truthTaus = nullptr;
-      if (!event->retrieve(truthTaus, "TruthTaus").isSuccess()) { // retrieve arguments: container type, container key
-         ANA_MSG_ERROR("Failed to retrieve TruthTaus container");
-         return EL::StatusCode::FAILURE;
-      }
       cand.evt.n_tau_truth = truthTaus->size();
       for (const auto &part : *truthTaus) {
          if (part->pt() < 4.0e3) continue;
          // if(part->status()!=1) continue;
+	 //std::cout << "origin tau: " << acc_classifierParticleOrigin(*part) <<std::endl;
          cand.evt.truth_tau_pt.push_back(part->pt());
          cand.evt.truth_tau_eta.push_back(part->eta());
          cand.evt.truth_tau_phi.push_back(part->phi());
@@ -2212,8 +2273,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       }
 
       //-- BOSONS --
-      const xAOD::TruthParticleContainer *truthParticles(nullptr);
-      ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
       // Dressed
       const TLorentzVector truth_V_dressed =
          VBFInvAnalysis::getTruthBosonP4(truthParticles, truthElectrons, truthMuons, truthParticles);

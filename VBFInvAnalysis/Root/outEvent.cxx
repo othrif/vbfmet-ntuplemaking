@@ -49,6 +49,7 @@ void Analysis::outEvent::reset()
 
    // truth filters
    FlavourFilter=-9999;
+   nParton=-9999;
    MGVTruthPt=-9999;
    SherpaVTruthPt=-9999;
    in_vy_overlap=false;
@@ -105,6 +106,10 @@ void Analysis::outEvent::reset()
    truth_el_phi.clear();
    truth_el_m.clear();
    truth_el_status.clear();
+   n_ph_truth = -9999;
+   truth_ph_pt.clear();
+   truth_ph_eta.clear();
+   truth_ph_phi.clear();
    n_tau_truth = -9999;
    truth_tau_pt.clear();
    truth_tau_eta.clear();
@@ -124,9 +129,11 @@ void Analysis::outEvent::reset()
    passPV            = -9999;
    passJetCleanLoose = -9999;
    passJetCleanTight = -9999;
+   passJetCleanTightEM = -9999;
    passDetErr        = -9999;
    passBatman        = false;
    passVjetsFilter   = false;
+   passVjetsFilterTauEl = false;
    passVjetsPTV      = false;
 
    n_vx          = -9999;
@@ -216,6 +223,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
 
    if(isMC()){
      tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
+     tree->Branch(prefix + "nParton", &nParton);
      tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);
      tree->Branch(prefix + "SherpaVTruthPt", &SherpaVTruthPt);
      tree->Branch(prefix + "in_vy_overlap", &in_vy_overlap);
@@ -285,6 +293,10 @@ void Analysis::outEvent::attachToTree(TTree *tree)
       tree->Branch(prefix + "truth_el_phi", &truth_el_phi);
       tree->Branch(prefix + "truth_el_m", &truth_el_m);
       tree->Branch(prefix + "truth_el_status", &truth_el_status);
+      tree->Branch(prefix + "n_ph_truth", &n_ph_truth);
+      tree->Branch(prefix + "truth_ph_pt", &truth_ph_pt);
+      tree->Branch(prefix + "truth_ph_eta", &truth_ph_eta);
+      tree->Branch(prefix + "truth_ph_phi", &truth_ph_phi);
       tree->Branch(prefix + "n_tau_truth", &n_tau_truth);
       tree->Branch(prefix + "truth_tau_pt", &truth_tau_pt);
       tree->Branch(prefix + "truth_tau_eta", &truth_tau_eta);
@@ -305,10 +317,12 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "passPV", &passPV);
    tree->Branch(prefix + "passJetCleanLoose", &passJetCleanLoose);
    tree->Branch(prefix + "passJetCleanTight", &passJetCleanTight);
+   tree->Branch(prefix + "passJetCleanTightEM", &passJetCleanTightEM);
    tree->Branch(prefix + "passDetErr", &passDetErr);
 
    if (!doTrim()) tree->Branch(prefix + "passBatman", &passBatman);
    tree->Branch(prefix + "passVjetsFilter", &passVjetsFilter);
+   tree->Branch(prefix + "passVjetsFilterTauEl", &passVjetsFilterTauEl);
    tree->Branch(prefix + "passVjetsPTV", &passVjetsPTV);
 
    tree->Branch(prefix + "n_vx", &n_vx);

@@ -44,6 +44,7 @@ public:
    Float_t              dilepTrigSFWeight;
 
    Int_t FlavourFilter;
+   Int_t   nParton;
    Float_t MGVTruthPt;
    Float_t SherpaVTruthPt;
    Bool_t in_vy_overlap;
@@ -105,6 +106,11 @@ public:
    std::vector<Float_t> truth_mu_m;
    std::vector<Int_t>   truth_mu_status;
 
+   Int_t                n_ph_truth;
+   std::vector<Float_t> truth_ph_pt;
+   std::vector<Float_t> truth_ph_eta;
+   std::vector<Float_t> truth_ph_phi;
+
    Int_t                n_tau_truth;
    std::vector<Float_t> truth_tau_pt;
    std::vector<Float_t> truth_tau_eta;
@@ -124,10 +130,12 @@ public:
    Int_t passPV;
    Int_t passJetCleanLoose;
    Int_t passJetCleanTight;
+   Int_t passJetCleanTightEM;
    Int_t passDetErr;
 
    Bool_t passBatman;
    Bool_t passVjetsFilter;
+   Bool_t passVjetsFilterTauEl;
    Bool_t passVjetsPTV;
 
    Int_t    n_vx;
