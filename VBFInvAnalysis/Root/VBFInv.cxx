@@ -1206,30 +1206,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto photon : content.allPhotons) {
      if (acc_baseline(*photon) == 1 && acc_passOR(*photon) == 1) { // baseline already applied
 	content.baselinePhotons.push_back(photon);
-	//content.goodPhotons.push_back(photon);
-	//std::cout << "pt: " << photon->pt() << " amb: " << (acc_ambiguityType(*photon)==0) << " 1: " << (acc_ambiguityType(*photon)==1) 
-	//	  << " 2: " << (acc_ambiguityType(*photon)==2) 
-	//	  << " 3: " << (acc_ambiguityType(*photon)==3) 
-	//	  << " 4: " << (acc_ambiguityType(*photon)==4) 
-	//	  << " 5: " << (acc_ambiguityType(*photon)==5) 
-	//	  << " 6: " << (acc_ambiguityType(*photon)==6) 
-	//	  << " 7: " << (acc_ambiguityType(*photon)==7) 
-	//	  << std::endl;
-	//if( acc_ambiguityLink.isAvailable(*photon) && acc_ambiguityLink(*photon).isValid() ){
-	//  uint8_t ambType = acc_ambiguityType(*dynamic_cast<const xAOD::Electron*>(*acc_ambiguityLink(*photon)));
-	//  std::cout << "Egamma pt: " << " amb: " << (ambType==0) 
-	//          << " 1: " << (ambType==1) 
-	//	  << " 2: " << (ambType==2) 
-	//	  << " 3: " << (ambType==3) 
-	//	  << " 4: " << (ambType==4) 
-	//	  << " 5: " << (ambType==5) 
-	//	  << " 6: " << (ambType==6) 
-	//	  << " 7: " << (ambType==7) 
-	//	  << std::endl;
-	//}
-	//if (acc_signal(*photon) == 1 && acc_passOR(*photon) == 1) content.goodPhotons.push_back(photon);
-	if  ( fabs( photon->caloCluster()->etaBE(2) ) >1.37 &&  fabs( photon->caloCluster()->etaBE(2) ) <1.52) continue;
-	if (acc_isol(*photon) && acc_passOR(*photon) == 1){ content.goodPhotons.push_back(photon); dec_signal(*photon)=1; }
+	if (acc_signal(*photon) == 1 && acc_passOR(*photon) == 1) content.goodPhotons.push_back(photon);
+	//if  ( fabs( photon->caloCluster()->etaBE(2) ) >1.37 &&  fabs( photon->caloCluster()->etaBE(2) ) <1.52) continue;
+	//if (acc_isol(*photon) && acc_passOR(*photon) == 1){ content.goodPhotons.push_back(photon); dec_signal(*photon)=1; }
       }
    }
 
@@ -2049,6 +2028,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
             } else if (thisSyst.Contains("PH_EFF")) {   // photon efficiency SF 
 	      float &sysSF = cand.evt.GetSystVar("phSFWeight", thisSyst, m_tree[""]);
 	      sysSF = m_susytools_handle->GetTotalPhotonSF(content.goodPhotons,true,true,false);
+            } else if (thisSyst.Contains("EL_CHARGEID_")) {   // electron charge flip working point. Skipping because we don't use this
             } else {
                ANA_MSG_INFO("Not configured to save this weight systematic var. " << sysWeight.name().c_str());
             }
