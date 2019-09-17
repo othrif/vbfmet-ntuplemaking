@@ -2017,6 +2017,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
             } else if (thisSyst.Contains("PH_EFF")) {   // photon efficiency SF 
 	      float &sysSF = cand.evt.GetSystVar("phSFWeight", thisSyst, m_tree[""]);
 	      sysSF = m_susytools_handle->GetTotalPhotonSF(content.goodPhotons,true,true,false);
+            } else if (thisSyst.Contains("EL_CHARGEID_")) {   // electron charge flip working point. Skipping because we don't use this
             } else {
                ANA_MSG_INFO("Not configured to save this weight systematic var. " << sysWeight.name().c_str());
             }
