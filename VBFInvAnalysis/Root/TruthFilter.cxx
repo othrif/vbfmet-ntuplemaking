@@ -21,6 +21,7 @@ bool passTruthFilter(const xAOD::JetContainer *truthJets, double JetEtaFilter, d
 	if(truthElectrons){
 	  for (const auto &part : *truthElectrons) {
 	    if (part->pt() < 20.0e3) continue;
+	    if (fabs(part->eta()) > 5.0) continue;
 	    if (part->status() != 1) continue;
 	    if(!(acc_classifierParticleOrigin(*part)==12 || acc_classifierParticleOrigin(*part)==13)) continue; //require it is w or z
 	    if(jet->p4().DeltaR(part->p4())<0.3) passOR=false;
@@ -29,6 +30,7 @@ bool passTruthFilter(const xAOD::JetContainer *truthJets, double JetEtaFilter, d
 	if(truthTaus){
 	  for (const auto &part : *truthTaus) {
 	    if (part->pt() < 20.0e3) continue;
+	    if (fabs(part->eta()) > 5.0) continue;
 	    if (part->status() == 3) continue;
 	    if(!(acc_classifierParticleOrigin(*part)==12 || acc_classifierParticleOrigin(*part)==13)) continue; //require it is w or z
 	    if(jet->p4().DeltaR(part->p4())<0.3) passOR=false;
