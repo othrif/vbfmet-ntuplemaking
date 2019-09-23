@@ -26,7 +26,7 @@ public:
       m_write       = true;
       m_doExtraTrim = doTrim;
       m_computeXS   = false;
-      m_doORDetail  = false; 
+      m_doORDetail  = true; 
       m_isMC        = true;
    }
 

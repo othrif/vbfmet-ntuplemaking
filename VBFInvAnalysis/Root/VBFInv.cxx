@@ -689,6 +689,14 @@ EL::StatusCode VBFInv::initialize()
       m_cand[thisSyst].evt.setDoORDetail(doORDetail);
       m_cand[thisSyst].rns.setDoTrim((trim && !doRnS));
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
+
+      //m_cand[thisSyst].evt.setDoORDetail(doORDetail);
+      //m_cand[thisSyst].tau["tau"].setDoORDetail(doORDetail);
+      //m_cand[thisSyst].ph["ph"].setDoORDetail(doORDetail);
+      //m_cand[thisSyst].el["el"].setDoORDetail(doORDetail);
+      //m_cand[thisSyst].mu["mu"].setDoORDetail(doORDetail);
+      //m_cand[thisSyst].jet["jet"].setDoORDetail(doORDetail);
+
    }
    return EL::StatusCode::SUCCESS;
 }
@@ -2405,7 +2413,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
    // TrackMET
    if (content.doTrackMET) {
-      cand.track_met["track_met"].add(content.track_met);
+      cand.track_met["track_met"].add(content.track_met, content.vertices);
    }
    if (m_isMC) cand.met["met_truth"].add(*((*content.met_truth)["NonInt"]));
    //-----------------------------------------------------------------------
