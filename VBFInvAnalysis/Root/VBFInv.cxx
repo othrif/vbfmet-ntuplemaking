@@ -294,7 +294,7 @@ EL::StatusCode VBFInv::initialize()
          vecStringGRL.push_back(PathResolverFindCalibFile(
             "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.xml")); // 2017 GRL, R21 (44307.4 pb-1)
          vecStringGRL.push_back(PathResolverFindCalibFile(
-            "GoodRunsLists/data18_13TeV/20181111/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL, R21 (59937.2 pb-1)
+            "GoodRunsLists/data18_13TeV/20190318/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL, R21 (58450.1 pb-1)
       }
       ANA_CHECK(m_grl.setProperty("GoodRunsListVec", vecStringGRL));
       ANA_CHECK(m_grl.setProperty("PassThrough",
