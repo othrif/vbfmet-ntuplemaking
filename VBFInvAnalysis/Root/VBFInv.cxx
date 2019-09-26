@@ -294,7 +294,7 @@ EL::StatusCode VBFInv::initialize()
          vecStringGRL.push_back(PathResolverFindCalibFile(
             "GoodRunsLists/data17_13TeV/20180619/physics_25ns_Triggerno17e33prim.xml")); // 2017 GRL, R21 (44307.4 pb-1)
          vecStringGRL.push_back(PathResolverFindCalibFile(
-            "GoodRunsLists/data18_13TeV/20181111/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL, R21 (59937.2 pb-1)
+            "GoodRunsLists/data18_13TeV/20190318/physics_25ns_Triggerno17e33prim.xml")); // 2018 GRL, R21 (58450.1 pb-1)
       }
       ANA_CHECK(m_grl.setProperty("GoodRunsListVec", vecStringGRL));
       ANA_CHECK(m_grl.setProperty("PassThrough",
@@ -680,7 +680,7 @@ EL::StatusCode VBFInv::initialize()
          m_cand[thisSyst].track_met["track_met"]       = Analysis::outTrackMET("track_met", (trim && !doTrackMET));
       }
       if (doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim && !doTauDetail);
-      if (doPhotonDetail) m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim && !doPhotonDetail);
+      m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim && !doPhotonDetail);
 
       // Set trimming option for remaning outHolder objects
       m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail && !doRnS));
