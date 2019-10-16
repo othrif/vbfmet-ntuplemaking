@@ -91,6 +91,8 @@ EL::StatusCode VBFInv ::histInitialize()
    m_NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
    m_NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
    m_NumberEvents->GetXaxis()->SetBinLabel(4, "RawEXOT5");
+   m_NumberEvents->GetXaxis()->SetBinLabel(5, "90400");
+   m_NumberEvents->GetXaxis()->SetBinLabel(6, "90401");
    m_NumberEvents->GetXaxis()->SetBinLabel(10, "All");
    m_NumberEvents->GetXaxis()->SetBinLabel(11, "passJetFilter");
    m_NumberEvents->GetXaxis()->SetBinLabel(12, "passBFilter");
@@ -186,6 +188,10 @@ EL::StatusCode VBFInv ::fileExecute()
             nbin = 25;
          else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonwIsoFilter")
             nbin = 26;
+         else if (cbk->name() == "LHE3Weight_PDFset=90400")
+            nbin = 5;
+         else if (cbk->name() == "LHE3Weight_PDFset=90401")
+            nbin = 6;
          if (nbin > 0) {
 	   double tmp_sumEVT    = m_NumberEvents->GetBinContent(nbin);
 	   double tmp_sumEVTtwo = m_NumberEvents->GetBinError(nbin);
