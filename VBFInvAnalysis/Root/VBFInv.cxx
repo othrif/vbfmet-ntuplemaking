@@ -1817,9 +1817,31 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // MC-only information
 
    if (m_isMC) {
-
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_prodMode("HTXS_prodMode");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_errorCode("HTXS_errorCode");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage0_Category("HTXS_Stage0_Category");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Category_pTjet30("HTXS_Stage1_1_Category_pTjet30");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Category_pTjet25("HTXS_Stage1_1_Category_pTjet25");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Fine_Category_pTjet30("HTXS_Stage1_1_Fine_Category_pTjet30");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Fine_Category_pTjet25("HTXS_Stage1_1_Fine_Category_pTjet25");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Njets_pTjet25("HTXS_Njets_pTjet25");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Njets_pTjet30("HTXS_Njets_pTjet30");
+     static SG::AuxElement::ConstAccessor<Float_t> acc_HTXS_V_pt("HTXS_V_pt");
+     static SG::AuxElement::ConstAccessor<Float_t> acc_HTXS_Higgs_pt("HTXS_Higgs_pt");
       // Record all weights
       cand.evt.mcEventWeight = content.eventInfo->mcEventWeight();
+      cand.evt.HTXS_prodMode                       = acc_HTXS_prodMode(*content.eventInfo);
+      cand.evt.HTXS_errorCode                      = acc_HTXS_errorCode(*content.eventInfo);
+      cand.evt.HTXS_Stage0_Category                = acc_HTXS_Stage0_Category(*content.eventInfo);
+      cand.evt.HTXS_Stage1_1_Category_pTjet30      = acc_HTXS_Stage1_1_Category_pTjet30(*content.eventInfo);
+      cand.evt.HTXS_Stage1_1_Category_pTjet25      = acc_HTXS_Stage1_1_Category_pTjet25(*content.eventInfo);
+      cand.evt.HTXS_Stage1_1_Fine_Category_pTjet30 = acc_HTXS_Stage1_1_Fine_Category_pTjet30(*content.eventInfo);
+      cand.evt.HTXS_Stage1_1_Fine_Category_pTjet25 = acc_HTXS_Stage1_1_Fine_Category_pTjet25(*content.eventInfo);
+      cand.evt.HTXS_Njets_pTjet25                  = acc_HTXS_Njets_pTjet25(*content.eventInfo);
+      cand.evt.HTXS_Njets_pTjet30                  = acc_HTXS_Njets_pTjet30(*content.eventInfo);
+      cand.evt.HTXS_V_pt                           = acc_HTXS_V_pt(*content.eventInfo);
+      cand.evt.HTXS_Higgs_pt                       = acc_HTXS_Higgs_pt(*content.eventInfo);
+
       if (my_XsecDB)
          cand.evt.mcEventWeightXsec = content.eventInfo->mcEventWeight() * my_XsecDB->xsectTimesEff(cand.evt.runNumber);
       cand.evt.mcEventWeights = content.eventInfo->mcEventWeights();
