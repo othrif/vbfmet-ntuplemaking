@@ -1851,6 +1851,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (my_XsecDB)
          cand.evt.mcEventWeightXsec = content.eventInfo->mcEventWeight() * my_XsecDB->xsectTimesEff(cand.evt.runNumber);
       cand.evt.mcEventWeights = content.eventInfo->mcEventWeights();
+      // Fixes a bug in the PDF weights from production
+      if(cand.evt.runNumber==346588) cand.evt.mcEventWeights = content.eventInfo->mcEventWeights()->at(111);
+      if(cand.evt.runNumber==346600) cand.evt.mcEventWeights = content.eventInfo->mcEventWeights()->at(109);
       cand.evt.puWeight       = m_susytools_handle->GetPileupWeight();
       cand.evt.btagSFWeight   = m_susytools_handle->BtagSF(&content.goodJets);
 
