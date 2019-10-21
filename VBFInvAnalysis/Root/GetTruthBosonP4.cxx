@@ -137,4 +137,28 @@ TLorentzVector getTruthBosonP4(const xAOD::TruthParticleContainer *truthParticle
 
    return vV;
 }
+TLorentzVector getTruthBosonP4_simple(const xAOD::TruthParticleContainer *truthParticles)
+  {
+    // Select neutrinos:
+    // - Status 3 neutrinos from original truth particle container.
+    // - DxAOD key: "TruthParticles"
+
+    std::vector<TLorentzVector> leptons;
+    for (const auto& part : *truthParticles) {
+      int pdg = abs(part->pdgId());
+      if (pdg != 12 && pdg != 14 && pdg != 16 && pdg != 11 && pdg != 13 && pdg != 15) continue;//3 neutrinos, el, mu, tau
+      if (part->status() != 3) continue;
+      TLorentzVector v(part->px(), part->py(), part->pz(), part->e());
+      leptons.push_back(v);
+    }
+
+    // Compute vector boson 4-momentum
+    TLorentzVector vV(0, 0, 0, 0);
+
+    for (auto& lepton : leptons) {
+      vV += lepton;
+    }
+
+    return vV;
+  }
 } // namespace VBFInvAnalysis

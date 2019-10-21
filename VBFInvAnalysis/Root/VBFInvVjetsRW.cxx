@@ -237,7 +237,7 @@ EL::StatusCode VBFInvVjetsRW ::initialize()
    m_tree->Branch("truth_mc_pdg", &m_truth_mc_pdg);
    m_tree->Branch("truth_mc_status", &m_truth_mc_status);
    m_tree->Branch("truth_mc_barcode", &m_truth_mc_barcode);
-
+   m_tree->Branch("truth_V_simple_pt", &m_truth_V_simple_pt);
    //   m_cand.attachToTree(m_tree, ""); // we use empty prefix
 
    return EL::StatusCode::SUCCESS;
@@ -340,6 +340,12 @@ EL::StatusCode VBFInvVjetsRW ::analyzeEvent()
          }
       }
    }
+
+   xAOD::TEvent *event = wk()->xaodEvent();
+   const xAOD::TruthParticleContainer *truthParticles(nullptr);
+   ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
+   const TLorentzVector truth_V_simple = VBFInvAnalysis::getTruthBosonP4_simple(truthParticles);
+   m_truth_V_simple_pt = truth_V_simple.Pt();
 
    m_tree->Fill();
 

@@ -1,0 +1,28 @@
+###############################################
+# Grid submission STANDARD
+###############################################
+--algo=VBFInvTruth
+--driver=prun
+--configFile=VBFInvAnalysis/vbfinv.conf
+--replicationSite=DESY-HH_LOCALGROUPDISK
+--user=othrif
+###############################################
+# TO MODIFY
+###############################################
+--version=v35TRUTH1
+#--doSyst
+#--doSkim
+#--doTrim
+#--doTrimSyst
+###############################################
+# Other
+###############################################
+--submitDir=submitDir
+--inputRucioLists=
+--inputDirs=
+--inputRucio=
+--inputFile=
+--inputList=
+#--nevents=100
+#--debug
+#--noPileup
