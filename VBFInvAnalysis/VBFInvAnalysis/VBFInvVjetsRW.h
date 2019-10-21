@@ -68,6 +68,7 @@ public:
    std::vector<Int_t>        m_truth_mc_pdg;        //!
    std::vector<Int_t>        m_truth_mc_dyn_iso;    //!
    std::vector<Int_t>        m_truth_mc_fix_iso;    //!
+   Float_t m_truth_V_simple_pt; //!
 
    // this is a standard constructor
    VBFInvVjetsRW();

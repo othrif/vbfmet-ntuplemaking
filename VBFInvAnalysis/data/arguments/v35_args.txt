@@ -9,11 +9,21 @@
 ###############################################
 # TO MODIFY
 ###############################################
---version=v22
---doSyst
---doSkim
---doTrim
---doTrimSyst
+--version=v35LTopoRnS
+#--doSyst
+#--doSkim
+#--doTrim
+#--doTrimSyst
+--doORDetail 
+--doPhotonDetail 
+--doRnS 
+--doMETDetail 
+--doJetDetail 
+--doElectronDetail 
+--doMuonDetail 
+--doTauDetail 
+--doTrackMET 
+--computeXS
 ###############################################
 # Other
 ###############################################
