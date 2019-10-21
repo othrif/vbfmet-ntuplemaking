@@ -21,7 +21,7 @@ def commandline():
   # Take some arguments from the command line:
   parser = argparse.ArgumentParser( description = "Author: Othmane Rifki \nUse rucio to get the EVNT and AOD information based on a DSID", add_help=True )
   parser.add_argument("-d","--dsid",    dest="dsid",    action="store",      default="364114",                 help="input DSID (default: %default)")
-  parser.add_argument("-c","--campaign",dest="campaign",action="store",      default="MC15c,MC16a,MC16c,MC16d,MC16e",help="input campaign (default: %default)")
+  parser.add_argument("-c","--campaign",dest="campaign",action="store",      default="MC16a,MC16d,MC16e",help="input campaign (default: %default)")
   parser.add_argument("-s","--summary", dest='summary', action='store_true', default=False,                    help='prints summary of each campaign for AOD and the mc15 EVNT container (default: %default)')
   parser.add_argument("-o","--output",  dest='output',  action='store_true', default=False,                    help='sets up output mode (default: %default)')
   parser.add_argument("-r","--ratio",  dest='ratio',  action='store_true', default=False,                    help='only prints a row of AOD/DAOD(ratio) for each campaign, for mass running (default: %default)')

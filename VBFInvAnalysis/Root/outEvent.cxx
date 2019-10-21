@@ -46,6 +46,17 @@ void Analysis::outEvent::reset()
    muSFTrigWeight = 1.0;
    eleANTISF      = 1.0;
    dilepTrigSFWeight =1.0;
+   HTXS_prodMode=-1;
+   HTXS_errorCode=-1;
+   HTXS_Stage0_Category=-1;
+   HTXS_Stage1_1_Category_pTjet30=-1;
+   HTXS_Stage1_1_Category_pTjet25=-1;
+   HTXS_Stage1_1_Fine_Category_pTjet30=-1;
+   HTXS_Stage1_1_Fine_Category_pTjet25=-1;
+   HTXS_Njets_pTjet25=-1;
+   HTXS_Njets_pTjet30=-1;
+   HTXS_V_pt=-1;
+   HTXS_Higgs_pt=-1;
 
    // truth filters
    FlavourFilter=-9999;
@@ -222,6 +233,19 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "dilepTrigSFWeight", &dilepTrigSFWeight);
 
    if(isMC()){
+     if (!doTrim()){// really only need for signal
+       tree->Branch(prefix + "HTXS_prodMode", &HTXS_prodMode);
+       tree->Branch(prefix + "HTXS_errorCode", &HTXS_errorCode);
+       tree->Branch(prefix + "HTXS_Stage0_Category", &HTXS_Stage0_Category);
+       tree->Branch(prefix + "HTXS_Stage1_1_Category_pTjet30", &HTXS_Stage1_1_Category_pTjet30);
+       tree->Branch(prefix + "HTXS_Stage1_1_Category_pTjet25", &HTXS_Stage1_1_Category_pTjet25);
+       tree->Branch(prefix + "HTXS_Stage1_1_Fine_Category_pTjet30", &HTXS_Stage1_1_Fine_Category_pTjet30);
+       tree->Branch(prefix + "HTXS_Stage1_1_Fine_Category_pTjet25", &HTXS_Stage1_1_Fine_Category_pTjet25);
+       tree->Branch(prefix + "HTXS_Njets_pTjet25", &HTXS_Njets_pTjet25);
+       tree->Branch(prefix + "HTXS_Njets_pTjet30", &HTXS_Njets_pTjet30);
+       tree->Branch(prefix + "HTXS_V_pt", &HTXS_V_pt);
+       tree->Branch(prefix + "HTXS_Higgs_pt", &HTXS_Higgs_pt);
+     }
      tree->Branch(prefix + "FlavourFilter", &FlavourFilter);
      tree->Branch(prefix + "nParton", &nParton);
      tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);

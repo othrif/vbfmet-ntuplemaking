@@ -91,6 +91,8 @@ EL::StatusCode VBFInv ::histInitialize()
    m_NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
    m_NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
    m_NumberEvents->GetXaxis()->SetBinLabel(4, "RawEXOT5");
+   m_NumberEvents->GetXaxis()->SetBinLabel(5, "90400");
+   m_NumberEvents->GetXaxis()->SetBinLabel(6, "90401");
    m_NumberEvents->GetXaxis()->SetBinLabel(10, "All");
    m_NumberEvents->GetXaxis()->SetBinLabel(11, "passJetFilter");
    m_NumberEvents->GetXaxis()->SetBinLabel(12, "passBFilter");
@@ -186,6 +188,10 @@ EL::StatusCode VBFInv ::fileExecute()
             nbin = 25;
          else if (cbk->name() == "EXOT5SumEvtWeightFilterAlg_PhotonwIsoFilter")
             nbin = 26;
+         else if (cbk->name() == "LHE3Weight_PDFset=90400")
+            nbin = 5;
+         else if (cbk->name() == "LHE3Weight_PDFset=90401")
+            nbin = 6;
          if (nbin > 0) {
 	   double tmp_sumEVT    = m_NumberEvents->GetBinContent(nbin);
 	   double tmp_sumEVTtwo = m_NumberEvents->GetBinError(nbin);
@@ -1575,7 +1581,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    if (acc_BCIDDistanceFromTail.isAvailable(*content.eventInfo))
       cand.evt.BCIDDistanceFromTail = acc_BCIDDistanceFromTail(*content.eventInfo);
    cand.evt.averageIntPerXing    = content.eventInfo->averageInteractionsPerCrossing();
-   cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
+   cand.evt.corAverageIntPerXing = content.eventInfo->actualInteractionsPerCrossing();
+   if(!m_isMC) cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
 
    // Which year are we in?
    cand.evt.year = (m_isMC) ? m_susytools_handle->treatAsYear() : 0; // RandomRunNumber from the PRWTool
@@ -1827,12 +1834,38 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    // MC-only information
 
    if (m_isMC) {
-
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_prodMode("HTXS_prodMode");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_errorCode("HTXS_errorCode");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage0_Category("HTXS_Stage0_Category");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Category_pTjet30("HTXS_Stage1_1_Category_pTjet30");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Category_pTjet25("HTXS_Stage1_1_Category_pTjet25");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Fine_Category_pTjet30("HTXS_Stage1_1_Fine_Category_pTjet30");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Fine_Category_pTjet25("HTXS_Stage1_1_Fine_Category_pTjet25");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Njets_pTjet25("HTXS_Njets_pTjet25");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Njets_pTjet30("HTXS_Njets_pTjet30");
+     static SG::AuxElement::ConstAccessor<Float_t> acc_HTXS_V_pt("HTXS_V_pt");
+     static SG::AuxElement::ConstAccessor<Float_t> acc_HTXS_Higgs_pt("HTXS_Higgs_pt");
       // Record all weights
       cand.evt.mcEventWeight = content.eventInfo->mcEventWeight();
+      if(acc_HTXS_prodMode.isAvailable(*content.eventInfo)){
+	cand.evt.HTXS_prodMode                       = acc_HTXS_prodMode(*content.eventInfo);
+	cand.evt.HTXS_errorCode                      = acc_HTXS_errorCode(*content.eventInfo);
+	cand.evt.HTXS_Stage0_Category                = acc_HTXS_Stage0_Category(*content.eventInfo);
+	cand.evt.HTXS_Stage1_1_Category_pTjet30      = acc_HTXS_Stage1_1_Category_pTjet30(*content.eventInfo);
+	cand.evt.HTXS_Stage1_1_Category_pTjet25      = acc_HTXS_Stage1_1_Category_pTjet25(*content.eventInfo);
+	cand.evt.HTXS_Stage1_1_Fine_Category_pTjet30 = acc_HTXS_Stage1_1_Fine_Category_pTjet30(*content.eventInfo);
+	cand.evt.HTXS_Stage1_1_Fine_Category_pTjet25 = acc_HTXS_Stage1_1_Fine_Category_pTjet25(*content.eventInfo);
+	cand.evt.HTXS_Njets_pTjet25                  = acc_HTXS_Njets_pTjet25(*content.eventInfo);
+	cand.evt.HTXS_Njets_pTjet30                  = acc_HTXS_Njets_pTjet30(*content.eventInfo);
+	cand.evt.HTXS_V_pt                           = acc_HTXS_V_pt(*content.eventInfo);
+	cand.evt.HTXS_Higgs_pt                       = acc_HTXS_Higgs_pt(*content.eventInfo);
+      }
       if (my_XsecDB)
          cand.evt.mcEventWeightXsec = content.eventInfo->mcEventWeight() * my_XsecDB->xsectTimesEff(cand.evt.runNumber);
       cand.evt.mcEventWeights = content.eventInfo->mcEventWeights();
+      // Fixes a bug in the PDF weights from production
+      if(cand.evt.runNumber==346588) cand.evt.mcEventWeight = cand.evt.mcEventWeights.at(111);
+      if(cand.evt.runNumber==346600) cand.evt.mcEventWeight = cand.evt.mcEventWeights.at(109);
       cand.evt.puWeight       = m_susytools_handle->GetPileupWeight();
       cand.evt.btagSFWeight   = m_susytools_handle->BtagSF(&content.goodJets);
 

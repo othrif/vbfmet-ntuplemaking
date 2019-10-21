@@ -43,6 +43,19 @@ public:
    Float_t              eleANTISF;
    Float_t              dilepTrigSFWeight;
 
+   // Signal Truth variables
+   Int_t HTXS_prodMode;
+   Int_t HTXS_errorCode;
+   Int_t HTXS_Stage0_Category;
+   Int_t HTXS_Stage1_1_Category_pTjet30;
+   Int_t HTXS_Stage1_1_Category_pTjet25;
+   Int_t HTXS_Stage1_1_Fine_Category_pTjet30;
+   Int_t HTXS_Stage1_1_Fine_Category_pTjet25;
+   Int_t HTXS_Njets_pTjet25;
+   Int_t HTXS_Njets_pTjet30;
+   Float_t HTXS_V_pt;
+   Float_t HTXS_Higgs_pt;
+
    Int_t FlavourFilter;
    Int_t   nParton;
    Float_t MGVTruthPt;
