@@ -515,6 +515,8 @@ mc16_13TeV.363659.MGPy8EG_N30NLO_Wtaunu_Ht280_500_BFilter.recon.AOD.e4944_s3126_
 # QCD powerlaw #
 # missing
 # gamma + jets #
+mc16_13TeV.364541.Sherpa_222_NNPDF30NNLO_SinglePhoton_pty_17_35.recon.AOD.e6788_s3126_r10201
+mc16_13TeV.364542.Sherpa_222_NNPDF30NNLO_SinglePhoton_pty_35_70.recon.AOD.e6788_s3126_r10201
 mc16_13TeV.364543.Sherpa_222_NNPDF30NNLO_SinglePhoton_pty_70_140.recon.AOD.e5938_s3126_r10201
 mc16_13TeV.364544.Sherpa_222_NNPDF30NNLO_SinglePhoton_pty_140_280.recon.AOD.e5938_s3126_r10201
 mc16_13TeV.364545.Sherpa_222_NNPDF30NNLO_SinglePhoton_pty_280_500.recon.AOD.e5938_s3126_r10201

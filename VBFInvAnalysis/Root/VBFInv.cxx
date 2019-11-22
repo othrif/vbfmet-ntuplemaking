@@ -468,7 +468,8 @@ EL::StatusCode VBFInv::initialize()
                       mc_campaign + "_dsid" + std::to_string(mcchannel) + "_" + simType + ".root";
       if((mcchannel==312523 || mcchannel==312454) && mc_campaign=="mc16e")
 	prwConfigFile = "data/VBFInvAnalysis/prwfiles/pileup_" + mc_campaign + "_dsid" + std::to_string(mcchannel) + "_" + simType + ".root";
-	
+      if(mcchannel>=363236 && mcchannel<=363239)
+	prwConfigFile = "data/VBFInvAnalysis/prwfiles/pileup_" + mc_campaign + "_dsid" + std::to_string(mcchannel) + "_" + simType + ".root";	
       std::cout << "input:  " << prwConfigFile << " " << PathResolverFindCalibFile(prwConfigFile) << std::endl;
       prwConfigFile = PathResolverFindCalibFile(prwConfigFile);
       if (prwConfigFile.empty()) {
