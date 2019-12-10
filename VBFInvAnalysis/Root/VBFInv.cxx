@@ -1576,7 +1576,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.BCIDDistanceFromTail = acc_BCIDDistanceFromTail(*content.eventInfo);
    cand.evt.averageIntPerXing    = content.eventInfo->averageInteractionsPerCrossing();
    cand.evt.corAverageIntPerXing = content.eventInfo->actualInteractionsPerCrossing();
-   if(!m_isMC) cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
+   if(!m_isMC) cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing(true);
 
    // Which year are we in?
    cand.evt.year = (m_isMC) ? m_susytools_handle->treatAsYear() : 0; // RandomRunNumber from the PRWTool

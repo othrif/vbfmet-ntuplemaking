@@ -282,6 +282,8 @@ elif (args.driver == 'prun'):
     if args.replicationSite != None:
         driver.options().setString("nc_optGridDestSE",args.replicationSite)
         driver.options().setString('nc_destSE', args.replicationSite)
+
+    #driver.options().setString('nc_excludedSite', 'ANALY_MWT2_UCORE')
     driver.submitOnly(job, args.submitDir )
 elif (args.driver == 'condor'):
     driver = ROOT.EL.CondorDriver()

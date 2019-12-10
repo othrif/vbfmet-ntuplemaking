@@ -62,6 +62,7 @@ FwdJet.doJVT: false
 FwdJet.JvtEtaMin: 2.5
 FwdJet.JvtPtMax: 120e3
 FwdJet.JvtUseTightOP: true
+FwdJet.JvtUseTighterOP: true
 #
 BadJet.Cut: LooseBad
 #
