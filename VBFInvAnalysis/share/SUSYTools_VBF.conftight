@@ -61,8 +61,7 @@ Jet.UncertConfig: rel21/Fall2018/R4_CategoryReduction_SimpleJER.config
 FwdJet.doJVT: false
 FwdJet.JvtEtaMin: 2.5
 FwdJet.JvtPtMax: 120e3
-FwdJet.JvtUseTightOP: true
-FwdJet.JvtUseTighterOP: true
+FwdJet.JvtOp: Tighter
 #
 BadJet.Cut: LooseBad
 #

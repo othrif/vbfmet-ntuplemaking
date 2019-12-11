@@ -2009,6 +2009,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << sysWeight.name().c_str());
                return EL::StatusCode::FAILURE;
             }
+            if (m_susytools_Tighter_handle->applySystematicVariation(sysWeight) != CP::SystematicCode::Ok) {
+               ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << sysWeight.name().c_str());
+               return EL::StatusCode::FAILURE;
+            }
             if (thisSyst.Contains("PRW_")) {
                float &sysSF = cand.evt.GetSystVar("puWeight", thisSyst, m_tree[""]);
                sysSF        = m_susytools_handle->GetPileupWeight();
@@ -2064,6 +2068,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          }
          // set back to nominal
          if (m_susytools_handle->applySystematicVariation(systInfo.systset) != CP::SystematicCode::Ok) {
+            ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << systInfo.systset.name().c_str());
+            return EL::StatusCode::FAILURE;
+         }
+         if (m_susytools_Tighter_handle->applySystematicVariation(systInfo.systset) != CP::SystematicCode::Ok) {
             ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << systInfo.systset.name().c_str());
             return EL::StatusCode::FAILURE;
          }
