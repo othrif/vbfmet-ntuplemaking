@@ -968,6 +968,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // Accessors needed for the object selection
    static SG::AuxElement::Accessor<char> acc_baseline("baseline");
    static SG::AuxElement::Accessor<char> acc_signal("signal");
+   static SG::AuxElement::Accessor<char> acc_signalSel("signalSel");
    static SG::AuxElement::Accessor<char> acc_signal_less_JVT("signal_less_JVT");
    static SG::AuxElement::Accessor<char> acc_passOR("passOR");
    static SG::AuxElement::Accessor<char> acc_passJvt("passJvt");
@@ -1204,8 +1205,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    // need to label these as signal leptons for the later SF treatment
    const static SG::AuxElement::Decorator<char> dec_signal("signal");
-   for (auto electron : content.goodElectrons) { dec_signal(*electron)=1; }
-   for (auto muon : content.goodMuons) { dec_signal(*muon)=1; }
+   const static SG::AuxElement::Decorator<char> dec_signalSel("signalSel");
+   for (auto electron : content.goodElectrons) { dec_signalSel(*electron) = acc_signal(*electron); dec_signal(*electron)=1; }
+   for (auto muon : content.goodMuons) { dec_signalSel(*muon) = acc_signal(*muon);  dec_signal(*muon)=1; }
 
    static const SG::AuxElement::Accessor<uint8_t> acc_ambiguityType("ambiguityType");  
    static const SG::AuxElement::Accessor<ElementLink<xAOD::EgammaContainer> > acc_ambiguityLink("ambiguityLink");
@@ -1534,6 +1536,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    if (saveMe) fillTree(content, cand, systInfo);
 
    if (debug) ANA_MSG_INFO("====================================================================");
+
+   // let's reset the signal defintiions correctly
+   for (auto electron : content.goodElectrons) { dec_signal(*electron)=acc_signalSel(*electron); }
+   for (auto muon : content.goodMuons) { dec_signal(*muon)=dec_signalSel(*muon); }
 
    return EL::StatusCode::SUCCESS;
 }
