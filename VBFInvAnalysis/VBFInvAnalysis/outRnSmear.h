@@ -12,6 +12,8 @@ namespace Analysis {
 class outRnSmear : public outObject {
 public:
    Float_t rnsPSweight;
+   Float_t onlineJet1Pt;
+   Float_t onlineJet1Eta;
 
 public:
    outRnSmear(TString name = "", Bool_t doTrim = kFALSE);
