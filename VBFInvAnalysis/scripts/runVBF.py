@@ -266,6 +266,7 @@ elif (args.driver == 'prun'):
     if args.doSystematics:
       tag = tag+"Syst"
     dset_name_mask = 'user.{user}.{tag}.%in:name[2]%.%in:name[3]%.%in:name[6]%'.format(user=args.userName, tag=tag)
+    #dset_name_mask = 'user.{user}.{tag}.%in:name[4]%.%in:name[5]%'.format(user=args.userName, tag=tag)
     print dset_name_mask, len(dset_name_mask)
     driver = ROOT.EL.PrunDriver()
     if args.doSystematics:
@@ -283,6 +284,8 @@ elif (args.driver == 'prun'):
     if args.replicationSite != None:
         driver.options().setString("nc_optGridDestSE",args.replicationSite)
         driver.options().setString('nc_destSE', args.replicationSite)
+
+    #driver.options().setString('nc_excludedSite', 'ANALY_MWT2_UCORE')
     driver.submitOnly(job, args.submitDir )
 elif (args.driver == 'condor'):
     driver = ROOT.EL.CondorDriver()

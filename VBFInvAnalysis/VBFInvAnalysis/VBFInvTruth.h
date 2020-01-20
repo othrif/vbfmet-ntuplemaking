@@ -45,7 +45,9 @@ public:
    std::vector<float> *m_jet_phi;   //!
    std::vector<float> *m_jet_m;     //!
    std::vector<int> *  m_jet_label; //!
-
+   float truth_jj_mass; //! 
+   float truth_jj_deta;//! 
+   
    int                 m_nels;        //!
    std::vector<float> *m_el_m;        //!
    std::vector<float> *m_el_pt;       //!

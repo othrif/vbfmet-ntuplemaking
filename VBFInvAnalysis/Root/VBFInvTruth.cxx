@@ -123,6 +123,9 @@ EL::StatusCode VBFInvTruth ::initialize()
    my_XsecDB                = new SUSY::CrossSectionDB(xSecFilePath);
    if (debug) ANA_MSG_INFO("xsec DB initialized using file:" << xSecFilePath);
 
+   truth_jj_mass=0;
+   truth_jj_deta=0;
+
    m_jet_E     = new std::vector<float>();
    m_jet_pt    = new std::vector<float>();
    m_jet_eta   = new std::vector<float>();
@@ -224,6 +227,8 @@ EL::StatusCode VBFInvTruth ::initialize()
    truthTree->Branch("EventWeightSys", &m_EventWeightSys);
 
    // Jets
+   truthTree->Branch("truth_jj_mass", &truth_jj_mass);
+   truthTree->Branch("truth_jj_deta", &truth_jj_deta);
    truthTree->Branch("njets", &m_njets);
    truthTree->Branch("jet_E", &m_jet_E);
    truthTree->Branch("jet_pt", &m_jet_pt);
@@ -563,8 +568,10 @@ EL::StatusCode VBFInvTruth ::execute()
 
    // Jets
    int njet5 = 0;
+   TLorentzVector mjj;
    for (const auto &truthJ_itr : *jets) {
       if (truthJ_itr->pt() > 5000. && truthJ_itr->auxdata<bool>("passTruthOR")) {
+	if(njet5<2) mjj += truthJ_itr->p4();
          m_jet_E->push_back(truthJ_itr->e());
          m_jet_pt->push_back(truthJ_itr->pt());
          m_jet_eta->push_back(truthJ_itr->eta());
@@ -575,7 +582,13 @@ EL::StatusCode VBFInvTruth ::execute()
       }
    }
    m_njets = njet5;
-
+   if(m_jet_pt->size()>1){
+     truth_jj_mass = mjj.M();
+     truth_jj_deta = fabs(m_jet_eta->at(0)-m_jet_eta->at(1));
+   }else{
+     truth_jj_mass=-10;
+     truth_jj_deta=-10;
+   }
    // Electrons
    int nel5 = 0;
    for (const auto &elec_itr : *els)
@@ -586,8 +599,8 @@ EL::StatusCode VBFInvTruth ::execute()
          m_el_phi->push_back(elec_itr->phi());
          m_el_type->push_back(elec_itr->auxdata<uint>("classifierParticleType"));
          m_el_origin->push_back(elec_itr->auxdata<uint>("classifierParticleOrigin"));
-         m_el_ptcone30->push_back(elec_itr->auxdata<float>("ptcone30"));
-         m_el_etcone20->push_back(elec_itr->auxdata<float>("etcone20"));
+         //m_el_ptcone30->push_back(elec_itr->auxdata<float>("ptcone30"));
+         //m_el_etcone20->push_back(elec_itr->auxdata<float>("etcone20"));
          m_el_pdgid->push_back(elec_itr->pdgId());
          nel5++;
       }
@@ -604,8 +617,8 @@ EL::StatusCode VBFInvTruth ::execute()
          m_ph_phi->push_back(ph_itr->phi());
          m_ph_type->push_back(ph_itr->auxdata<uint>("classifierParticleType"));
          m_ph_origin->push_back(ph_itr->auxdata<uint>("classifierParticleOrigin"));
-         m_ph_ptcone30->push_back(ph_itr->auxdata<float>("ptcone30"));
-         m_ph_etcone20->push_back(ph_itr->auxdata<float>("etcone20"));
+         //m_ph_ptcone30->push_back(ph_itr->auxdata<float>("ptcone30"));
+         //m_ph_etcone20->push_back(ph_itr->auxdata<float>("etcone20"));
          m_ph_pdgid->push_back(ph_itr->pdgId());
          nph5++;
       }
@@ -622,8 +635,8 @@ EL::StatusCode VBFInvTruth ::execute()
          m_mu_phi->push_back(mu_itr->phi());
          m_mu_type->push_back(mu_itr->auxdata<uint>("classifierParticleType"));
          m_mu_origin->push_back(mu_itr->auxdata<uint>("classifierParticleOrigin"));
-         m_mu_ptcone30->push_back(mu_itr->auxdata<float>("ptcone30"));
-         m_mu_etcone20->push_back(mu_itr->auxdata<float>("etcone20"));
+         //m_mu_ptcone30->push_back(mu_itr->auxdata<float>("ptcone30"));
+	 // m_mu_etcone20->push_back(mu_itr->auxdata<float>("etcone20"));
          m_mu_pdgid->push_back(mu_itr->pdgId());
          nmu5++;
       }

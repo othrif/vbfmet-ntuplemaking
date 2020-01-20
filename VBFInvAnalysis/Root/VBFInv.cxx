@@ -455,6 +455,7 @@ EL::StatusCode VBFInv::initialize()
             break;
          }
       }
+      MC_campaign = mc_campaign;
       unsigned mcchannel = runNum;
       if (m_isMC) mcchannel = eventInfo->mcChannelNumber();
       if (getMCChannel > 0) mcchannel = unsigned(getMCChannel);
@@ -465,6 +466,10 @@ EL::StatusCode VBFInv::initialize()
       // std::to_string(eventInfo->mcChannelNumber()) + "_" + simType + ".root";
       prwConfigFile = "dev/PileupReweighting/share/DSID" + std::to_string(mcchannel / 1000) + "xxx/pileup_" +
                       mc_campaign + "_dsid" + std::to_string(mcchannel) + "_" + simType + ".root";
+      if((mcchannel==312523 || mcchannel==312454) && mc_campaign=="mc16e")
+	prwConfigFile = "data/VBFInvAnalysis/prwfiles/pileup_" + mc_campaign + "_dsid" + std::to_string(mcchannel) + "_" + simType + ".root";
+      if(mcchannel>=363236 && mcchannel<=363239)
+	prwConfigFile = "data/VBFInvAnalysis/prwfiles/pileup_" + mc_campaign + "_dsid" + std::to_string(mcchannel) + "_" + simType + ".root";	
       std::cout << "input:  " << prwConfigFile << " " << PathResolverFindCalibFile(prwConfigFile) << std::endl;
       prwConfigFile = PathResolverFindCalibFile(prwConfigFile);
       if (prwConfigFile.empty()) {
@@ -975,6 +980,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // Accessors needed for the object selection
    static SG::AuxElement::Accessor<char> acc_baseline("baseline");
    static SG::AuxElement::Accessor<char> acc_signal("signal");
+   static SG::AuxElement::Accessor<char> acc_signalSel("signalSel");
    static SG::AuxElement::Accessor<char> acc_signal_less_JVT("signal_less_JVT");
    static SG::AuxElement::Accessor<char> acc_passOR("passOR");
    static SG::AuxElement::Accessor<char> acc_passJvt("passJvt");
@@ -1211,8 +1217,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    // need to label these as signal leptons for the later SF treatment
    const static SG::AuxElement::Decorator<char> dec_signal("signal");
-   for (auto electron : content.goodElectrons) { dec_signal(*electron)=1; }
-   for (auto muon : content.goodMuons) { dec_signal(*muon)=1; }
+   const static SG::AuxElement::Decorator<char> dec_signalSel("signalSel");
+   for (auto electron : content.goodElectrons) { dec_signalSel(*electron) = acc_signal(*electron); dec_signal(*electron)=1; }
+   for (auto muon : content.goodMuons) { dec_signalSel(*muon) = acc_signal(*muon);  dec_signal(*muon)=1; }
 
    static const SG::AuxElement::Accessor<uint8_t> acc_ambiguityType("ambiguityType");  
    static const SG::AuxElement::Accessor<ElementLink<xAOD::EgammaContainer> > acc_ambiguityLink("ambiguityLink");
@@ -1549,6 +1556,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    if (debug) ANA_MSG_INFO("====================================================================");
 
+   // let's reset the signal defintiions correctly
+   for (auto electron : content.goodElectrons) { dec_signal(*electron)=acc_signalSel(*electron); }
+   for (auto muon : content.goodMuons) { dec_signal(*muon)=dec_signalSel(*muon); }
+
    return EL::StatusCode::SUCCESS;
 }
 
@@ -1590,7 +1601,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.BCIDDistanceFromTail = acc_BCIDDistanceFromTail(*content.eventInfo);
    cand.evt.averageIntPerXing    = content.eventInfo->averageInteractionsPerCrossing();
    cand.evt.corAverageIntPerXing = content.eventInfo->actualInteractionsPerCrossing();
-   if(!m_isMC) cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing();
+   if(!m_isMC) cand.evt.corAverageIntPerXing = m_susytools_handle->GetCorrectedAverageInteractionsPerCrossing(true);
 
    // Which year are we in?
    cand.evt.year = (m_isMC) ? m_susytools_handle->treatAsYear() : 0; // RandomRunNumber from the PRWTool
@@ -1857,7 +1868,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.mcEventWeight = content.eventInfo->mcEventWeight();
       if(acc_HTXS_prodMode.isAvailable(*content.eventInfo)){
 	cand.evt.HTXS_prodMode                       = acc_HTXS_prodMode(*content.eventInfo);
-	cand.evt.HTXS_errorCode                      = acc_HTXS_errorCode(*content.eventInfo);
+      }
+      if(acc_HTXS_Stage0_Category.isAvailable(*content.eventInfo)){
+        cand.evt.HTXS_errorCode                      = acc_HTXS_errorCode(*content.eventInfo);
 	cand.evt.HTXS_Stage0_Category                = acc_HTXS_Stage0_Category(*content.eventInfo);
 	cand.evt.HTXS_Stage1_1_Category_pTjet30      = acc_HTXS_Stage1_1_Category_pTjet30(*content.eventInfo);
 	cand.evt.HTXS_Stage1_1_Category_pTjet25      = acc_HTXS_Stage1_1_Category_pTjet25(*content.eventInfo);
@@ -2021,6 +2034,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
                ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << sysWeight.name().c_str());
                return EL::StatusCode::FAILURE;
             }
+            if (m_susytools_Tighter_handle->applySystematicVariation(sysWeight) != CP::SystematicCode::Ok) {
+               ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << sysWeight.name().c_str());
+               return EL::StatusCode::FAILURE;
+            }
             if (thisSyst.Contains("PRW_")) {
                float &sysSF = cand.evt.GetSystVar("puWeight", thisSyst, m_tree[""]);
                sysSF        = m_susytools_handle->GetPileupWeight();
@@ -2076,6 +2093,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          }
          // set back to nominal
          if (m_susytools_handle->applySystematicVariation(systInfo.systset) != CP::SystematicCode::Ok) {
+            ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << systInfo.systset.name().c_str());
+            return EL::StatusCode::FAILURE;
+         }
+         if (m_susytools_Tighter_handle->applySystematicVariation(systInfo.systset) != CP::SystematicCode::Ok) {
             ANA_MSG_ERROR("Cannot configure SUSYTools for weight systematic var. " << systInfo.systset.name().c_str());
             return EL::StatusCode::FAILURE;
          }

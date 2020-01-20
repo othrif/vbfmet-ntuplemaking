@@ -24,8 +24,8 @@ endif()
 atlas_ctest_setup()
 
 # Set up the analysis project from the repository.
-atlas_project( WorkDir 1.0.0
-   USE ${base_project} )
+atlas_project( WorkDir 1.0.0 
+	          USE ${base_project} )
 
 # Generate an environment setup script. This call makes sure that whatever
 # "external" you use in your analysis project, is set up correctly in the
