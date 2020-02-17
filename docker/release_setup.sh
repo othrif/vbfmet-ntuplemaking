@@ -6,7 +6,8 @@
 source ~/analysis_release_setup.sh
 
 # Set up the STAnalysisCode installation:
-source /usr/STAnalysisCode/*/InstallArea/*/setup.sh
+#source /usr/STAnalysisCode/*/InstallArea/*/setup.sh
+source /usr/WorkDir/*/InstallArea/*/setup.sh
 echo "Configured STAnalysisCode from: $STAnalysisCode_DIR"
 
 # Set up the prompt:
