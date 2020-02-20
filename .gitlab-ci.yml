@@ -116,9 +116,9 @@ test:
     paths:
       - submitDir/data-MiniNtuple/*.root
     expire_in: 1 day
-# testing the ntuple making
 
 test_recast:
+  <<: *build_job
   stage: test_recast
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   script:
@@ -130,6 +130,5 @@ test_recast:
     - ls
   artifacts:
     paths:
-      - testOutput_ttbar
-      - testOutput_data
+      - submitDir/data-MiniNtuple/*.root
     expire_in: 1 week
