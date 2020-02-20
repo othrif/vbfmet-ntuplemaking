@@ -13,6 +13,7 @@ stages:
   - install
   - docker
   - test
+  - test_recast
 
 # Set the behaviour of the CI build.
 variables:
@@ -115,3 +116,20 @@ test:
     paths:
       - submitDir/data-MiniNtuple/*.root
     expire_in: 1 day
+# testing the ntuple making
+
+test_recast:
+  stage: test_recast
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+  script:
+    - cd "${BUILD_DIR}"
+    - source "${AnalysisBase_PLATFORM}/setup.sh"
+    - cd ../
+    - export USER=othrif
+    - testDocker.sh
+    - ls
+  artifacts:
+    paths:
+      - testOutput_ttbar
+      - testOutput_data
+    expire_in: 1 week
