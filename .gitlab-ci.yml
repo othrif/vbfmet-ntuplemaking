@@ -120,7 +120,6 @@ test:
 test_recast:
   <<: *build_job
   stage: test_recast
-  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
   script:
     - cd "${BUILD_DIR}"
     - source "${AnalysisBase_PLATFORM}/setup.sh"
