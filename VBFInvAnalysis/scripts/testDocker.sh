@@ -14,7 +14,7 @@ source ../build/${AnalysisBase_PLATFORM}/setup.sh
 TEST_TYPES=(Signal)
 
 # Remote DAOD filenames
-TESTFILE_ORIGINS=("root://eosuser.cern.ch//eos/user/o/othrif/recast_vbfmet/DAOD_EXOT5/mc16_13TeV.346600.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET75.deriv.DAOD_EXOT5.e7613_s3126_r9364_p3895/DAOD_EXOT5.18795494._000010.pool.root.1")
+TESTFILE_ORIGINS=("root://eosatlas.cern.ch//eos/atlas/atlascerngroupdisk/phys-exotics/jdm/vbfinv/RECAST/input/DAOD_EXOT5/mc16_13TeV.346600.PowhegPy8EG_NNPDF30_AZNLOCTEQ6L1_VBFH125_ZZ4nu_MET75.deriv.DAOD_EXOT5.e7613_s3126_r9364_p3895/DAOD_EXOT5.18795494._000010.pool.root.1")
 
 # Local names for the DAODs
 TESTFILE_LOCALS=(test_signal.root)
