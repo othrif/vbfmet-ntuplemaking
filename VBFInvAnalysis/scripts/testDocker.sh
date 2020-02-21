@@ -1,14 +1,14 @@
-echo "Checking build dir"
-pwd
-ls ../*
+#echo "Checking build dir"
+#pwd
+#ls ../*
 
 ##############################
 # Setup                      #
 ##############################
-echo "SETUP Release"
-source ~/release_setup.sh
-echo "SETUP Executables"
-source ../build/${AnalysisBase_PLATFORM}/setup.sh
+#echo "SETUP Release"
+#source ~/release_setup.sh
+#echo "SETUP Executables"
+#source ../build/${AnalysisBase_PLATFORM}/setup.sh
 
 # DAOD file types to loop over
 TEST_TYPES=(Signal)
@@ -58,8 +58,10 @@ while [  $i_type -lt 1 ]; do
   echo "Current Dir : "
   pwd
   echo "Place where executable lives : "
-  ls ../source/*
+  #ls ../source/*
   echo "Running job now : "
+  echo "runVBF.py -f ${TESTFILE_LOCALS[$i_type]}"
+  ls *
   runVBF.py -f "${TESTFILE_LOCALS[$i_type]}"
 
   # Increment counter
