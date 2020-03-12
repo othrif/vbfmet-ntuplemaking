@@ -39,6 +39,7 @@ public:
    // node (done by the //!)
 public:
    int                 m_njets;     //!
+   int                 m_njets25;     //!
    std::vector<float> *m_jet_E;     //!
    std::vector<float> *m_jet_pt;    //!
    std::vector<float> *m_jet_eta;   //!
