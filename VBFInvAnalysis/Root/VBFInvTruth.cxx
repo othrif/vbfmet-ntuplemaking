@@ -125,6 +125,7 @@ EL::StatusCode VBFInvTruth ::initialize()
 
    truth_jj_mass=0;
    truth_jj_deta=0;
+   truth_jj_dphi=0;
 
    m_jet_E     = new std::vector<float>();
    m_jet_pt    = new std::vector<float>();
@@ -229,6 +230,7 @@ EL::StatusCode VBFInvTruth ::initialize()
    // Jets
    truthTree->Branch("truth_jj_mass", &truth_jj_mass);
    truthTree->Branch("truth_jj_deta", &truth_jj_deta);
+   truthTree->Branch("truth_jj_dphi", &truth_jj_dphi);
    truthTree->Branch("njets", &m_njets);
    truthTree->Branch("jet_E", &m_jet_E);
    truthTree->Branch("jet_pt", &m_jet_pt);
@@ -585,9 +587,14 @@ EL::StatusCode VBFInvTruth ::execute()
    if(m_jet_pt->size()>1){
      truth_jj_mass = mjj.M();
      truth_jj_deta = fabs(m_jet_eta->at(0)-m_jet_eta->at(1));
+     TLorentzVector tj1,tj2;
+     tj1.SetPtEtaPhiM(m_jet_pt->at(0),m_jet_eta->at(0),m_jet_phi->at(0),m_jet_m->at(0));
+     tj2.SetPtEtaPhiM(m_jet_pt->at(1),m_jet_eta->at(1),m_jet_phi->at(1),m_jet_m->at(1));
+     truth_jj_dphi = fabs(tj1.DeltaPhi(tj2));
    }else{
      truth_jj_mass=-10;
      truth_jj_deta=-10;
+     truth_jj_dphi=-10;
    }
    // Electrons
    int nel5 = 0;
