@@ -137,6 +137,7 @@ public:
    Int_t                      trigger_lep;
    Int_t                      trigger_lep_OR;
    Int_t                      trigger_met;
+   Int_t                      trigger_ph;
 
    Int_t passGRL;
    //      Int_t passTrigger;
@@ -161,6 +162,9 @@ public:
    Double_t met_tst_nolep_j1_dphi;
    Double_t met_tst_nolep_j2_dphi;
    Double_t met_cst_jet;
+   Float_t met_cst_phi;
+   Float_t met_cst_em_jet;
+   Float_t met_cst_em_phi;
    Double_t metsig_tst;
    Double_t metsig_tst_nolep;
 

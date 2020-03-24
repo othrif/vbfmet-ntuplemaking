@@ -689,6 +689,7 @@ EL::StatusCode VBFInv::initialize()
          m_cand[thisSyst].trackjet["trackjet"] = Analysis::outTrackJet("trackjet", (trim && !doTrackJetDetail));
       if (doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim && !doTauDetail);
       m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim && !doPhotonDetail);
+      if(doPhotonDetail) m_cand[thisSyst].ph["baseph"] = Analysis::outPhoton("baseph", trim && !doPhotonDetail);
 
       // Set trimming option for remaning outHolder objects
       m_cand[thisSyst].evt.setDoTrim((trim && !doEventDetail && !doRnS));
@@ -1350,12 +1351,29 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    double met_cst_jet  = -1.;
    met_cst_jet         = (*content.met_cst)["RefJet"]->met();
+
    content.met_cst_jet = met_cst_jet;
+   content.met_cst_phi =  (*content.met_cst)["RefJet"]->phi();
 
    if (debug) {
       print("MET CST", met_cst_jet * 1e-3);
       print("MHT without jVT", mht * 1e-3);
    }
+
+   // MET CST, for HT
+   TLorentzVector myMET_cst_em;
+   double         myMETsig_cst_em;
+   getMET(content.met_cst_em, content.met_cst_emAux,
+          content.jetsEM, // use all objects (before OR and after corrections) for MET utility
+          &(content.baselineElectrons), &(content.baselineMuons),
+          &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+                                  // Muons do not, but they do have cleaning
+          kFALSE,                 // do TST
+          kFALSE,                 // do JVT
+          nullptr,                // invisible particles
+          myMET_cst_em, myMETsig_cst_em, 2); // runs with tighter or emtopo jets
+   content.met_cst_em_jet = (*content.met_cst_em)["RefJet"]->met();
+   content.met_cst_em_phi = (*content.met_cst_em)["RefJet"]->phi();
 
    // track MET
    //getTrackMET(content.met_track, content.met_trackAux,
@@ -1776,7 +1794,29 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       cand.evt.trigger_met += 0x4000;
    if (cand.evt.trigger["HLT_j70_j50_0eta490_invm1100j70_dphi20_deta40_L1MJJ-500-NFF"]) cand.evt.trigger_met += 0x8000;
    if (cand.evt.trigger["HLT_g35_medium_j70_j50_0eta490_invm900j50_L1MJJ-500-NFF"]) cand.evt.trigger_met += 0x10000;
-
+   // photon trigger info
+   if (cand.evt.trigger["HLT_g15_loose_L1EM7"]) cand.evt.trigger_ph += 0x1;
+   if (cand.evt.trigger["HLT_g20_loose_L1EM12"]) cand.evt.trigger_ph += 0x2;
+   if (cand.evt.trigger["HLT_g25_loose_L1EM15"]) cand.evt.trigger_ph += 0x4;
+   if (cand.evt.trigger["HLT_g35_loose_L1EM15"]) cand.evt.trigger_ph += 0x8;
+   if (cand.evt.trigger["HLT_g40_loose_L1EM15"]) cand.evt.trigger_ph += 0x10;
+   if (cand.evt.trigger["HLT_g45_loose_L1EM15"]) cand.evt.trigger_ph += 0x20;
+   if (cand.evt.trigger["HLT_g50_loose_L1EM15"]) cand.evt.trigger_ph += 0x40;
+   if (cand.evt.trigger["HLT_g10_loose"]) cand.evt.trigger_ph += 0x80;
+   if (cand.evt.trigger["HLT_g15_loose"]) cand.evt.trigger_ph += 0x100;
+   if (cand.evt.trigger["HLT_g20_loose"]) cand.evt.trigger_ph += 0x200;
+   if (cand.evt.trigger["HLT_g25_loose"]) cand.evt.trigger_ph += 0x400;
+   if (cand.evt.trigger["HLT_g60_loose"]) cand.evt.trigger_ph += 0x800;
+   if (cand.evt.trigger["HLT_g70_loose"]) cand.evt.trigger_ph += 0x1000;
+   if (cand.evt.trigger["HLT_g80_loose"]) cand.evt.trigger_ph += 0x2000;
+   if (cand.evt.trigger["HLT_g100_loose"]) cand.evt.trigger_ph += 0x4000;
+   if (cand.evt.trigger["HLT_g120_loose"]) cand.evt.trigger_ph += 0x8000;
+   if (cand.evt.trigger["HLT_g140_loose"]) cand.evt.trigger_ph += 0x10000;
+   if (cand.evt.trigger["HLT_g160_loose"]) cand.evt.trigger_ph += 0x20000;
+   if (cand.evt.trigger["HLT_g180_loose"]) cand.evt.trigger_ph += 0x40000;
+   if (cand.evt.trigger["HLT_g200_etcut"]) cand.evt.trigger_ph += 0x80000;
+   if (cand.evt.trigger["HLT_g300_etcut"]) cand.evt.trigger_ph += 0x100000;
+   
    // pass event flags
    cand.evt.passGRL = content.passGRL;
    cand.evt.passPV  = content.passPV;
@@ -1828,6 +1868,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    cand.evt.met_tst_nolep_j1_dphi = content.met_tst_nolep_j1_dphi;
    cand.evt.met_tst_nolep_j2_dphi = content.met_tst_nolep_j2_dphi;
    cand.evt.met_cst_jet           = content.met_cst_jet;
+   cand.evt.met_cst_phi           = content.met_cst_phi;
+   cand.evt.met_cst_em_jet        = content.met_cst_em_jet;
+   cand.evt.met_cst_em_phi        = content.met_cst_em_phi;
    cand.evt.metsig_tst            = content.metsig_tst;
    cand.evt.metsig_tst_nolep      = content.metsig_tst_nolep;
 
@@ -2244,6 +2287,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          return EL::StatusCode::FAILURE;
       }
       cand.evt.n_mu_truth = truthMuons->size();
+      static SG::AuxElement::Accessor<unsigned int> acc_classifierParticleOrigin("classifierParticleOrigin");
       for (const auto &part : *truthMuons) {
          if (part->pt() < 4.0e3) continue;
          if (part->status() != 1) continue;
@@ -2251,10 +2295,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_mu_eta.push_back(part->eta());
          cand.evt.truth_mu_phi.push_back(part->phi());
          cand.evt.truth_mu_m.push_back(part->m());
-         cand.evt.truth_mu_status.push_back(part->status());
+         //cand.evt.truth_mu_status.push_back(part->status());
+	 cand.evt.truth_mu_status.push_back(acc_classifierParticleOrigin(*part));
       }
 
-      static SG::AuxElement::Accessor<unsigned int> acc_classifierParticleOrigin("classifierParticleOrigin");
       //-- ELECTRONS --
       cand.evt.n_el_truth = truthElectrons->size();
       for (const auto &part : *truthElectrons) {
@@ -2265,7 +2309,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_el_eta.push_back(part->eta());
          cand.evt.truth_el_phi.push_back(part->phi());
          cand.evt.truth_el_m.push_back(part->m());
-         cand.evt.truth_el_status.push_back(part->status());
+         //cand.evt.truth_el_status.push_back(part->status());
+	 cand.evt.truth_el_status.push_back(acc_classifierParticleOrigin(*part));
       }
       //-- PHOTONS --
       const xAOD::TruthParticleContainer *truthParticles(nullptr);
@@ -2436,6 +2481,11 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    /////////////////////////////
    // Selected photons
    ////////////////////////////
+   for (auto thisPh : content.baselinePhotons) {
+     //if (acc_DFCommonCrackVetoCleaning.isAvailable(*thisPh) && acc_DFCommonCrackVetoCleaning(*thisPh) == 0) 1;
+     if(acc_signal(*thisPh) != 1) cand.ph["baseph"].add(*thisPh);
+   }
+
    for (auto thisPh : content.goodPhotons) {
       if (acc_DFCommonCrackVetoCleaning.isAvailable(*thisPh) && acc_DFCommonCrackVetoCleaning(*thisPh) == 0)
          ++cand.evt.n_ph_crackVetoCleaning;

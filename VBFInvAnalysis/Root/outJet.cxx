@@ -192,6 +192,9 @@ void Analysis::outJet::add(const xAOD::Jet &input)
 
       double tmp_btag_weight(-9999.);
       input.btagging()->MVx_discriminant("MV2c10", tmp_btag_weight);
+      //std::cout << "MV2c10: " << tmp_btag_weight << std::endl;
+      //input.btagging()->MVx_discriminant("DL1r", tmp_btag_weight);
+      //std::cout << "DL1r: " << tmp_btag_weight << std::endl;
       btag_weight.push_back(tmp_btag_weight);
 
       // number of charged tracks within a jet

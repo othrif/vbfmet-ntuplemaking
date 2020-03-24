@@ -135,6 +135,7 @@ void Analysis::outEvent::reset()
    trigger_lep = 0;
    trigger_lep_OR = -9999;
    trigger_met = -9999;
+   trigger_ph = 0;
 
    passGRL           = -9999;
    passPV            = -9999;
@@ -174,6 +175,9 @@ void Analysis::outEvent::reset()
    met_tst_nolep_j1_dphi = -9999;
    met_tst_nolep_j2_dphi = -9999;
    met_cst_jet           = -9999;
+   met_cst_phi           = -9999;
+   met_cst_em_jet           = -9999;
+   met_cst_em_phi           = -9999;
    metsig_tst            = -9999;
    metsig_tst_nolep      = -9999;
 
@@ -273,6 +277,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "trigger_lep", &trigger_lep);
    tree->Branch(prefix + "trigger_lep_OR", &trigger_lep_OR);
    tree->Branch(prefix + "trigger_met", &trigger_met);
+   tree->Branch(prefix + "trigger_ph", &trigger_ph);
 
    /*
        tree->Branch(prefix + "pdf_id1", &pdf_id1);
@@ -376,6 +381,9 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "met_tst_nolep_j1_dphi", &met_tst_nolep_j1_dphi);
    tree->Branch(prefix + "met_tst_nolep_j2_dphi", &met_tst_nolep_j2_dphi);
    tree->Branch(prefix + "met_cst_jet", &met_cst_jet);
+   tree->Branch(prefix + "met_cst_phi", &met_cst_phi);
+   tree->Branch(prefix + "met_cst_em_jet", &met_cst_em_jet);
+   tree->Branch(prefix + "met_cst_em_phi", &met_cst_em_phi);
    tree->Branch(prefix + "metsig_tst", &metsig_tst);
    tree->Branch(prefix + "metsig_tst_nolep", &metsig_tst_nolep);
 

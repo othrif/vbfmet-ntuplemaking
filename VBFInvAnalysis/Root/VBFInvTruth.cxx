@@ -126,6 +126,7 @@ EL::StatusCode VBFInvTruth ::initialize()
    truth_jj_mass=0;
    truth_jj_deta=0;
    truth_jj_dphi=0;
+   m_njets25=0;
 
    m_jet_E     = new std::vector<float>();
    m_jet_pt    = new std::vector<float>();
@@ -232,6 +233,7 @@ EL::StatusCode VBFInvTruth ::initialize()
    truthTree->Branch("truth_jj_deta", &truth_jj_deta);
    truthTree->Branch("truth_jj_dphi", &truth_jj_dphi);
    truthTree->Branch("njets", &m_njets);
+   truthTree->Branch("njets25", &m_njets25);
    truthTree->Branch("jet_E", &m_jet_E);
    truthTree->Branch("jet_pt", &m_jet_pt);
    truthTree->Branch("jet_eta", &m_jet_eta);
@@ -570,6 +572,7 @@ EL::StatusCode VBFInvTruth ::execute()
 
    // Jets
    int njet5 = 0;
+   int njet25 = 0;
    TLorentzVector mjj;
    for (const auto &truthJ_itr : *jets) {
       if (truthJ_itr->pt() > 5000. && truthJ_itr->auxdata<bool>("passTruthOR")) {
@@ -581,9 +584,11 @@ EL::StatusCode VBFInvTruth ::execute()
          m_jet_m->push_back(truthJ_itr->m());
          m_jet_label->push_back(truthJ_itr->auxdata<int>("PartonTruthLabelID"));
          njet5++;
+	 if (truthJ_itr->pt() > 25000.) njet25++;
       }
    }
    m_njets = njet5;
+   m_njets25 = njet25;
    if(m_jet_pt->size()>1){
      truth_jj_mass = mjj.M();
      truth_jj_deta = fabs(m_jet_eta->at(0)-m_jet_eta->at(1));
