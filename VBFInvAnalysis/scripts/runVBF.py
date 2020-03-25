@@ -62,7 +62,7 @@ parser.add_argument("--doContLepDetail", dest="doContLepDetail", action="store_t
 parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--doVertexDetail", dest="doVertexDetail", action="store_true", default=False, help="add detailed branches for vertex info")
 parser.add_argument("--doORDetail", dest="doORDetail", action="store_true", default=False, help="add detailed branches for overlap removal")
-parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
+parser.add_argument("--skipCutBookKeeper", dest="skipCutBookKeeper", action='store_true', default=False, help="skip CutBookKeeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
 parser.add_argument("--noTruthBoson", dest="noTruthBoson",action='store_true', default=False, help="deactivate boson mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
@@ -213,18 +213,18 @@ if( args.algoName == "VBFInv" ):
   alg.doTrackMET = args.doTrackMET
   alg.doTTMet = args.doTTMet
 elif ( args.algoName == "VBFInvTruth"):
-  alg.skipCBK = args.skipCutBookKeper
+  alg.skipCBK = args.skipCutBookKeeper
   alg.MultiWeight = args.isMultiWeight
   alg.noTruthBoson = args.noTruthBoson
 elif ( args.algoName == "VBFInvSherpaTruth"):
-  alg.skipCBK = args.skipCutBookKeper
+  alg.skipCBK = args.skipCutBookKeeper
   alg.MultiWeight = args.isMultiWeight
   alg.antiktDR = args.antiktDR
   alg.shouldNotCluster = args.noClusterPartons
   alg.partonJetPtCut = args.partonPt
   alg.truthJetPtCut = args.truthPt
 elif ( args.algoName == "VBFInvVjetsRW"):
-  alg.skipCBK = args.skipCutBookKeper
+  alg.skipCBK = args.skipCutBookKeeper
 else:
   print("ERROR: You need to enter a valid algorithm name: \"VBFInv\" or \"VBFInvTruth\" or \"VBFInvSherpaTruth\" or \"VBFInvVjetsRW\"")
   sys.exit()
