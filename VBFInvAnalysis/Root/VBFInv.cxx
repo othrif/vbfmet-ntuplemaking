@@ -1880,10 +1880,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
      static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_prodMode("HTXS_prodMode");
      static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_errorCode("HTXS_errorCode");
      static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage0_Category("HTXS_Stage0_Category");
-     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Category_pTjet30("HTXS_Stage1_1_Category_pTjet30");
-     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Category_pTjet25("HTXS_Stage1_1_Category_pTjet25");
-     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Fine_Category_pTjet30("HTXS_Stage1_1_Fine_Category_pTjet30");
-     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Fine_Category_pTjet25("HTXS_Stage1_1_Fine_Category_pTjet25");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Category_pTjet30("HTXS_Stage1_2_Category_pTjet30");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Category_pTjet25("HTXS_Stage1_2_Category_pTjet25");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Fine_Category_pTjet30("HTXS_Stage1_2_Fine_Category_pTjet30");
+     static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Stage1_1_Fine_Category_pTjet25("HTXS_Stage1_2_Fine_Category_pTjet25");
      static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Njets_pTjet25("HTXS_Njets_pTjet25");
      static SG::AuxElement::ConstAccessor<Int_t> acc_HTXS_Njets_pTjet30("HTXS_Njets_pTjet30");
      static SG::AuxElement::ConstAccessor<Float_t> acc_HTXS_V_pt("HTXS_V_pt");
