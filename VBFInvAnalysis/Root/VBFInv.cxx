@@ -2547,7 +2547,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
 EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
                               std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet,
-                              xAOD::ElectronContainer *el, xAOD::MuonContainer *mu, xAOD::PhotonContainer * /*ph*/,
+                              xAOD::ElectronContainer *el, xAOD::MuonContainer *mu, xAOD::PhotonContainer * ph,
                               Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer *invis, TLorentzVector &myMET,
                               double &myMETsig, int METType)
 {
@@ -2560,7 +2560,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
       ANA_CHECK(m_susytools_handle->GetMET(*met,
                                            jet, // use all objects (before OR and after corrections) for MET utility
                                            el, mu,
-                                           0, // ph, // ph term
+                                           ph, // ph, // ph term
                                            0, // tau term
                                            doTST, doJVT,
                                            invis // invisible particles
@@ -2571,7 +2571,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
          m_susytools_Tight_handle->GetMET(*met,
                                           jet, // use all objects (before OR and after corrections) for MET utility
                                           el, mu,
-                                          0, // ph, // ph term
+					  ph, // ph, // ph term
                                           0, // tau term
                                           doTST, doJVT,
                                           invis // invisible particles
@@ -2582,7 +2582,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
          m_susytools_Tighter_handle->GetMET(*met,
                                             jet, // use all objects (before OR and after corrections) for MET utility
                                             el, mu,
-                                            0, // ph, // ph term
+                                            ph, // ph, // ph term
                                             0, // tau term
                                             doTST, doJVT,
                                             invis // invisible particles
@@ -2593,7 +2593,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
          m_susytools_Tenacious_handle->GetMET(*met,
                                               jet, // use all objects (before OR and after corrections) for MET utility
                                               el, mu,
-                                              0, // ph, // ph term
+                                              ph, // ph, // ph term
                                               0, // tau term
                                               doTST, doJVT,
                                               invis // invisible particles
