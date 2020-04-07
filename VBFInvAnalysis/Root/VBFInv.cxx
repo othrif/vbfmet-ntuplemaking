@@ -1538,6 +1538,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
                ((*content.met_tenacious_tst_nolep)["Final"]->met() > metSkimToUse) ||
                ((*content.met_tenacious_tst)["Final"]->met() > metSkimToUse);
    if(content.isNominal && content.goodPhotons.size() > 0) saveMe=true;// remove the met skim for photon events
+   //if(content.isNominal && content.goodPhotons.size() > 0 && content.baselineMuons.size()==0 && content.baselineElectrons.size()==0) saveMe=true;// remove the met skim for photon events
    if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::MET_skim, event_weight);
    if (content.goodJets.size() < 2) // At least two good jet
       return EL::StatusCode::SUCCESS;
