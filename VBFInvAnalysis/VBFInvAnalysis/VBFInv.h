@@ -85,16 +85,6 @@ public:
    TString  MC_campaign;
    TString  skip_syst;
    TString  trigger_list;
-   Double_t pt1Skim;
-   Double_t pt1SkimForSyst;
-   Double_t pt2Skim;
-   Double_t pt2SkimForSyst;
-   Double_t metSkim;
-   Double_t metSkimForSyst;
-   Double_t mjjSkim;
-   Double_t mjjSkimForSyst;
-   Double_t detajjSkim;
-   Double_t detajjSkimForSyst;
    Double_t rebalancedJetPt;
    Bool_t   doPileup;
    Bool_t   doSystematics;

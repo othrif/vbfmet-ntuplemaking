@@ -48,8 +48,7 @@ ClassImp(VBFInv)
 
    VBFInv ::VBFInv()
    : debug(false), verbose(false), config_file(""), ST_config_file(""), prw_file(""), lumicalc_file(""), GRL_file(""),
-     MC_campaign(""), skip_syst(""), trigger_list(""), pt1Skim(0), pt1SkimForSyst(0), pt2Skim(0), pt2SkimForSyst(0),
-     metSkim(0), metSkimForSyst(0), mjjSkim(0), mjjSkimForSyst(0), detajjSkim(0), detajjSkimForSyst(0),
+     MC_campaign(""), skip_syst(""), trigger_list(""), 
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false),
      doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doTrackMET(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
@@ -258,11 +257,6 @@ EL::StatusCode VBFInv::initialize()
    ANA_MSG_INFO("  - doSkim = " << doSkim);
    ANA_MSG_INFO("  - doTrim = " << doTrim);
    ANA_MSG_INFO("  - doTrimSyst = " << doTrimSyst);
-   // ANA_MSG_INFO("  - pt1Skim = " << pt1Skim << " MeV ( " << pt1SkimForSyst << " MeV for systematics)");
-   // ANA_MSG_INFO("  - pt2Skim = " << pt1Skim << " MeV ( " << pt2SkimForSyst << " MeV for systematics)");
-   // ANA_MSG_INFO("  - metSkim = " << metSkim << " MeV ( " << metSkimForSyst << " MeV for systematics)");
-   // ANA_MSG_INFO("  - mjjSkim = " << mjjSkim << " MeV ( " << mjjSkimForSyst << " MeV for systematics)");
-   // ANA_MSG_INFO("  - detajjSkim = " << detajjSkim << " ( " << detajjSkimForSyst << " for systematics)");
    ANA_MSG_INFO("  - JetEtaFilter = " << JetEtaFilter);
    ANA_MSG_INFO("  - JetpTFilter = " << JetpTFilter << " MeV ");
    ANA_MSG_INFO("  - MjjFilter = " << MjjFilter << " MeV ");
@@ -1520,18 +1514,12 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // const Double_t metSkimToUse    = (content.isNominal) ? metSkim : metSkimForSyst;
    // const Double_t mjjSkimToUse    = (content.isNominal) ? mjjSkim : mjjSkimForSyst;
    // const Double_t detajjSkimToUse = (content.isNominal) ? detajjSkim : detajjSkimForSyst;
-   // TVector2 met_nomuon_to_use = TVector2((*content.met_tst_nomuon)["Final"]->mpx(),
-   // (*content.met_tst_nomuon)["Final"]->mpy()); TVector2 met_noelectron_to_use =
-   // TVector2((*content.met_tst_noelectron)["Final"]->mpx(), (*content.met_tst_noelectron)["Final"]->mpy());
-   TVector2 met_nolep_to_use =
-      TVector2((*content.met_tst_nolep)["Final"]->mpx(), (*content.met_tst_nolep)["Final"]->mpy());
-   double detajjMax = -1., mjjMax = -1., dphijjMax = -1.; // not really max here, ?TO DO?
-   HelperFunctions::computejj(content.goodJets, mjjMax, detajjMax, dphijjMax);
-   if (debug) {
-      print("Max Mjj", mjjMax);
-      print("Max DEta", detajjMax);
-      print("Max DPhi", dphijjMax);
-   }
+   // TVector2 met_nomuon_to_use     = TVector2((*content.met_tst_nomuon)["Final"]->mpx(),
+   // 					     (*content.met_tst_nomuon)["Final"]->mpy()); 
+   // TVector2 met_noelectron_to_use = TVector2((*content.met_tst_noelectron)["Final"]->mpx(), 
+   // 					     (*content.met_tst_noelectron)["Final"]->mpy());
+   TVector2 met_nolep_to_use      = TVector2((*content.met_tst_nolep)["Final"]->mpx(), 
+					     (*content.met_tst_nolep)["Final"]->mpy());
 
    // Skimming
    // Bool_t saveMe = ( met_nomuon_to_use.Mod() > metSkimToUse || met_noelectron_to_use.Mod() > metSkimToUse );
