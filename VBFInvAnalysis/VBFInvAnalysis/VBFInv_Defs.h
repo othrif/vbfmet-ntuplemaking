@@ -12,12 +12,14 @@ enum CutID {
    //        Trigger = 4,
    DetError    = 4,
    JetBad      = 5,
-   MET_skim    = 6,
-   JetN_skim   = 7,
-   JetpT1_skim = 8,
-   JetpT2_skim = 9,
-   Mjj_skim    = 10,
-   DEta_skim   = 11
+   PhotonN_skim = 6,
+   BaseLepN_skim= 7
+   /* MET_skim    = 6, */
+   /* JetN_skim   = 7, */
+   /* JetpT1_skim = 8, */
+   /* JetpT2_skim = 9, */
+   /* Mjj_skim    = 10, */
+   /* DEta_skim   = 11 */
 };
 
 } // namespace VBFInvCuts

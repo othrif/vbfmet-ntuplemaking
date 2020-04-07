@@ -120,12 +120,14 @@ EL::StatusCode VBFInv ::histInitialize()
    m_CutFlow.addCut("Vertex");
    m_CutFlow.addCut("Detector cleaning");
    m_CutFlow.addCut("Jet cleaning");
-   m_CutFlow.addCut("MET skim");
-   m_CutFlow.addCut("JetN skim");
-   m_CutFlow.addCut("Jet pT1 skim");
-   m_CutFlow.addCut("Jet pT2 skim");
-   m_CutFlow.addCut("Mjj skim");
-   m_CutFlow.addCut("DEta skim");
+   m_CutFlow.addCut("PhotonN skim");
+   m_CutFlow.addCut("Baseline LepN skim");
+   // m_CutFlow.addCut("MET skim");
+   // m_CutFlow.addCut("JetN skim");
+   // m_CutFlow.addCut("Jet pT1 skim");
+   // m_CutFlow.addCut("Jet pT2 skim");
+   // m_CutFlow.addCut("Mjj skim");
+   // m_CutFlow.addCut("DEta skim");
 
    return EL::StatusCode::SUCCESS;
 }
@@ -256,11 +258,11 @@ EL::StatusCode VBFInv::initialize()
    ANA_MSG_INFO("  - doSkim = " << doSkim);
    ANA_MSG_INFO("  - doTrim = " << doTrim);
    ANA_MSG_INFO("  - doTrimSyst = " << doTrimSyst);
-   ANA_MSG_INFO("  - pt1Skim = " << pt1Skim << " MeV ( " << pt1SkimForSyst << " MeV for systematics)");
-   ANA_MSG_INFO("  - pt2Skim = " << pt1Skim << " MeV ( " << pt2SkimForSyst << " MeV for systematics)");
-   ANA_MSG_INFO("  - metSkim = " << metSkim << " MeV ( " << metSkimForSyst << " MeV for systematics)");
-   ANA_MSG_INFO("  - mjjSkim = " << mjjSkim << " MeV ( " << mjjSkimForSyst << " MeV for systematics)");
-   ANA_MSG_INFO("  - detajjSkim = " << detajjSkim << " ( " << detajjSkimForSyst << " for systematics)");
+   // ANA_MSG_INFO("  - pt1Skim = " << pt1Skim << " MeV ( " << pt1SkimForSyst << " MeV for systematics)");
+   // ANA_MSG_INFO("  - pt2Skim = " << pt1Skim << " MeV ( " << pt2SkimForSyst << " MeV for systematics)");
+   // ANA_MSG_INFO("  - metSkim = " << metSkim << " MeV ( " << metSkimForSyst << " MeV for systematics)");
+   // ANA_MSG_INFO("  - mjjSkim = " << mjjSkim << " MeV ( " << mjjSkimForSyst << " MeV for systematics)");
+   // ANA_MSG_INFO("  - detajjSkim = " << detajjSkim << " ( " << detajjSkimForSyst << " for systematics)");
    ANA_MSG_INFO("  - JetEtaFilter = " << JetEtaFilter);
    ANA_MSG_INFO("  - JetpTFilter = " << JetpTFilter << " MeV ");
    ANA_MSG_INFO("  - MjjFilter = " << MjjFilter << " MeV ");
@@ -826,16 +828,17 @@ EL::StatusCode VBFInv ::readConfig()
    MC_campaign       = env.GetValue("VBF.MC_campaign", "EMPTY");
    skip_syst         = env.GetValue("VBF.skip_syst", "");
    trigger_list      = env.GetValue("VBF.trigger_list", "");
-   pt1Skim           = env.GetValue("VBF.pt1Skim", 0);
-   pt2Skim           = env.GetValue("VBF.pt2Skim", 0);
-   metSkim           = env.GetValue("VBF.metSkim", 0);
-   mjjSkim           = env.GetValue("VBF.mjjSkim", 0);
-   detajjSkim        = env.GetValue("VBF.detajjSkim", 0);
-   pt1SkimForSyst    = env.GetValue("VBF.pt1SkimForSyst", 0);
-   pt2SkimForSyst    = env.GetValue("VBF.pt2SkimForSyst", 0);
-   metSkimForSyst    = env.GetValue("VBF.metSkimForSyst", 0);
-   mjjSkimForSyst    = env.GetValue("VBF.mjjSkimForSyst", 0);
-   detajjSkimForSyst = env.GetValue("VBF.detajjSkimForSyst", 0);
+   
+   // pt1Skim           = env.GetValue("VBF.pt1Skim", 0);
+   // pt2Skim           = env.GetValue("VBF.pt2Skim", 0);
+   // metSkim           = env.GetValue("VBF.metSkim", 0);
+   // mjjSkim           = env.GetValue("VBF.mjjSkim", 0);
+   // detajjSkim        = env.GetValue("VBF.detajjSkim", 0);
+   // pt1SkimForSyst    = env.GetValue("VBF.pt1SkimForSyst", 0);
+   // pt2SkimForSyst    = env.GetValue("VBF.pt2SkimForSyst", 0);
+   // metSkimForSyst    = env.GetValue("VBF.metSkimForSyst", 0);
+   // mjjSkimForSyst    = env.GetValue("VBF.mjjSkimForSyst", 0);
+   // detajjSkimForSyst = env.GetValue("VBF.detajjSkimForSyst", 0);
 
    return EL::StatusCode::SUCCESS;
 }
@@ -1430,7 +1433,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       //    printMET(content.met_tst_nomuon, "MET no muons");
       //printTrackMET(content.met_track, "track MET");
       //-- PHOTONS --
-      printObjects(content.allPhotons, "photons");
+      printObjects(content.allPhotons, "allPhotons");
+      printObjects(content.goodPhotons, "goodPhotons");
    }
 
    //-----------------------------------------------------------------------
@@ -1510,11 +1514,12 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    //-----------------------------------------------------------------------
 
    // skimming
-   const Double_t pt1SkimToUse    = (content.isNominal) ? pt1Skim : pt1SkimForSyst;
-   const Double_t pt2SkimToUse    = (content.isNominal) ? pt2Skim : pt2SkimForSyst;
-   const Double_t metSkimToUse    = (content.isNominal) ? metSkim : metSkimForSyst;
-   const Double_t mjjSkimToUse    = (content.isNominal) ? mjjSkim : mjjSkimForSyst;
-   const Double_t detajjSkimToUse = (content.isNominal) ? detajjSkim : detajjSkimForSyst;
+   
+   // const Double_t pt1SkimToUse    = (content.isNominal) ? pt1Skim : pt1SkimForSyst;
+   // const Double_t pt2SkimToUse    = (content.isNominal) ? pt2Skim : pt2SkimForSyst;
+   // const Double_t metSkimToUse    = (content.isNominal) ? metSkim : metSkimForSyst;
+   // const Double_t mjjSkimToUse    = (content.isNominal) ? mjjSkim : mjjSkimForSyst;
+   // const Double_t detajjSkimToUse = (content.isNominal) ? detajjSkim : detajjSkimForSyst;
    // TVector2 met_nomuon_to_use = TVector2((*content.met_tst_nomuon)["Final"]->mpx(),
    // (*content.met_tst_nomuon)["Final"]->mpy()); TVector2 met_noelectron_to_use =
    // TVector2((*content.met_tst_noelectron)["Final"]->mpx(), (*content.met_tst_noelectron)["Final"]->mpy());
@@ -1530,7 +1535,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    // Skimming
    // Bool_t saveMe = ( met_nomuon_to_use.Mod() > metSkimToUse || met_noelectron_to_use.Mod() > metSkimToUse );
-   Bool_t saveMe = true;
+   Bool_t saveMe = (content.goodPhotons.size() >= 1);
+   if(content.goodPhotons.size() < 1) // At least one good photon
+     return EL::StatusCode::SUCCESS;
+   if(saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::PhotonN_skim, event_weight);
+   saveMe &= (content.baselineElectrons.size() >= 1 || content.baselineMuons.size() >= 1);
+   if(saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::BaseLepN_skim, event_weight);
+
    // Bool_t saveMe = (met_nolep_to_use.Mod() > metSkimToUse);
    // if (doMETDetail)
    //    saveMe = saveMe || ((*content.met_tight_tst_nolep)["Final"]->met() > metSkimToUse) ||
