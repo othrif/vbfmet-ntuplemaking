@@ -1530,27 +1530,28 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    // Skimming
    // Bool_t saveMe = ( met_nomuon_to_use.Mod() > metSkimToUse || met_noelectron_to_use.Mod() > metSkimToUse );
-   Bool_t saveMe = (met_nolep_to_use.Mod() > metSkimToUse);
-   if (doMETDetail)
-      saveMe = saveMe || ((*content.met_tight_tst_nolep)["Final"]->met() > metSkimToUse) ||
-               ((*content.met_tight_tst)["Final"]->met() > metSkimToUse) ||
-               //((*content.met_tighter_tst_nolep)["Final"]->met() > metSkimToUse) ||
-               //((*content.met_tighter_tst)["Final"]->met() > metSkimToUse) ||
-               ((*content.met_tenacious_tst_nolep)["Final"]->met() > metSkimToUse) ||
-               ((*content.met_tenacious_tst)["Final"]->met() > metSkimToUse);
-   if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::MET_skim, event_weight);
-   if (content.goodJets.size() < 2) // At least two good jet
-      return EL::StatusCode::SUCCESS;
-   if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::JetN_skim, event_weight);
-   saveMe &= (content.goodJets[0]->pt() > pt1SkimToUse);
-   if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::JetpT1_skim, event_weight);
-   saveMe &= (content.goodJets[1]->pt() > pt2SkimToUse);
-   if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::JetpT2_skim, event_weight);
-   saveMe &= (mjjMax > mjjSkimToUse);
-   if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::Mjj_skim, event_weight);
-   saveMe &= (detajjMax > detajjSkimToUse);
-   if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::DEta_skim, event_weight);
-   saveMe |= !doSkim; // user flag to skim or not
+   Bool_t saveMe = true;
+   // Bool_t saveMe = (met_nolep_to_use.Mod() > metSkimToUse);
+   // if (doMETDetail)
+   //    saveMe = saveMe || ((*content.met_tight_tst_nolep)["Final"]->met() > metSkimToUse) ||
+   //             ((*content.met_tight_tst)["Final"]->met() > metSkimToUse) ||
+   //             //((*content.met_tighter_tst_nolep)["Final"]->met() > metSkimToUse) ||
+   //             //((*content.met_tighter_tst)["Final"]->met() > metSkimToUse) ||
+   //             ((*content.met_tenacious_tst_nolep)["Final"]->met() > metSkimToUse) ||
+   //             ((*content.met_tenacious_tst)["Final"]->met() > metSkimToUse);
+   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::MET_skim, event_weight);
+   // if (content.goodJets.size() < 2) // At least two good jet
+   //    return EL::StatusCode::SUCCESS;
+   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::JetN_skim, event_weight);
+   // saveMe &= (content.goodJets[0]->pt() > pt1SkimToUse);
+   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::JetpT1_skim, event_weight);
+   // saveMe &= (content.goodJets[1]->pt() > pt2SkimToUse);
+   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::JetpT2_skim, event_weight);
+   // saveMe &= (mjjMax > mjjSkimToUse);
+   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::Mjj_skim, event_weight);
+   // saveMe &= (detajjMax > detajjSkimToUse);
+   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::DEta_skim, event_weight);
+   // saveMe |= !doSkim; // user flag to skim or not
 
    if (saveMe) fillTree(content, cand, systInfo);
 
@@ -1945,13 +1946,13 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          return EL::StatusCode::FAILURE;
       }
       //-- PHOTONS --
-      //const xAOD::TruthParticleContainer *truthPhotons = nullptr;
-      //const TString ph_container = (m_isEXOT5) ? "EXOT5TruthPhotons" : "TruthPhotons";
-      //if (!event->retrieve(truthPhotons, ph_container.Data())
-      //        .isSuccess()) { // retrieve arguments: container type, container key
-      //   ANA_MSG_ERROR("Failed to retrieve TruthPhotons container");
-      //   return EL::StatusCode::FAILURE;
-      //}
+      // const xAOD::TruthParticleContainer *truthPhotons = nullptr;
+      // const TString ph_container = (m_isEXOT5) ? "EXOT5TruthPhotons" : "TruthPhotons";
+      // if (!event->retrieve(truthPhotons, ph_container.Data())
+      // 	  .isSuccess()) { // retrieve arguments: container type, container key
+      // 	ANA_MSG_ERROR("Failed to retrieve TruthPhotons container");
+      // 	return EL::StatusCode::FAILURE;
+      // }
       //-- TAUS --
       const xAOD::TruthParticleContainer *truthTaus = nullptr;
       if (!event->retrieve(truthTaus, "TruthTaus").isSuccess()) { // retrieve arguments: container type, container key
@@ -2335,16 +2336,16 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (cand.evt.truth_V_dressed_pt > 500.0e3) checkPTV = true;
       cand.evt.passVjetsPTV = checkPTV;
 
-      // -- vertices --
-      const xAOD::TruthVertexContainer *truthVertices(nullptr);
-      if (event->retrieve(truthVertices, "TruthVertices").isSuccess()) {
-         xAOD::TruthVertexContainer::const_iterator vtx_itr = truthVertices->begin();
-         cand.evt.truth_vtx_z                               = (*vtx_itr)->z();
-         /* for (const auto&  truthVtx_itr : *truthVertices) {
-          cand.evt.truth_vtx_ntrk = truthVtx_itr->nOutgoingParticles();//.push_back(truthVtx_itr->nOutgoingParticles());
-          cand.evt.truth_vtx_z = truthVtx_itr->z();//.push_back(truthVtx_itr->z());
-        }*/
-      }
+      // // -- vertices --
+      // const xAOD::TruthVertexContainer *truthVertices(nullptr);
+      // if (event->retrieve(truthVertices, "TruthVertices").isSuccess()) {
+      //    xAOD::TruthVertexContainer::const_iterator vtx_itr = truthVertices->begin();
+      //    cand.evt.truth_vtx_z                               = (*vtx_itr)->z();
+      //    /* for (const auto&  truthVtx_itr : *truthVertices) {
+      //     cand.evt.truth_vtx_ntrk = truthVtx_itr->nOutgoingParticles();//.push_back(truthVtx_itr->nOutgoingParticles());
+      //     cand.evt.truth_vtx_z = truthVtx_itr->z();//.push_back(truthVtx_itr->z());
+      //   }*/
+      // } 
 
    } // done with MC only
 
@@ -2519,7 +2520,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 
 EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
                               std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet,
-                              xAOD::ElectronContainer *el, xAOD::MuonContainer *mu, xAOD::PhotonContainer * /*ph*/,
+                              xAOD::ElectronContainer *el, xAOD::MuonContainer *mu, xAOD::PhotonContainer *ph,
                               Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer *invis, TLorentzVector &myMET,
                               double &myMETsig, int METType)
 {
@@ -2532,7 +2533,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
       ANA_CHECK(m_susytools_handle->GetMET(*met,
                                            jet, // use all objects (before OR and after corrections) for MET utility
                                            el, mu,
-                                           0, // ph, // ph term
+                                           ph, // 0, // ph term
                                            0, // tau term
                                            doTST, doJVT,
                                            invis // invisible particles
@@ -2543,7 +2544,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
          m_susytools_Tight_handle->GetMET(*met,
                                           jet, // use all objects (before OR and after corrections) for MET utility
                                           el, mu,
-                                          0, // ph, // ph term
+                                          ph, // 0, // ph term
                                           0, // tau term
                                           doTST, doJVT,
                                           invis // invisible particles
@@ -2554,7 +2555,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
          m_susytools_Tighter_handle->GetMET(*met,
                                             jet, // use all objects (before OR and after corrections) for MET utility
                                             el, mu,
-                                            0, // ph, // ph term
+                                            ph, // 0, // ph term
                                             0, // tau term
                                             doTST, doJVT,
                                             invis // invisible particles
@@ -2565,7 +2566,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
          m_susytools_Tenacious_handle->GetMET(*met,
                                               jet, // use all objects (before OR and after corrections) for MET utility
                                               el, mu,
-                                              0, // ph, // ph term
+                                              ph, // 0, // ph term
                                               0, // tau term
                                               doTST, doJVT,
                                               invis // invisible particles
