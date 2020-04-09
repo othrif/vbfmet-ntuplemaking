@@ -25,6 +25,7 @@
 // Local include(s):
 #include <VBFInvAnalysis/VBFInvTruth.h>
 #include <VBFInvAnalysis/HelperFunctions.h>
+#include <VBFInvAnalysis/TruthFilter.h>
 
 #ifdef ROOTCORE
 #include "xAODRootAccess/Init.h"
@@ -127,7 +128,8 @@ EL::StatusCode VBFInvTruth ::initialize()
    truth_jj_mass=0;
    truth_jj_deta=0;
    truth_jj_dphi=0;
-
+   passVjetsFilter=true;
+   
    m_jet_E     = new std::vector<float>();
    m_jet_pt    = new std::vector<float>();
    m_jet_eta   = new std::vector<float>();
@@ -229,6 +231,11 @@ EL::StatusCode VBFInvTruth ::initialize()
    truthTree->Branch("EventWeightSys", &m_EventWeightSys);
 
    // Jets
+   truthTree->Branch("truthF_jj_mass", &truthF_jj_mass);
+   truthTree->Branch("truthF_jj_deta", &truthF_jj_deta);
+   truthTree->Branch("truthF_jj_mass", &truthF_jj_mass);
+   truthTree->Branch("passVjetsFilter", &passVjetsFilter);
+
    truthTree->Branch("truth_jj_mass", &truth_jj_mass);
    truthTree->Branch("truth_jj_deta", &truth_jj_deta);
    truthTree->Branch("truth_jj_dphi", &truth_jj_dphi);
@@ -494,7 +501,7 @@ EL::StatusCode VBFInvTruth ::execute()
    //-----------------------------------------------------------------------
    //  Overlap Removal
    //-----------------------------------------------------------------------
-
+   /*
    // Jets - leptons
    for (const auto &truthJ_itr : *jets) {
       if (truthJ_itr->pt() > 5000.) {
@@ -565,17 +572,29 @@ EL::StatusCode VBFInvTruth ::execute()
          ANA_MSG_DEBUG("mu-jet OR: Does not pass due to mu pt < 5 GeV!");
       }
    }
-
+   */
    //-----------------------------------------------------------------------
    //  Fill branches
    //-----------------------------------------------------------------------
+
+
+   // Truth filter for V+jets Extension
+   double JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),PhijjFilter(2.5);
+   double tmp_mjj, tmp_detajj, tmp_dphijj;
+   passVjetsFilter = VBFInvAnalysis::passTruthFilter(jets, JetEtaFilter, JetpTFilter, MjjFilter,
+							      PhijjFilter, tmp_mjj, tmp_detajj, tmp_dphijj);
+   truthF_jj_mass  = tmp_mjj;
+   truthF_jj_deta  = tmp_detajj;
+   truthF_jj_dphi  = tmp_dphijj;
+
+
 
    // Jets
    int njet5 = 0;
    int njet25 = 0;
    TLorentzVector mjj;
    for (const auto &truthJ_itr : *jets) {
-      if (truthJ_itr->pt() > 5000. && truthJ_itr->auxdata<bool>("passTruthOR")) {
+     if (truthJ_itr->pt() > 5000.){ // && truthJ_itr->auxdata<bool>("passTruthOR")) {
 	if(njet5<2) mjj += truthJ_itr->p4();
          m_jet_E->push_back(truthJ_itr->e());
          m_jet_pt->push_back(truthJ_itr->pt());
@@ -604,7 +623,7 @@ EL::StatusCode VBFInvTruth ::execute()
    // Electrons
    int nel5 = 0;
    for (const auto &elec_itr : *els)
-      if (elec_itr->pt() > 5000. && elec_itr->auxdata<bool>("passTruthOR")) {
+     if (elec_itr->pt() > 5000.){ // && elec_itr->auxdata<bool>("passTruthOR")) {
          m_el_m->push_back(elec_itr->m());
          m_el_pt->push_back(elec_itr->pt());
          m_el_eta->push_back(elec_itr->eta());
@@ -640,7 +659,7 @@ EL::StatusCode VBFInvTruth ::execute()
    // Muons
    int nmu5 = 0;
    for (const auto &mu_itr : *mus) {
-      if (mu_itr->pt() > 5000. && mu_itr->auxdata<bool>("passTruthOR")) {
+     if (mu_itr->pt() > 5000.) { // && mu_itr->auxdata<bool>("passTruthOR")) {
          m_mu_m->push_back(mu_itr->m());
          m_mu_pt->push_back(mu_itr->pt());
          m_mu_eta->push_back(mu_itr->eta());
@@ -696,7 +715,7 @@ m_ntaus = ntau5;
    int nbos10 = 0;
    if (bosons) {
       for (const auto &bos_itr : *bosons) {
-         if (bos_itr->pt() > 10000.) {
+         if (bos_itr->pt() > 5000.) {
             m_boson_e->push_back(bos_itr->e());
             m_boson_m->push_back(bos_itr->m());
             m_boson_pt->push_back(bos_itr->pt());
@@ -712,7 +731,7 @@ m_ntaus = ntau5;
    //  Neutrinos
    int nnu10 = 0;
    for (const auto &nu_itr : *neutrinos) {
-      if (nu_itr->pt() > 10000.) {
+      if (nu_itr->pt() > 5000.) {
          m_nu_e->push_back(nu_itr->e());
          m_nu_m->push_back(nu_itr->m());
          m_nu_pt->push_back(nu_itr->pt());

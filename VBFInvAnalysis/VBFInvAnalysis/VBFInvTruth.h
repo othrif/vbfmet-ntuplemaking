@@ -48,7 +48,13 @@ public:
    std::vector<int> *  m_jet_label; //!
    float truth_jj_mass; //! 
    float truth_jj_deta;//! 
+
+   bool passVjetsFilter; //! 
+   float truthF_jj_mass;//! 
+   float truthF_jj_deta;//! 
+   float truthF_jj_dphi;//! 
    float truth_jj_dphi;//! 
+
    
    int                 m_nels;        //!
    std::vector<float> *m_el_m;        //!
