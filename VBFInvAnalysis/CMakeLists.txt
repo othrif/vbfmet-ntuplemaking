@@ -59,7 +59,7 @@ atlas_add_library( VBFInvAnalysisLib
    VBFInvAnalysis/*.h Root/*.h Root/*.cxx ${VBFInvAnalysisDictSource}
    INCLUDE_DIRS ${FASTJET_INCLUDE_DIR}
    PUBLIC_HEADERS VBFInvAnalysis
-   LINK_LIBRARIES EventLoop xAODEventInfo PATInterfaces xAODJet xAODTruth xAODCore AsgAnalysisInterfaces JetInterface JetResolutionLib xAODMuon 
+   LINK_LIBRARIES EventLoop xAODEventInfo PATInterfaces xAODJet xAODTruth xAODCore AsgAnalysisInterfaces JetInterface JetResolutionLib xAODMuon
     MuonSelectorToolsLib MuonMomentumCorrectionsLib TrigDecisionToolLib TrigConfInterfaces EventLoopAlgs PathResolver BoostedJetTaggersLib
 
    AthContainers CxxUtils

@@ -124,13 +124,12 @@ EL::StatusCode VBFInvTruth ::initialize()
    my_XsecDB                = new SUSY::CrossSectionDB(xSecFilePath);
    if (debug) ANA_MSG_INFO("xsec DB initialized using file:" << xSecFilePath);
 
-   truthF_jj_mass=0;
-   truthF_jj_deta=0;
-   truthF_jj_dphi=0;
-   passVjetsFilter=true;
+   m_njets25=0;
    truth_jj_mass=0;
    truth_jj_deta=0;
-
+   truth_jj_dphi=0;
+   passVjetsFilter=true;
+   
    m_jet_E     = new std::vector<float>();
    m_jet_pt    = new std::vector<float>();
    m_jet_eta   = new std::vector<float>();
@@ -239,7 +238,9 @@ EL::StatusCode VBFInvTruth ::initialize()
 
    truthTree->Branch("truth_jj_mass", &truth_jj_mass);
    truthTree->Branch("truth_jj_deta", &truth_jj_deta);
+   truthTree->Branch("truth_jj_dphi", &truth_jj_dphi);
    truthTree->Branch("njets", &m_njets);
+   truthTree->Branch("njets25", &m_njets25);
    truthTree->Branch("jet_E", &m_jet_E);
    truthTree->Branch("jet_pt", &m_jet_pt);
    truthTree->Branch("jet_eta", &m_jet_eta);
@@ -590,6 +591,7 @@ EL::StatusCode VBFInvTruth ::execute()
 
    // Jets
    int njet5 = 0;
+   int njet25 = 0;
    TLorentzVector mjj;
    for (const auto &truthJ_itr : *jets) {
      if (truthJ_itr->pt() > 5000.){ // && truthJ_itr->auxdata<bool>("passTruthOR")) {
@@ -601,15 +603,22 @@ EL::StatusCode VBFInvTruth ::execute()
          m_jet_m->push_back(truthJ_itr->m());
          m_jet_label->push_back(truthJ_itr->auxdata<int>("PartonTruthLabelID"));
          njet5++;
+	 if (truthJ_itr->pt() > 25000. ) ++njet25;
       }
    }
    m_njets = njet5;
+   m_njets25 = njet25;
    if(m_jet_pt->size()>1){
      truth_jj_mass = mjj.M();
      truth_jj_deta = fabs(m_jet_eta->at(0)-m_jet_eta->at(1));
+     TLorentzVector tj1,tj2;
+     tj1.SetPtEtaPhiM(m_jet_pt->at(0),m_jet_eta->at(0),m_jet_phi->at(0),m_jet_m->at(0));
+     tj2.SetPtEtaPhiM(m_jet_pt->at(1),m_jet_eta->at(1),m_jet_phi->at(1),m_jet_m->at(1));
+     truth_jj_dphi = fabs(tj1.DeltaPhi(tj2));
    }else{
      truth_jj_mass=-10;
      truth_jj_deta=-10;
+     truth_jj_dphi=-10;
    }
    // Electrons
    int nel5 = 0;

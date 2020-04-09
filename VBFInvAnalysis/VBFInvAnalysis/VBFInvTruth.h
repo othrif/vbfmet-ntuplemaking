@@ -39,6 +39,7 @@ public:
    // node (done by the //!)
 public:
    int                 m_njets;     //!
+   int                 m_njets25;     //!
    std::vector<float> *m_jet_E;     //!
    std::vector<float> *m_jet_pt;    //!
    std::vector<float> *m_jet_eta;   //!
@@ -52,6 +53,8 @@ public:
    float truthF_jj_mass;//! 
    float truthF_jj_deta;//! 
    float truthF_jj_dphi;//! 
+   float truth_jj_dphi;//! 
+
    
    int                 m_nels;        //!
    std::vector<float> *m_el_m;        //!
