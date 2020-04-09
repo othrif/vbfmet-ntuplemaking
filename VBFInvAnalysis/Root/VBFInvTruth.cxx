@@ -25,6 +25,7 @@
 // Local include(s):
 #include <VBFInvAnalysis/VBFInvTruth.h>
 #include <VBFInvAnalysis/HelperFunctions.h>
+#include <VBFInvAnalysis/TruthFilter.h>
 
 #ifdef ROOTCORE
 #include "xAODRootAccess/Init.h"
@@ -123,6 +124,10 @@ EL::StatusCode VBFInvTruth ::initialize()
    my_XsecDB                = new SUSY::CrossSectionDB(xSecFilePath);
    if (debug) ANA_MSG_INFO("xsec DB initialized using file:" << xSecFilePath);
 
+   truthF_jj_mass=0;
+   truthF_jj_deta=0;
+   truthF_jj_dphi=0;
+   passVjetsFilter=true;
    truth_jj_mass=0;
    truth_jj_deta=0;
 
@@ -227,6 +232,11 @@ EL::StatusCode VBFInvTruth ::initialize()
    truthTree->Branch("EventWeightSys", &m_EventWeightSys);
 
    // Jets
+   truthTree->Branch("truthF_jj_mass", &truthF_jj_mass);
+   truthTree->Branch("truthF_jj_deta", &truthF_jj_deta);
+   truthTree->Branch("truthF_jj_mass", &truthF_jj_mass);
+   truthTree->Branch("passVjetsFilter", &passVjetsFilter);
+
    truthTree->Branch("truth_jj_mass", &truth_jj_mass);
    truthTree->Branch("truth_jj_deta", &truth_jj_deta);
    truthTree->Branch("njets", &m_njets);
@@ -565,6 +575,18 @@ EL::StatusCode VBFInvTruth ::execute()
    //-----------------------------------------------------------------------
    //  Fill branches
    //-----------------------------------------------------------------------
+
+
+   // Truth filter for V+jets Extension
+   double JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),PhijjFilter(2.5);
+   double tmp_mjj, tmp_detajj, tmp_dphijj;
+   passVjetsFilter = VBFInvAnalysis::passTruthFilter(jets, JetEtaFilter, JetpTFilter, MjjFilter,
+							      PhijjFilter, tmp_mjj, tmp_detajj, tmp_dphijj);
+   truthF_jj_mass  = tmp_mjj;
+   truthF_jj_deta  = tmp_detajj;
+   truthF_jj_dphi  = tmp_dphijj;
+
+
 
    // Jets
    int njet5 = 0;
