@@ -296,7 +296,7 @@ elif (args.driver == 'condor'):
     condor_options+="notify_user = christian.sander@desy.de" + "\n"
     condor_options+="notification = Error" + "\n"
     condor_options+="should_transfer_files = NO" + "\n"
-    condor_options+="Requirements = ( OpSysAndVer == \"CentOS7\")" + "\n"
+    condor_options+="Requirements = ( OpSysAndVer == \"SL6\")" + "\n"
     #  Not working well OpSysAndVer == \"CentOS7\" ||
     #    condor_options+="" + "\n"
     driver.options().setString (ROOT.EL.Job.optCondorConf, condor_options);

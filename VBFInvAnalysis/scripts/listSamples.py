@@ -7,11 +7,9 @@
 
 from collections import OrderedDict
 
-mainMCTest = OrderedDict([('QCDw',      range(361020,361032 + 1))])
+#mainMCTest = OrderedDict([('QCDw',      range(361020,361032 + 1))])
 
 mainMC = OrderedDict([
-    ('signal',     [308276,308567,308284]),
-    ('signalAlt',  [308275] + range(308277,308283 + 1)),
     ('VH',         [308071,308072]),
     ('Multiboson', range(363355, 363360+1) + range(364242,364250 + 1) + range(364253,364255 + 1) + [363489,363494]),
     ('EWK',        range(308092, 308098+1)),
@@ -22,38 +20,27 @@ mainMC = OrderedDict([
     ('Zmumu',      range(364100, 364113 +1)),
     ('Ztautau',    range(364128, 364141 + 1)),
     ('Znunu',      range(364142, 364155 + 1)),
-    ('MoreVjets',  range(364216, 364229 + 1)),
-    ('ExtVjets',   range(309662, 309679 + 1)),
-    ('ZnunuMG',    range(361515, 361519 + 1)),
-    ('ZtautauMG',  range(361510, 361514 + 1)),
-    ('ZmumuMG',    range(363123, 363146 + 1)),
-    ('ZeeMG',      range(363147, 363170 + 1)),
-    ('WmunuMG',    range(363624, 363647 + 1)),
-    ('WenuMG',     range(363600, 363623 + 1)),
-    ('WtaunuMG',   range(363648, 363671 + 1)),
     ('top',        [410470,410471,410472])
     ])
 
-altMC = OrderedDict([
-    ('ZllVBF',    [345101,345102,345099,345100]),
-    ('ZllDY',     range(364198, 364215+1)),
-    ('QCDunw',    range(426001,426009 + 1)),
-    ('QCDpl',      range(310502,310502 + 1)),
-    ('QCDw',      range(361020,361032 + 1))
-    ])
+# altMC = OrderedDict([
+#     ('ZllVBF',    [345101,345102,345099,345100]),
+#     ('ZllDY',     range(364198, 364215+1)),
+#     ('QCDunw',    range(426001,426009 + 1)),
+#     ('QCDpl',      range(310502,310502 + 1)),
+#     ('QCDw',      range(361020,361032 + 1))
+#     ])
 
-truthMC = OrderedDict([
-    ('signal',    [308276,308567,308284]),
-    ('signalAlt', [308275] + range(308277,308283 + 1)),
-    ('EWK',       range(308092, 308098+1)),
-    ('Wenu',      range(364170,364183 + 1)),
-    ('Wmunu',     range(364156,364169 + 1)),
-    ('Wtaunu',    range(364184,364197 + 1)),
-    ('Zee',       range(364114, 364127 + 1)),
-    ('Zmumu',     range(364100, 364113 +1)),
-    ('Ztautau',   range(364128,364141 + 1)),
-    ('Znunu',     range(364142,364155 + 1)),
-    ])
+# truthMC = OrderedDict([
+#     ('EWK',       range(308092, 308098+1)),
+#     ('Wenu',      range(364170,364183 + 1)),
+#     ('Wmunu',     range(364156,364169 + 1)),
+#     ('Wtaunu',    range(364184,364197 + 1)),
+#     ('Zee',       range(364114, 364127 + 1)),
+#     ('Zmumu',     range(364100, 364113 +1)),
+#     ('Ztautau',   range(364128,364141 + 1)),
+#     ('Znunu',     range(364142,364155 + 1)),
+#     ])
 
 mcCampaign = {"mc16a":"r9364", "mc16c":"r9781", "mc16d":"r10201", "mc16e":"r10724"}
 
@@ -63,9 +50,9 @@ pTagDict = { "data15_13TeV"                  : "p3713",
              "data16_13TeV"                  : "p3713",
              "data17_13TeV"                  : "p3713",
              "data18_13TeV"                  : "p3713",
-             "mc16_13TeV"                    : "p3712"}
-myMC = mainMCTest
-#myMC = mainMC
+             "mc16_13TeV"                    : "p3870"}
+#myMC = mainMCTest
+myMC = mainMC
 myMC.update(myMC)
 #####################
 #
