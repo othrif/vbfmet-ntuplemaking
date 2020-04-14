@@ -14,6 +14,7 @@
 #include <EgammaAnalysisInterfaces/IAsgElectronEfficiencyCorrectionTool.h>
 #include <SUSYTools/SUSYCrossSection.h>
 #include "BoostedJetTaggers/JSSWTopTaggerDNN.h"
+#include <GammaORTools/IVGammaORTool.h>
 
 // ROOT include(s):
 #include <TROOT.h>
@@ -141,6 +142,8 @@ private:
    asg::AnaToolHandle<IAsgElectronEfficiencyCorrectionTool> m_elecEfficiencySFTool_anti_iso; //!
    asg::AnaToolHandle<IJetSelectorTool>                     m_DNNTop80;                      //!
    asg::AnaToolHandle<IJetSelectorTool>                     m_DNNW50;                        //!
+   asg::AnaToolHandle<IVGammaORTool>                        m_VyORTool;                      //!
+   asg::AnaToolHandle<IVGammaORTool>                        m_VyORToolIso;                   //!
 
    SUSY::CrossSectionDB *my_XsecDB; //!
 

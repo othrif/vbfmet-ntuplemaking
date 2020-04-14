@@ -63,7 +63,9 @@ ClassImp(VBFInv)
      m_elecEfficiencySFTool_anti_id(
         "AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_id", this),
      m_elecEfficiencySFTool_anti_iso(
-        "AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_iso", this)
+				     "AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_iso", this), 
+     m_VyORTool("VGammaORTool/vy_or_tool",this),
+     m_VyORToolIso("VGammaORTool/vy_or_tool_iso",this)
 {
 }
 
@@ -302,6 +304,19 @@ EL::StatusCode VBFInv::initialize()
       ANA_CHECK(m_grl.setProperty("PassThrough",
                                   false)); // if true (default) will ignore result of GRL and will just pass all events
       ANA_CHECK(m_grl.initialize());
+   }
+   
+   //configure VGammaORTool
+   if(m_isMC){
+     std::vector<float> ph_pt = std::vector<float>({15e3});
+     ANA_CHECK( m_VyORTool.setProperty("photon_pT_cuts",ph_pt) );
+     ANA_CHECK( m_VyORTool.setProperty("use_gamma_iso", false) ); 
+
+     ANA_CHECK( m_VyORToolIso.setProperty("photon_pT_cuts",ph_pt) );
+     ANA_CHECK( m_VyORToolIso.setProperty("use_gamma_iso", true) ); 
+
+     ANA_CHECK( m_VyORTool.retrieve() );
+     ANA_CHECK( m_VyORToolIso.retrieve() );
    }
 
    // configure forward JVT tool
@@ -1401,6 +1416,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       }
    }
 
+   
    //-----------------------------------------------------------------------
    // Debugs and sanity checks
    //-----------------------------------------------------------------------
@@ -1911,18 +1927,30 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       static SG::AuxElement::Accessor<int>   acc_FlavourFilter("FlavourFilter");
       static SG::AuxElement::Accessor<float> acc_MGVTruthPt("MGVTruthPt");
       static SG::AuxElement::Accessor<float> acc_SherpaVTruthPt("SherpaVTruthPt");
-      static SG::AuxElement::Accessor<bool>  acc_in_vy_overlap("in_vy_overlap");
-      static SG::AuxElement::Accessor<bool>  acc_in_vy_overlap_iso("in_vy_overlap_iso");
+      //      static SG::AuxElement::Accessor<bool>  acc_in_vy_overlap("in_vy_overlap");
+      //      static SG::AuxElement::Accessor<bool>  acc_in_vy_overlap_iso("in_vy_overlap_iso");
       if (acc_FlavourFilter.isAvailable(*content.eventInfo))
          cand.evt.FlavourFilter = acc_FlavourFilter(*content.eventInfo);
       if (acc_MGVTruthPt.isAvailable(*content.eventInfo)) cand.evt.MGVTruthPt = acc_MGVTruthPt(*content.eventInfo);
       if (acc_SherpaVTruthPt.isAvailable(*content.eventInfo))
          cand.evt.SherpaVTruthPt = acc_SherpaVTruthPt(*content.eventInfo);
-      if (acc_in_vy_overlap.isAvailable(*content.eventInfo))
-         cand.evt.in_vy_overlap = acc_in_vy_overlap(*content.eventInfo);
-      if (acc_in_vy_overlap_iso.isAvailable(*content.eventInfo))
-         cand.evt.in_vy_overlap_iso = acc_in_vy_overlap_iso(*content.eventInfo);
+      // if (acc_in_vy_overlap.isAvailable(*content.eventInfo))
+      //    cand.evt.in_vy_overlap = acc_in_vy_overlap(*content.eventInfo);
+      // if (acc_in_vy_overlap_iso.isAvailable(*content.eventInfo))
+      //    cand.evt.in_vy_overlap_iso = acc_in_vy_overlap_iso(*content.eventInfo);
 
+      // VGamma/VJets overlap removal tool
+      Bool_t in_vy_overlap=false;
+      ANA_CHECK( m_VyORTool->inOverlap(in_vy_overlap) );
+      Bool_t in_vy_overlap_iso=false;
+      ANA_CHECK( m_VyORToolIso->inOverlap(in_vy_overlap_iso) );
+      if(debug){
+	print("in_vy_overlap", in_vy_overlap);
+	print("in_vy_overlap_iso", in_vy_overlap_iso);
+      }
+      cand.evt.in_vy_overlap     = in_vy_overlap;
+      cand.evt.in_vy_overlap_iso = in_vy_overlap_iso;
+         
       // electron anti-id SF
       // implementing setup
       // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronEfficiencyAntiID#Correlation%20of%20uncertainties
