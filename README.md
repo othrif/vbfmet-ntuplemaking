@@ -66,8 +66,11 @@ runVBF.py -f <path/file.root> -n100 --debug
 runVBF.py -i <folder> -n100
 # local running on TRUTH3, need to specifiy the algorithm (-a)
 runVBF.py -i <folder> -n100 -a VBFInvTruth
-# grid submission with file containing list of datasets (one per line)
-runVBF.py -l <rucio list> -u $USER -v <Ntuple version> --driver prun
+```
+## Grid submission ##
+```bash
+# Requires a file containing list of datasets in rucio to run on
+runVBF.py -d prun -l <rucio list> -s <submit directory to be made> -r SLACXRD_LOCALGROUPDISK -v <ntuple version> --doSkim --doMuonDetail --doElectronDetail --doMETDetail --doPhotonDetail --doEventDetail --doJetDetail -u $USER
 ```
 See more options in the runVBF.py help:
 ``` bash
