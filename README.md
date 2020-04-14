@@ -30,7 +30,7 @@ Doug Schaefer, Ben Rosser, Christian Sander, Rui Zou
 - Output is a flat ntuple called `MiniNtuple`
 - CutBookkeeper output for histogram normalization is in `NumberEvents` histogram
 
-# Setting up the code (for running on `DAOD_HIGG2D1`)#
+# Setting up the code (for running on `DAOD_HIGG2D1`) #
 ``` bash
 kinit $USER@CERN.CH
 setupATLAS
