@@ -1,8 +1,4 @@
-#############################################
-VBF Higgs to Invisible Full Run 2 Analysis
-#############################################
-
-[![pipeline status](https://gitlab.cern.ch/othrif/STAnalysisCode/badges/master/pipeline.svg)](https://gitlab.cern.ch/STAnalysisCode/commits/master)
+# VBF Higgs to Invisible Full Run 2 Analysis #
 
   * [Developer](#developer)
   * [Notes](#notes)
@@ -30,15 +26,18 @@ Doug Schaefer, Ben Rosser, Christian Sander, Rui Zou
 # Notes #
 - Code runs on DAOD_EXOT5 using the `VBFInv` algorithm
 - Code runs on DAOD_TRUTH3 using `VBFInvTruth` algorithm
+- Code runs on DAOD_HIGG2D1 using the `VBFInv` algorithm (use the `ZHdarkPhoton` branch)
 - Output is a flat ntuple called `MiniNtuple`
 - CutBookkeeper output for histogram normalization is in `NumberEvents` histogram
 
-# Setting up the code #
+# Setting up the code (for running on `DAOD_HIGG2D1`)#
 ``` bash
 kinit $USER@CERN.CH
 setupATLAS
 lsetup git
 git clone https://gitlab.cern.ch/VBFInv/STAnalysisCode.git
+cd STAnalysisCode 
+git checkout ZHdarkPhoton && cd -
 source STAnalysisCode/VBFInvAnalysis/scripts/setupRelease.sh
 ```
 
@@ -75,7 +74,7 @@ See more options in the runVBF.py help:
 runVBF.py -h
 ```
 
-## Check downloaded samples##
+## Check downloaded samples ##
 To check that you have downloaded all of the samples. Run
 ``` bash
 checkSample.py -l data_MC_EXOT5.txt -i local_List.txt
