@@ -35,11 +35,11 @@ MuonCosmic.d0: 0.2
 #
 BadMuon.qoverp: 0.4
 #
-PhotonBaseline.Pt: 20000.
+PhotonBaseline.Pt: 10000.
 PhotonBaseline.Eta: 2.37
 PhotonBaseline.Id: Tight
 #
-Photon.Pt: 20000.
+Photon.Pt: 10000.
 Photon.Eta: 2.37
 Photon.Id: Tight
 Photon.Iso: FixedCutTight

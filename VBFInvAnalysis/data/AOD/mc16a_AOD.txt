@@ -1,3 +1,5 @@
+mc16_13TeV.830006.H7_720_WmunujjEW.recon.AOD.e8022_s3126_r9364
+mc16_13TeV.830007.H7_720_ZmumujjEW.recon.AOD.e8022_s3126_r9364
 mc16_13TeV.700011.Sh_228_eegamma_pty7_EnhMaxpTVpTy.recon.AOD.e7947_s3126_r9364
 mc16_13TeV.700012.Sh_228_mmgamma_pty7_EnhMaxpTVpTy.recon.AOD.e7947_s3126_r9364
 mc16_13TeV.700013.Sh_228_ttgamma_pty7_EnhMaxpTVpTy.recon.AOD.e7947_s3126_r9364
