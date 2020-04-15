@@ -64,8 +64,8 @@ ClassImp(VBFInv)
         "AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_id", this),
      m_elecEfficiencySFTool_anti_iso(
 				     "AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_iso", this), 
-     m_VyORTool("VGammaORTool/vy_or_tool",this),
-     m_VyORToolIso("VGammaORTool/vy_or_tool_iso",this)
+     m_VyORTool("VGammaORTool/VyORTool",this),
+     m_VyORToolIso("VGammaORTool/VyORToolIso",this)
 {
 }
 
