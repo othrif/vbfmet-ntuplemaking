@@ -1,8 +1,8 @@
 ## Two '##' denotes samples that still need to be run.
 ### Zy ###
-## mc16_13TeV:mc16_13TeV.700011.Sh_228_eegamma_pty7_EnhMaxpTVpTy.deriv.DAOD_HIGG2D1.e7947_s3126_r10201_p3916
-## mc16_13TeV:mc16_13TeV.700012.Sh_228_mmgamma_pty7_EnhMaxpTVpTy.deriv.DAOD_HIGG2D1.e7947_s3126_r10201_p3916
-## mc16_13TeV:mc16_13TeV.700013.Sh_228_ttgamma_pty7_EnhMaxpTVpTy.deriv.DAOD_HIGG2D1.e7947_s3126_r10201_p3916
+mc16_13TeV:mc16_13TeV.700011.Sh_228_eegamma_pty7_EnhMaxpTVpTy.deriv.DAOD_HIGG2D1.e7947_s3126_r10201_p3916
+mc16_13TeV:mc16_13TeV.700012.Sh_228_mmgamma_pty7_EnhMaxpTVpTy.deriv.DAOD_HIGG2D1.e7947_s3126_r10201_p3916
+mc16_13TeV:mc16_13TeV.700013.Sh_228_ttgamma_pty7_EnhMaxpTVpTy.deriv.DAOD_HIGG2D1.e7947_s3126_r10201_p3916
 ### VV semi-leptonic ###
 mc16_13TeV:mc16_13TeV.363356.Sherpa_221_NNPDF30NNLO_ZqqZll.deriv.DAOD_HIGG2D1.e5525_s3126_r10201_p3916
 mc16_13TeV:mc16_13TeV.363358.Sherpa_221_NNPDF30NNLO_WqqZll.deriv.DAOD_HIGG2D1.e5525_s3126_r10201_p3916
