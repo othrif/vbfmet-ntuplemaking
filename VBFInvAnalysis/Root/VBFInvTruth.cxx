@@ -71,9 +71,11 @@ EL::StatusCode VBFInvTruth ::fileExecute()
    ANA_MSG_INFO("Number of events in this file = " << m_event->getEntries()); // print long long int
 
    if (skipCBK) {
+      LINE
       NumberEvents->Fill(0., m_event->getEntries());
       NumberEvents->Fill(3., m_event->getEntries());
    } else {
+      LINE
       // Read the CutBookkeeper container
       const xAOD::CutBookkeeperContainer *completeCBC = 0;
       if (!m_event->retrieveMetaInput(completeCBC, "CutBookkeepers").isSuccess()) {
@@ -129,7 +131,7 @@ EL::StatusCode VBFInvTruth ::initialize()
    truth_jj_deta=0;
    truth_jj_dphi=0;
    passVjetsFilter=true;
-   
+
    m_jet_E     = new std::vector<float>();
    m_jet_pt    = new std::vector<float>();
    m_jet_eta   = new std::vector<float>();
@@ -233,7 +235,7 @@ EL::StatusCode VBFInvTruth ::initialize()
    // Jets
    truthTree->Branch("truthF_jj_mass", &truthF_jj_mass);
    truthTree->Branch("truthF_jj_deta", &truthF_jj_deta);
-   truthTree->Branch("truthF_jj_mass", &truthF_jj_mass);
+   truthTree->Branch("truthF_jj_dphi", &truthF_jj_dphi);
    truthTree->Branch("passVjetsFilter", &passVjetsFilter);
 
    truthTree->Branch("truth_jj_mass", &truth_jj_mass);
