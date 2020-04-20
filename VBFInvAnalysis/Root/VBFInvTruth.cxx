@@ -129,7 +129,7 @@ EL::StatusCode VBFInvTruth ::initialize()
    truth_jj_deta=0;
    truth_jj_dphi=0;
    passVjetsFilter=true;
-   
+
    m_jet_E     = new std::vector<float>();
    m_jet_pt    = new std::vector<float>();
    m_jet_eta   = new std::vector<float>();
@@ -233,7 +233,7 @@ EL::StatusCode VBFInvTruth ::initialize()
    // Jets
    truthTree->Branch("truthF_jj_mass", &truthF_jj_mass);
    truthTree->Branch("truthF_jj_deta", &truthF_jj_deta);
-   truthTree->Branch("truthF_jj_mass", &truthF_jj_mass);
+   truthTree->Branch("truthF_jj_dphi", &truthF_jj_dphi);
    truthTree->Branch("passVjetsFilter", &passVjetsFilter);
 
    truthTree->Branch("truth_jj_mass", &truth_jj_mass);
