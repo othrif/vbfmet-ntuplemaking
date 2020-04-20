@@ -71,11 +71,9 @@ EL::StatusCode VBFInvTruth ::fileExecute()
    ANA_MSG_INFO("Number of events in this file = " << m_event->getEntries()); // print long long int
 
    if (skipCBK) {
-      LINE
       NumberEvents->Fill(0., m_event->getEntries());
       NumberEvents->Fill(3., m_event->getEntries());
    } else {
-      LINE
       // Read the CutBookkeeper container
       const xAOD::CutBookkeeperContainer *completeCBC = 0;
       if (!m_event->retrieveMetaInput(completeCBC, "CutBookkeepers").isSuccess()) {
