@@ -1363,18 +1363,20 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // MET CST, for HT
    TLorentzVector myMET_cst_em;
    double         myMETsig_cst_em;
-   getMET(content.met_cst_em, content.met_cst_emAux,
-          content.jetsEM, // use all objects (before OR and after corrections) for MET utility
-          &(content.baselineElectrons), &(content.baselineMuons),
-          &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
-                                  // Muons do not, but they do have cleaning
-          kFALSE,                 // do TST
-          kFALSE,                 // do JVT
-          nullptr,                // invisible particles
-          myMET_cst_em, myMETsig_cst_em, 2); // runs with tighter or emtopo jets
-   content.met_cst_em_jet = (*content.met_cst_em)["RefJet"]->met();
-   content.met_cst_em_phi = (*content.met_cst_em)["RefJet"]->phi();
-
+   // requires that emtopo jets are loaded
+   if(copyEMTopoFJVT){
+     getMET(content.met_cst_em, content.met_cst_emAux,
+	    content.jetsEM, // use all objects (before OR and after corrections) for MET utility
+	    &(content.baselineElectrons), &(content.baselineMuons),
+	    nullptr, //&(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+	    // Muons do not, but they do have cleaning
+	    kFALSE,                 // do TST
+	    kFALSE,                 // do JVT
+	    nullptr,                // invisible particles
+	    myMET_cst_em, myMETsig_cst_em, 2); // runs with tighter or emtopo jets   
+     content.met_cst_em_jet = (*content.met_cst_em)["RefJet"]->met();
+     content.met_cst_em_phi = (*content.met_cst_em)["RefJet"]->phi();
+   }
    // track MET
    //getTrackMET(content.met_track, content.met_trackAux,
    //            content.jets, // use all objects (before OR and after corrections) for MET utility
@@ -1530,6 +1532,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // Skimming
    // Bool_t saveMe = ( met_nomuon_to_use.Mod() > metSkimToUse || met_noelectron_to_use.Mod() > metSkimToUse );
    Bool_t saveMe = (met_nolep_to_use.Mod() > metSkimToUse);
+   // setup truth skimming
+   if(m_isMC && content.isNominal){
+     if((cand.evt.truth_V_dressed_pt>100e3 || cand.met["met_truth"].et>100e3) && cand.evt.n_jet_truth>=2 && cand.evt.truthF_jj_mass>800e3 && cand.evt.truthF_jj_deta>3.0 && cand.evt.truthF_jj_dphi<2.5) saveMe=true;
+   }
    if (doMETDetail)
       saveMe = saveMe || ((*content.met_tight_tst_nolep)["Final"]->met() > metSkimToUse) ||
                ((*content.met_tight_tst)["Final"]->met() > metSkimToUse) ||
