@@ -41,7 +41,7 @@ public:
    TTree *m_tree; //!
    //   Analysis::OutputTruth m_cand; //!
    TH1F *m_histoEventCount; //!
-
+   TH1D *NumberEvents; //!
    // things used in the analysis
    Bool_t                    m_iso_dyn;             //!
    Int_t                     m_run;                 //!

@@ -113,6 +113,13 @@ EL::StatusCode VBFInvVjetsRW ::histInitialize()
 
    wk()->addOutput(m_histoEventCount);
 
+  NumberEvents = new TH1D("NumberEvents", "Number Events", 4, 0, 4);
+   NumberEvents->GetXaxis()->SetBinLabel(1, "Raw");
+   NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
+   NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
+   NumberEvents->GetXaxis()->SetBinLabel(4, "RawTRUTH");
+   return EL::StatusCode::SUCCESS;
+
    return EL::StatusCode::SUCCESS;
 }
 
@@ -165,10 +172,27 @@ EL::StatusCode VBFInvVjetsRW ::fileExecute()
          }
       }
       // if the right & proper bookkeeper is found, read info
+            uint64_t nEventsProcessed    = 0;
+      double   sumOfWeights        = 0.;
+      double   sumOfWeightsSquared = 0.;
       if (event_bookkeeper) {
          m_histoEventCount->Fill("initial_weighted", event_bookkeeper->sumOfEventWeights());
          m_histoEventCount->Fill("initial_raw", event_bookkeeper->nAcceptedEvents());
+
+         nEventsProcessed    = event_bookkeeper->nAcceptedEvents();
+         sumOfWeights        = event_bookkeeper->sumOfEventWeights();
+         sumOfWeightsSquared = event_bookkeeper->sumOfEventWeightsSquared();
+         ANA_MSG_INFO("CutBookkeepers Accepted:" << nEventsProcessed << ", SumWei:" << sumOfWeights << ", sumWei2:" << sumOfWeightsSquared);
       }
+          else {
+         ANA_MSG_INFO("No relevent CutBookKeepers found");
+         nEventsProcessed = event->getEntries();
+      }
+      NumberEvents->Fill(0., nEventsProcessed);
+      NumberEvents->Fill(1., sumOfWeights);
+      NumberEvents->Fill(2., sumOfWeightsSquared);
+      NumberEvents->Fill(3., event->getEntries());
+
 
    } // derivation
 
@@ -212,6 +236,7 @@ EL::StatusCode VBFInvVjetsRW ::initialize()
    //   m_cand.reset();
 
    TFile *thisFile = wk()->getOutputFile("MiniNtuple");
+   NumberEvents->SetDirectory(thisFile);
 
    const TString treeName = "MiniNtuple";
 
