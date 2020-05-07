@@ -141,7 +141,7 @@ EL::StatusCode VBFInvVjetsRW ::fileExecute()
          int                        maxcycle     = -1;
 
          for (auto cbk : *completeCBC) {
-            std::cout << cbk->name() << " " << cbk->inputStream()  << " " << cbk->cycle() << std::endl;
+            //std::cout << cbk->name() << " " << cbk->inputStream()  << " " << cbk->cycle() << std::endl;
             if (cbk->name() == "AllExecutedEvents" && cbk->inputStream() == "StreamDAOD_TRUTH1" && cbk->cycle() > maxcycle) {
                maxcycle     = cbk->cycle();
                allEventsCBK = cbk;

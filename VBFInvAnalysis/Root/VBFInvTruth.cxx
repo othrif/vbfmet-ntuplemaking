@@ -85,7 +85,8 @@ EL::StatusCode VBFInvTruth ::fileExecute()
 
       // let's find the right CBK (latest with StreamAOD input before derivations)
       for (auto cbk : *completeCBC) {
-         if (cbk->name() == "AllExecutedEvents" && cbk->inputStream() == "StreamAOD" && cbk->cycle() > maxcycle) {
+//         std::cout << cbk->name() << " " << cbk->inputStream() << " " << cbk->cycle() << std::endl;
+         if (cbk->name() == "AllExecutedEvents" && cbk->inputStream() == "StreamDAOD_TRUTH3" && cbk->cycle() > maxcycle) {
             maxcycle     = cbk->cycle();
             allEventsCBK = cbk;
          }
@@ -128,7 +129,6 @@ EL::StatusCode VBFInvTruth ::initialize()
    truth_jj_mass=0;
    truth_jj_deta=0;
    truth_jj_dphi=0;
-   SherpaVTruthPt=0;
    passVjetsFilter=true;
 
    m_jet_E     = new std::vector<float>();
@@ -240,7 +240,6 @@ EL::StatusCode VBFInvTruth ::initialize()
    truthTree->Branch("truth_jj_mass", &truth_jj_mass);
    truthTree->Branch("truth_jj_deta", &truth_jj_deta);
    truthTree->Branch("truth_jj_dphi", &truth_jj_dphi);
-   truthTree->Branch("SherpaVTruthPt", &SherpaVTruthPt);
    truthTree->Branch("njets", &m_njets);
    truthTree->Branch("njets25", &m_njets25);
    truthTree->Branch("jet_E", &m_jet_E);
@@ -590,13 +589,6 @@ EL::StatusCode VBFInvTruth ::execute()
    truthF_jj_dphi  = tmp_dphijj;
 
 
-   // Access Sherpa Truth PTV
-   static SG::AuxElement::Accessor<float> acc_SherpaVTruthPt("SherpaVTruthPt");
-   if (acc_SherpaVTruthPt.isAvailable(*eventInfo))
-      SherpaVTruthPt = acc_SherpaVTruthPt(*eventInfo);
-  // else
-   //   std::cout << "SherpaVTruthPt not found: " << acc_SherpaVTruthPt(*eventInfo) << std::endl;
-
    // Jets
    int njet5 = 0;
    int njet25 = 0;
@@ -730,7 +722,6 @@ m_ntaus = ntau5;
             m_boson_eta->push_back(bos_itr->eta());
             m_boson_phi->push_back(bos_itr->phi());
             m_boson_pdgid->push_back(bos_itr->pdgId());
-            std::cout << SherpaVTruthPt << " " << bos_itr->pt() << std::endl;
             nbos10++;
          }
       }
