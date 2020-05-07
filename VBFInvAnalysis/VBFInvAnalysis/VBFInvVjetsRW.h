@@ -22,6 +22,8 @@ public:
    // that way they can be set directly from CINT and python.
 public:
    TString outputName;
+   bool        skipCBK;
+   bool auto_skipCBK; //!
 
    // variables that don't get filled at submission time should be
    // protected from being send from the submission node to the worker
@@ -80,6 +82,9 @@ public:
    std::vector<float> m_jet_phi;   //!
    std::vector<float> m_jet_m;     //!
    std::vector<int>   m_jet_label; //!
+
+   float m_met_et;  //!
+   float m_met_phi; //!
 
    // this is a standard constructor
    VBFInvVjetsRW();

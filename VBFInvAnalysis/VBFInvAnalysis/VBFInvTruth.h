@@ -54,7 +54,6 @@ public:
    float truthF_jj_deta;//!
    float truthF_jj_dphi;//!
    float truth_jj_dphi;//!
-   float SherpaVTruthPt;//!
 
 
    int                 m_nels;        //!
