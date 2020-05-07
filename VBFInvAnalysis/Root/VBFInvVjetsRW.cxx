@@ -25,8 +25,6 @@
 #include <EventLoop/Worker.h>
 #include <EventLoop/OutputStream.h>
 
-#include <VBFInvAnalysis/VBFInvVjetsRW.h>
-
 // xAODTruth
 #include <xAODTruth/TruthParticleContainer.h>
 #include <xAODTruth/TruthEventContainer.h>
@@ -41,8 +39,9 @@
 
 // utils
 #include <VBFInvAnalysis/GetTruthBosonP4.h>
-
+#include <VBFInvAnalysis/VBFInvVjetsRW.h>
 #include <VBFInvAnalysis/HelperFunctions.h>
+
 #include "xAODRootAccess/tools/TFileAccessTracer.h"
 
 #include <xAODBase/IParticleHelpers.h>
@@ -263,7 +262,21 @@ EL::StatusCode VBFInvVjetsRW ::initialize()
    m_tree->Branch("truth_mc_status", &m_truth_mc_status);
    m_tree->Branch("truth_mc_barcode", &m_truth_mc_barcode);
    m_tree->Branch("truth_V_simple_pt", &m_truth_V_simple_pt);
+   m_tree->Branch("jj_mass", &m_jj_mass);
+   m_tree->Branch("jj_dphi", &m_jj_dphi);
+   m_tree->Branch("jj_deta", &m_jj_deta);
+
+   m_tree->Branch("njets", &m_njets);
+   m_tree->Branch("njets25", &m_njets25);
+   m_tree->Branch("jet_E", &m_jet_E);
+   m_tree->Branch("jet_pt", &m_jet_pt);
+   m_tree->Branch("jet_eta", &m_jet_eta);
+   m_tree->Branch("jet_phi", &m_jet_phi);
+   m_tree->Branch("jet_m", &m_jet_m);
+   m_tree->Branch("jet_label", &m_jet_label);
+
    //   m_cand.attachToTree(m_tree, ""); // we use empty prefix
+
 
    return EL::StatusCode::SUCCESS;
 }
@@ -371,6 +384,40 @@ EL::StatusCode VBFInvVjetsRW ::analyzeEvent()
    ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
    const TLorentzVector truth_V_simple = VBFInvAnalysis::getTruthBosonP4_simple(truthParticles);
    m_truth_V_simple_pt = truth_V_simple.Pt();
+
+   // Add jet information
+   const xAOD::JetContainer *jets(nullptr);
+   if (!event->retrieve(jets,  "AntiKt4TruthDressedWZJets").isSuccess()) { // retrieve arguments: container type, container key
+      ANA_MSG_ERROR("Failed to retrieve AntiKt4TruthDressedWZJets container");
+      return EL::StatusCode::FAILURE;
+   }
+
+   std::vector<TLorentzVector> truthJets;
+   TLorentzVector              truthJet;
+
+   int njet = 0;
+   int njet25 = 0;
+   for (const auto *jet : *jets) {
+      TLorentzVector truthJet;
+      truthJet.SetPtEtaPhiE(jet->pt(), jet->eta(), jet->phi(), jet->e());
+      truthJets.push_back(truthJet);
+      m_jet_E.push_back(jet->e());
+      m_jet_pt.push_back(jet->pt());
+      m_jet_eta.push_back(jet->eta());
+      m_jet_phi.push_back(jet->phi());
+      m_jet_m.push_back(jet->m());
+      m_jet_label.push_back(jet->auxdata<int>("PartonTruthLabelID"));
+      njet++;
+      if (jet->pt() > 25000. ) ++njet25;
+   }
+   m_njets = njet;
+   m_njets25 = njet25;
+
+   double jj_deta = -1., jj_mass = -1., jj_dphi = -1.;
+   HelperFunctions::computejj(&truthJets, jj_mass, jj_deta, jj_dphi);
+   m_jj_mass = jj_mass;
+   m_jj_deta = jj_deta;
+   m_jj_dphi = jj_dphi;
 
    m_tree->Fill();
 
@@ -553,6 +600,13 @@ EL::StatusCode VBFInvVjetsRW::resetBranches()
    m_truth_mc_dyn_iso.clear();
    m_truth_mc_type.clear();
    m_truth_mc_origin.clear();
+
+   m_jet_E.clear();
+   m_jet_pt.clear();
+   m_jet_eta.clear();
+   m_jet_phi.clear();
+   m_jet_m.clear();
+   m_jet_label.clear();
 
    return EL::StatusCode::SUCCESS;
 }
