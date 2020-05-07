@@ -41,7 +41,7 @@ public:
    TTree *m_tree; //!
    //   Analysis::OutputTruth m_cand; //!
    TH1F *m_histoEventCount; //!
-
+   TH1D *NumberEvents; //!
    // things used in the analysis
    Bool_t                    m_iso_dyn;             //!
    Int_t                     m_run;                 //!
@@ -69,6 +69,17 @@ public:
    std::vector<Int_t>        m_truth_mc_dyn_iso;    //!
    std::vector<Int_t>        m_truth_mc_fix_iso;    //!
    Float_t m_truth_V_simple_pt; //!
+   Float_t m_jj_mass; //!
+   Float_t m_jj_dphi; //!
+   Float_t m_jj_deta; //!
+   int                 m_njets;     //!
+   int                 m_njets25;     //!
+   std::vector<float> m_jet_E;     //!
+   std::vector<float> m_jet_pt;    //!
+   std::vector<float> m_jet_eta;   //!
+   std::vector<float> m_jet_phi;   //!
+   std::vector<float> m_jet_m;     //!
+   std::vector<int>   m_jet_label; //!
 
    // this is a standard constructor
    VBFInvVjetsRW();

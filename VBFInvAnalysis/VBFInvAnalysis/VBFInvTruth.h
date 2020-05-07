@@ -46,16 +46,17 @@ public:
    std::vector<float> *m_jet_phi;   //!
    std::vector<float> *m_jet_m;     //!
    std::vector<int> *  m_jet_label; //!
-   float truth_jj_mass; //! 
-   float truth_jj_deta;//! 
+   float truth_jj_mass; //!
+   float truth_jj_deta;//!
 
-   bool passVjetsFilter; //! 
-   float truthF_jj_mass;//! 
-   float truthF_jj_deta;//! 
-   float truthF_jj_dphi;//! 
-   float truth_jj_dphi;//! 
+   bool passVjetsFilter; //!
+   float truthF_jj_mass;//!
+   float truthF_jj_deta;//!
+   float truthF_jj_dphi;//!
+   float truth_jj_dphi;//!
+   float SherpaVTruthPt;//!
 
-   
+
    int                 m_nels;        //!
    std::vector<float> *m_el_m;        //!
    std::vector<float> *m_el_pt;       //!
