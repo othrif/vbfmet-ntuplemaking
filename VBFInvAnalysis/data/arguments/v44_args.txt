@@ -9,20 +9,20 @@
 ###############################################
 # TO MODIFY
 ###############################################
---version=v43Jets2
+--version=v44
 #--doSyst
 #--doSkim
 #--doTrim
 #--doTrimSyst
-#--doORDetail 
-#--doPhotonDetail 
-#--doRnS 
-#--doMETDetail 
-#--doJetDetail 
-#--doElectronDetail 
-#--doMuonDetail 
-#--doTauDetail 
-#--doTrackMET 
+#--doORDetail
+#--doPhotonDetail
+#--doRnS
+#--doMETDetail
+#--doJetDetail
+#--doElectronDetail
+#--doMuonDetail
+#--doTauDetail
+#--doTrackMET
 #--computeXS
 ###############################################
 # Other

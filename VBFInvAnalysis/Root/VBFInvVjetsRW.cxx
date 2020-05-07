@@ -117,7 +117,7 @@ EL::StatusCode VBFInvVjetsRW ::histInitialize()
    NumberEvents->GetXaxis()->SetBinLabel(2, "Weights");
    NumberEvents->GetXaxis()->SetBinLabel(3, "WeightsSquared");
    NumberEvents->GetXaxis()->SetBinLabel(4, "RawTRUTH");
-   return EL::StatusCode::SUCCESS;
+
 
    return EL::StatusCode::SUCCESS;
 }
@@ -128,72 +128,51 @@ EL::StatusCode VBFInvVjetsRW ::fileExecute()
    // single file, e.g. collect a list of all lumi-blocks processed
 
    xAOD::TEvent *event = wk()->xaodEvent();
+   ANA_MSG_INFO("Number of events in this file = " << event->getEntries());
 
-   TTree *MetaData = dynamic_cast<TTree *>(wk()->inputFile()->Get("MetaData"));
-   if (!MetaData) {
-      ANA_MSG_ERROR("MetaData not found!");
-      return EL::StatusCode::FAILURE;
-   }
-   MetaData->LoadTree(0);
+   if (skipCBK) {
+      NumberEvents->Fill(0., event->getEntries());
+   } else {
+      // Read the CutBookkeeper container
+      const xAOD::CutBookkeeperContainer *completeCBC = 0;
+      if (event->retrieveMetaInput(completeCBC, "CutBookkeepers").isSuccess()) {
+         auto_skipCBK                            = false;
+         const xAOD::CutBookkeeper *allEventsCBK = 0;
+         int                        maxcycle     = -1;
 
-   const Bool_t isDerivation = !MetaData->GetBranch("StreamAOD");
-   //   const Bool_t isTruthDerivation = (MetaData->GetBranch("StreamDAOD_TRUTH1") ||
-   //   MetaData->GetBranch("StreamDAOD_TRUTH3"));
-
-   // get sum of event weights in derivation skims
-   if (isDerivation) {
-
-      // check for corruption
-      const xAOD::CutBookkeeperContainer *incompleteCBK = nullptr;
-      if (!event->retrieveMetaInput(incompleteCBK, "IncompleteCutBookkeepers").isSuccess()) {
-         ANA_MSG_ERROR("Failed to retrieve IncompleteCutBookkeepers from MetaData! Exiting.");
-         return EL::StatusCode::FAILURE;
-      }
-      if (incompleteCBK->size() != 0) {
-         Error("initializeEvent()", "Found incomplete Bookkeepers! Check file for corruption.");
-         return EL::StatusCode::FAILURE;
-      }
-
-      // set pointers & retrieve the bookkeeper container
-      const xAOD::CutBookkeeperContainer *bookkeepers = nullptr;
-      if (!event->retrieveMetaInput(bookkeepers, "CutBookkeepers").isSuccess()) {
-         ANA_MSG_ERROR("Failed to retrieve CutBookkeepers from MetaData");
-         return EL::StatusCode::FAILURE;
-      }
-      const xAOD::CutBookkeeper *event_bookkeeper = nullptr;
-
-      // find the max cycle where input stream is StreamAOD and the name is AllExecutedEvents
-      int maxCycle = -1;
-      for (auto cbk : *bookkeepers) {
-         if (cbk->inputStream() == "StreamAOD" && cbk->name() == "AllExecutedEvents" && cbk->cycle() > maxCycle) {
-            maxCycle         = cbk->cycle();
-            event_bookkeeper = cbk;
+         for (auto cbk : *completeCBC) {
+            std::cout << cbk->name() << " " << cbk->inputStream()  << " " << cbk->cycle() << std::endl;
+            if (cbk->name() == "AllExecutedEvents" && cbk->inputStream() == "StreamDAOD_TRUTH1" && cbk->cycle() > maxcycle) {
+               maxcycle     = cbk->cycle();
+               allEventsCBK = cbk;
+            }
          }
-      }
-      // if the right & proper bookkeeper is found, read info
-            uint64_t nEventsProcessed    = 0;
-      double   sumOfWeights        = 0.;
-      double   sumOfWeightsSquared = 0.;
-      if (event_bookkeeper) {
-         m_histoEventCount->Fill("initial_weighted", event_bookkeeper->sumOfEventWeights());
-         m_histoEventCount->Fill("initial_raw", event_bookkeeper->nAcceptedEvents());
 
-         nEventsProcessed    = event_bookkeeper->nAcceptedEvents();
-         sumOfWeights        = event_bookkeeper->sumOfEventWeights();
-         sumOfWeightsSquared = event_bookkeeper->sumOfEventWeightsSquared();
-         ANA_MSG_INFO("CutBookkeepers Accepted:" << nEventsProcessed << ", SumWei:" << sumOfWeights << ", sumWei2:" << sumOfWeightsSquared);
-      }
-          else {
-         ANA_MSG_INFO("No relevent CutBookKeepers found");
-         nEventsProcessed = event->getEntries();
-      }
-      NumberEvents->Fill(0., nEventsProcessed);
-      NumberEvents->Fill(1., sumOfWeights);
-      NumberEvents->Fill(2., sumOfWeightsSquared);
-      NumberEvents->Fill(3., event->getEntries());
+         uint64_t nEventsProcessed    = 0;
+         double   sumOfWeights        = 0.;
+         double   sumOfWeightsSquared = 0.;
+         if (allEventsCBK) {
+            nEventsProcessed    = allEventsCBK->nAcceptedEvents();
+            sumOfWeights        = allEventsCBK->sumOfEventWeights();
+            sumOfWeightsSquared = allEventsCBK->sumOfEventWeightsSquared();
+            ANA_MSG_INFO("CutBookkeepers Accepted:" << nEventsProcessed << ", SumWei:" << sumOfWeights
+               << ", sumWei2:" << sumOfWeightsSquared);
+            } else {
+               ANA_MSG_INFO("No relevant CutBookKeepers found");
+               nEventsProcessed = event->getEntries();
+               auto_skipCBK     = true;
+            }
 
+            NumberEvents->Fill(0., nEventsProcessed);
+            NumberEvents->Fill(1., sumOfWeights);
+            NumberEvents->Fill(2., sumOfWeightsSquared);
+            NumberEvents->Fill(3., event->getEntries());
+         }
+         else{
+            auto_skipCBK = true;
+         }
 
-   } // derivation
+   }
 
    return EL::StatusCode::SUCCESS;
 }
@@ -275,6 +254,9 @@ EL::StatusCode VBFInvVjetsRW ::initialize()
    m_tree->Branch("jet_m", &m_jet_m);
    m_tree->Branch("jet_label", &m_jet_label);
 
+   m_tree->Branch("met_et", &m_met_et);
+   m_tree->Branch("met_phi", &m_met_phi);
+
    //   m_cand.attachToTree(m_tree, ""); // we use empty prefix
 
 
@@ -352,6 +334,11 @@ EL::StatusCode VBFInvVjetsRW ::analyzeEvent()
    m_mconly_weight = evtInfo->mcEventWeight();
    //      mconly_weights = evtInfo->mcEventWeights();
 
+   if (skipCBK || auto_skipCBK) {
+      NumberEvents->Fill(1, m_mconly_weight);
+      NumberEvents->Fill(2, m_mconly_weight * m_mconly_weight);
+   }
+
    if (m_isDAODTRUTH) {
       for (auto thisMuon : *m_muons.first) {
          fillParticle(thisMuon);
@@ -418,6 +405,21 @@ EL::StatusCode VBFInvVjetsRW ::analyzeEvent()
    m_jj_mass = jj_mass;
    m_jj_deta = jj_deta;
    m_jj_dphi = jj_dphi;
+
+
+   // MET
+   const xAOD::MissingETContainer *met = nullptr;
+   if (!event->retrieve(met,  "MET_Truth").isSuccess()) { // retrieve arguments: container type, container key
+      ANA_MSG_ERROR("Failed to retrieve MET_Truth container");
+      return EL::StatusCode::FAILURE;
+   }
+   const xAOD::MissingET *met_nonint = (*met)["NonInt"];
+   float EtmissTruth_Etx = met_nonint->mpx();
+   float EtmissTruth_Ety = met_nonint->mpy();
+   float EtmissTruth_Et  = sqrt(EtmissTruth_Etx * EtmissTruth_Etx + EtmissTruth_Ety * EtmissTruth_Ety);
+   TLorentzVector MET_Truth(EtmissTruth_Etx, EtmissTruth_Ety, 0., EtmissTruth_Et);
+   m_met_et  = MET_Truth.Perp();
+   m_met_phi = MET_Truth.Phi();
 
    m_tree->Fill();
 
