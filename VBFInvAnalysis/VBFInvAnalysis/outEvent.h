@@ -61,6 +61,7 @@ public:
    Float_t MGVTruthPt;
    Float_t SherpaVTruthPt;
    Bool_t in_vy_overlap;
+   Bool_t in_vy_overlap10;
    Bool_t in_vy_overlap_iso;
    /*
          Int_t pdf_id1;
@@ -187,6 +188,8 @@ public:
    Int_t n_el_baseline_noOR;
    Int_t n_el_baseline_crackVetoCleaning;
    Int_t n_ph;
+   Int_t n_ph10;
+   Int_t n_ph15;
    Int_t n_ph_crackVetoCleaning;
 
    Float_t              truth_vtx_z;

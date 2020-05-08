@@ -68,7 +68,7 @@ atlas_add_library( VBFInvAnalysisLib
    GoodRunsListsLib PileupReweightingLib PathResolver TrigConfxAODLib TrigDecisionToolLib TriggerMatchingToolLib
    MuonMomentumCorrectionsLib FourMomUtils IsolationSelectionLib IsolationCorrectionsLib
    ElectronPhotonSelectorToolsLib TauAnalysisToolsLib ElectronEfficiencyCorrectionLib EgammaAnalysisInterfacesLib
-   SUSYToolsLib
+   SUSYToolsLib GammaORToolsLib
    ${FASTJET_LIBRARIES}
 
    PRIVATE_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS}
