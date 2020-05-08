@@ -46,6 +46,9 @@ public:
    Double_t met_tst_nolep_j1_dphi;
    Double_t met_tst_nolep_j2_dphi;
    Double_t met_cst_jet;
+   Float_t met_cst_phi;
+   Float_t met_cst_em_jet;
+   Float_t met_cst_em_phi;
    Double_t metsig_tst;
    Double_t metsig_tst_nolep;
    //      Double_t met_tst_nomuon_j1_dphi;
@@ -77,6 +80,8 @@ public:
    std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nolepAux;           //!
    std::shared_ptr<xAOD::MissingETContainer>    met_cst;                    //!
    std::shared_ptr<xAOD::MissingETAuxContainer> met_cstAux;                 //!
+   std::shared_ptr<xAOD::MissingETContainer>    met_cst_em;                 //!
+   std::shared_ptr<xAOD::MissingETAuxContainer> met_cst_emAux;              //!
    std::shared_ptr<xAOD::MissingETContainer>    met_tst_nophoton;    //!
    std::shared_ptr<xAOD::MissingETAuxContainer> met_tst_nophotonAux; //!
    //std::shared_ptr<xAOD::MissingETContainer>    met_track;           //!

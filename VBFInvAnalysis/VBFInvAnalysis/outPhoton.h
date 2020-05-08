@@ -15,6 +15,11 @@ private:
    std::vector<Float_t> pt;
    std::vector<Float_t> eta;
    std::vector<Float_t> phi;
+   std::vector<unsigned> isEM;
+   std::vector<Bool_t> iso;
+   std::vector<Float_t> topoetcone40;
+   std::vector<Float_t> ptcone20;
+   std::vector<Int_t>   truthOrigin;
    std::vector<Bool_t>  passOR;
 
 public:
