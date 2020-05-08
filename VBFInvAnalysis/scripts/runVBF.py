@@ -62,12 +62,13 @@ parser.add_argument("--doContLepDetail", dest="doContLepDetail", action="store_t
 parser.add_argument("--doEventDetail", dest="doEventDetail", action="store_true", default=False, help="add detailed branches for event level info")
 parser.add_argument("--doVertexDetail", dest="doVertexDetail", action="store_true", default=False, help="add detailed branches for vertex info")
 parser.add_argument("--doORDetail", dest="doORDetail", action="store_true", default=False, help="add detailed branches for overlap removal")
-parser.add_argument("--skipCutBookKeper", dest="skipCutBookKeper", action='store_true', default=False, help="skip CutBookKeper")
+parser.add_argument("--skipCutBookKeeper", dest="skipCutBookKeeper", action='store_true', default=False, help="skip CutBookKeeper")
 parser.add_argument("--isMultiWeight", dest="isMultiWeight",action='store_true', default=False, help="activate MultiWeight mode")
 parser.add_argument("--noTruthBoson", dest="noTruthBoson",action='store_true', default=False, help="deactivate boson mode")
 parser.add_argument("--doRnS", dest="doRnS", action="store_true", default=False, help="do Rebalance and Smear on SUSY11")
 parser.add_argument("--doFatJetDetail", dest="doFatJetDetail", action="store_true", default=False, help="store detailed branches for FatJet")
 parser.add_argument("--doTrackJetDetail", dest="doTrackJetDetail", action="store_true", default=False, help="store detailed branches for TrackJets")
+parser.add_argument("--doTrackMET", dest="doTrackMET", action="store_true", default=False, help="store branches for TrackMET")
 parser.add_argument("--getMCChannel", dest="getMCChannel", type=int, default=-1, help="specify the MC Channel number")
 parser.add_argument("--savePVOnly", dest="savePVOnly", action="store_true", default=False, help="saves only the PV value for the jets when True")
 parser.add_argument("--copyEMTopoFJVT", dest="copyEMTopoFJVT", action="store_true", default=False, help="saves only the emtopo fjvt for pflow jets when True")
@@ -209,20 +210,21 @@ if( args.algoName == "VBFInv" ):
   alg.doRnS = args.doRnS
   alg.doFatJetDetail = args.doFatJetDetail
   alg.doTrackJetDetail = args.doTrackJetDetail
+  alg.doTrackMET = args.doTrackMET
   alg.doTTMet = args.doTTMet
 elif ( args.algoName == "VBFInvTruth"):
-  alg.skipCBK = args.skipCutBookKeper
+  alg.skipCBK = args.skipCutBookKeeper
   alg.MultiWeight = args.isMultiWeight
   alg.noTruthBoson = args.noTruthBoson
 elif ( args.algoName == "VBFInvSherpaTruth"):
-  alg.skipCBK = args.skipCutBookKeper
+  alg.skipCBK = args.skipCutBookKeeper
   alg.MultiWeight = args.isMultiWeight
   alg.antiktDR = args.antiktDR
   alg.shouldNotCluster = args.noClusterPartons
   alg.partonJetPtCut = args.partonPt
   alg.truthJetPtCut = args.truthPt
 elif ( args.algoName == "VBFInvVjetsRW"):
-  alg.skipCBK = args.skipCutBookKeper
+  alg.skipCBK = args.skipCutBookKeeper
 else:
   print("ERROR: You need to enter a valid algorithm name: \"VBFInv\" or \"VBFInvTruth\" or \"VBFInvSherpaTruth\" or \"VBFInvVjetsRW\"")
   sys.exit()
@@ -294,7 +296,7 @@ elif (args.driver == 'condor'):
     condor_options+="notify_user = christian.sander@desy.de" + "\n"
     condor_options+="notification = Error" + "\n"
     condor_options+="should_transfer_files = NO" + "\n"
-    condor_options+="Requirements = ( OpSysAndVer == \"SL6\")" + "\n"
+    condor_options+="Requirements = ( OpSysAndVer == \"CentOS7\")" + "\n"
     #  Not working well OpSysAndVer == \"CentOS7\" ||
     #    condor_options+="" + "\n"
     driver.options().setString (ROOT.EL.Job.optCondorConf, condor_options);

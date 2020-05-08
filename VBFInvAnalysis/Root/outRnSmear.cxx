@@ -10,6 +10,8 @@ Analysis::outRnSmear::~outRnSmear() {}
 void Analysis::outRnSmear::reset()
 {
    rnsPSweight = 1.0;
+   onlineJet1Pt = -1.0;
+   onlineJet1Eta = 0.0;
 
    return;
 }
@@ -20,6 +22,8 @@ void Analysis::outRnSmear::attachToTree(TTree *tree)
 
    if (!doTrim()) {
       tree->Branch(prefix + "rnsPSweight", &rnsPSweight);
+      tree->Branch(prefix + "onlineJet1Pt", &onlineJet1Pt);
+      tree->Branch(prefix + "onlineJet1Eta", &onlineJet1Eta);
    }
 
    return;
@@ -72,13 +76,15 @@ double Analysis::outRnSmear::getPSweight(asg::AnaToolHandle<ST::ISUSYObjDef_xAOD
    double HLTjetEta = 0;
    double HLTjetPhi = 0;
    if (hlt_jet->size() > 0) {
-      HLTjetPt  = hlt_jet->at(0)->pt() / 1000.;
-      HLTjetEta = hlt_jet->at(0)->eta();
-      HLTjetPhi = hlt_jet->at(0)->phi();
+      //HLTjetPt  = hlt_jet->at(0)->pt() / 1000.;
+      //HLTjetEta = hlt_jet->at(0)->eta();
+      //HLTjetPhi = hlt_jet->at(0)->phi();
       for (unsigned int i = 0; i < hlt_jet->size(); ++i) {
-         if (hlt_jet->at(i)->pt() / 1000. > HLTjetPt) {
+         if (hlt_jet->at(i)->pt() / 1000. > HLTjetPt && fabs(hlt_jet->at(i)->eta()) < 3.2) {
             HLTjetPt  = hlt_jet->at(i)->pt() / 1000.;
+            onlineJet1Pt = HLTjetPt;
             HLTjetEta = hlt_jet->at(i)->eta();
+            onlineJet1Eta = HLTjetEta;
             HLTjetPhi = hlt_jet->at(i)->phi();
          }
       }
@@ -117,7 +123,7 @@ double Analysis::outRnSmear::getPSweight(asg::AnaToolHandle<ST::ISUSYObjDef_xAOD
       Info("getPSweight()", "No relevant single jet trigger has fired");
       return PSweight;
    } else {
-      for (int i = 0; i <= i_highest_threshold; i++) {
+      for (int i = 0; i <= i_highest_threshold || i <= i_highest_fire; i++) {
          auto chainGroup = susytools_handle->GetTrigChainGroup(single_jet_triggers.at(i));
          for (auto &trig : chainGroup->getListOfTriggers()) {
             auto        cg       = susytools_handle->GetTrigChainGroup(trig);

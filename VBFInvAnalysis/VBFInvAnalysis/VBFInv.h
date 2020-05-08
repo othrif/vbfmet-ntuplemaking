@@ -57,9 +57,11 @@ public:
                                    xAOD::ElectronContainer *el, xAOD::MuonContainer *mu, xAOD::PhotonContainer *ph,
                                    Bool_t doTST, Bool_t doJVT, xAOD::IParticleContainer *invis, TLorentzVector &myMET,
                                    double &myMETSig, int METType = 0);
+   /*
    virtual EL::StatusCode   getTrackMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
                                         std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet,
                                         xAOD::ElectronContainer *el, xAOD::MuonContainer *mu);
+   */
    void GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthParticleContainer *truthElectrons,
                     float &antiIdSF);
    void printObjects(xAOD::IParticleContainer obj, TString label);
@@ -102,6 +104,7 @@ public:
    Bool_t   doRnS;
    Bool_t   doFatJetDetail;
    Bool_t   doTrackJetDetail;
+   Bool_t   doTrackMET;
    Bool_t   doElectronDetail;
    Bool_t   doMuonDetail;
    Bool_t   doJetDetail;
