@@ -1,0 +1,8 @@
+mc15_13TeV.361372.Sherpa_CT10_Zee_Pt0_70_CVetoBVeto.deriv.DAOD_TRUTH3.e3651_p3655           
+mc15_13TeV.361373.Sherpa_CT10_Zee_Pt0_70_CFilterBVeto.deriv.DAOD_TRUTH3.e3651_p3655         
+mc15_13TeV.361374.Sherpa_CT10_Zee_Pt0_70_BFilter.deriv.DAOD_TRUTH3.e3651_p3655              
+mc15_13TeV.361375.Sherpa_CT10_Zee_Pt70_140_CVetoBVeto.deriv.DAOD_TRUTH3.e3651_p3655         
+mc15_13TeV.361376.Sherpa_CT10_Zee_Pt70_140_CFilterBVeto.deriv.DAOD_TRUTH3.e3651_p3655       
+mc15_13TeV.361377.Sherpa_CT10_Zee_Pt70_140_BFilter.deriv.DAOD_TRUTH3.e3651_p3655            
+mc15_13TeV.361378.Sherpa_CT10_Zee_Pt140_280_CVetoBVeto.deriv.DAOD_TRUTH3.e3651_p3655        
+mc15_13TeV.361379.Sherpa_CT10_Zee_Pt140_280_CFilterBVeto.deriv.DAOD_TRUTH3.e3651_p3655    
