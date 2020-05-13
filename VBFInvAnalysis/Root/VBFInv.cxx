@@ -53,7 +53,7 @@ ClassImp(VBFInv)
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false),
      doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doTrackMET(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
-     doContLepDetail(false), doVertexDetail(false), doORDetail(false), doTTMet(false), savePVOnly(false),
+     doContLepDetail(false), doVertexDetail(false), doORDetail(false), doTTMet(false), savePVOnly(false), doBaseJet(false),
      copyEMTopoFJVT(false), JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),
      PhijjFilter(2.5), getMCChannel(-1), computeXS(false), m_isMC(false), m_isAFII(false), m_eventCounter(0),
      m_determinedDerivation(false), m_isEXOT5(false), m_grl("GoodRunsListSelectionTool/grl", this),
@@ -64,7 +64,8 @@ ClassImp(VBFInv)
      m_elecEfficiencySFTool_anti_id(
         "AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_id", this),
      m_elecEfficiencySFTool_anti_iso(
-        "AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_iso", this)
+				     "AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_iso", this),
+  m_VyORTool("VGammaORTool/VyORTool",this)
 {
 }
 
@@ -306,6 +307,13 @@ EL::StatusCode VBFInv::initialize()
       ANA_CHECK(m_grl.setProperty("PassThrough",
                                   false)); // if true (default) will ignore result of GRL and will just pass all events
       ANA_CHECK(m_grl.initialize());
+   }
+   if(m_isMC){
+     std::vector<float> ph_pt = std::vector<float>({10e3});
+     ANA_CHECK( m_VyORTool.setProperty("photon_pT_cuts",ph_pt) );
+     ANA_CHECK( m_VyORTool.setProperty("use_gamma_iso", false) ); 
+
+     ANA_CHECK( m_VyORTool.retrieve() );
    }
 
    // configure forward JVT tool
@@ -684,6 +692,7 @@ EL::StatusCode VBFInv::initialize()
       if (doContLepDetail) m_cand[thisSyst].el["contel"] = Analysis::outElectron("contel", (trim && !doContLepDetail));
       m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail && !doRnS));
       m_cand[thisSyst].jet["jet"].setOutPV(savePVOnly);
+      if(doBaseJet)       m_cand[thisSyst].jet["basejet"] = Analysis::outJet("jet", (trim && !doJetDetail && !doRnS));
       if (doFatJetDetail) m_cand[thisSyst].fatjet["fatjet"] = Analysis::outFatJet("fatjet", (trim && !doFatJetDetail));
       if (doTrackJetDetail)
          m_cand[thisSyst].trackjet["trackjet"] = Analysis::outTrackJet("trackjet", (trim && !doTrackJetDetail));
@@ -1971,8 +1980,14 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.SherpaVTruthPt = acc_SherpaVTruthPt(*content.eventInfo);
       if (acc_in_vy_overlap.isAvailable(*content.eventInfo))
          cand.evt.in_vy_overlap = acc_in_vy_overlap(*content.eventInfo);
+      if (acc_in_vy_overlap.isAvailable(*content.eventInfo))
+	cand.evt.in_vy_overlap10 = acc_in_vy_overlap(*content.eventInfo); // updating for 10<pT<15 GeV
       if (acc_in_vy_overlap_iso.isAvailable(*content.eventInfo))
          cand.evt.in_vy_overlap_iso = acc_in_vy_overlap_iso(*content.eventInfo);
+
+      // VGamma/VJets overlap removal tool      
+      Bool_t in_vy_overlap10=false;
+      //ANA_CHECK( m_VyORTool->inOverlap(in_vy_overlap10) );
 
       // electron anti-id SF
       // implementing setup
@@ -2185,7 +2200,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       const xAOD::JetContainer *truthJets(nullptr);
       static Bool_t             failedLookingFor(kFALSE); // trick to avoid infinite RuntimeWarning's for EXOT5
       if (!failedLookingFor) {
-         if (!event->retrieve(truthJets, "AntiKt4TruthJets").isSuccess()) {
+	if (!event->retrieve(truthJets, "AntiKt4TruthJets").isSuccess()) {//AntiKt4TruthJets
             ANA_MSG_ERROR("VBFInv::analyzeEvent : Failed to access Truth Jets container; not attempting again, "
                           "truth_jet* variables will be empty");
             failedLookingFor = kTRUE;
@@ -2340,20 +2355,52 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 	 cand.evt.truth_el_status.push_back(acc_classifierParticleOrigin(*part));
       }
       //-- PHOTONS --
+      float lead_truth_ph_pt=0.0;
       const xAOD::TruthParticleContainer *truthParticles(nullptr);
       ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
       cand.evt.n_ph_truth = 0; //truthPhotons->size();
+      std::vector<TVector3> ph_4v,lep_4v;
+      TVector3 tmpv;
+      //std::vector<int> m_lepton_veto_origins = {3, 5, 6, 7, 8, 9, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+      //			       32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42};
+      //std::vector<int> m_preferred_lepton_origins = {1, 2, 4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
+      //std::vector<int> m_veto_photon_origins = {9, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,42};
+
       for (const auto &part : *truthParticles) {
+         if (part->status() != 1) continue;
+	 if ((abs(part->pdgId()) == 11 || abs(part->pdgId()) == 13 || abs(part->pdgId()) == 15)){
+	   //int lep_origin = acc_classifierParticleOrigin(*part);
+	   //const bool use = std::find(m_preferred_lepton_origins.begin(), m_preferred_lepton_origins.end(), lep_origin) != m_preferred_lepton_origins.end();
+	   //bool vetome = std::find(m_lepton_veto_origins.begin(), m_lepton_veto_origins.end(), lep_origin) != m_lepton_veto_origins.end();
+	   //if(!use){ // veto if not preferred
+	   //  if(vetome) continue;
+	   //}
+	   tmpv.SetPtEtaPhi(part->pt(), part->eta(), part->phi());
+	   lep_4v.push_back(tmpv);
+	 }
          if (part->pdgId() != 22) continue;
          if (part->pt() < 10.0e3) continue;
-         if (part->status() != 1) continue;
 	 //if( part->pt() >20.0e3) std::cout << "origin ph: " << acc_classifierParticleOrigin(*part) << " pt: " << part->pt() << " eta: " << part->eta() <<std::endl;
+	 if(lead_truth_ph_pt<part->pt()) lead_truth_ph_pt=part->pt();
          cand.evt.truth_ph_pt.push_back(part->pt());
          cand.evt.truth_ph_eta.push_back(part->eta());
          cand.evt.truth_ph_phi.push_back(part->phi());
 	 ++cand.evt.n_ph_truth;
+	 //int ph_origin = acc_classifierParticleOrigin(*part);
+	 //bool phvetoed = std::find(m_veto_photon_origins.begin(), m_veto_photon_origins.end(), ph_origin) != m_veto_photon_origins.end();
+	 //if(!phvetoed){
+	 tmpv.SetPtEtaPhi(part->pt(), part->eta(), part->phi());
+	   ph_4v.push_back(tmpv);
+	   //}
       }
-
+      // check for overlap of photons and leptons
+      for(unsigned j=0; j<ph_4v.size(); ++j){
+	for(unsigned ij=0; ij<lep_4v.size(); ++ij){
+	  if(ph_4v.at(j).DeltaR(lep_4v.at(ij))<0.1) { in_vy_overlap10=true; break; }
+	}
+      }
+      // update for the 10-15 GeV range only
+      if(lead_truth_ph_pt>10e3 && lead_truth_ph_pt<15e3) cand.evt.in_vy_overlap10=in_vy_overlap10;
       //-- TAUS --
       cand.evt.n_tau_truth = truthTaus->size();
       for (const auto &part : *truthTaus) {
@@ -2412,6 +2459,16 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (acc_bjet(*jet)) tmpNBJet++;
    }
    cand.evt.n_bjet = tmpNBJet;
+
+   if(doBaseJet){
+     static SG::AuxElement::Accessor<char> acc_signal("signal");
+     static SG::AuxElement::Accessor<char> acc_bad("bad");
+     static SG::AuxElement::Accessor<char> acc_passOR("passOR");
+     for (auto jet : content.allJets) {
+       if(acc_passOR(*jet) == 1 && acc_bad(*jet) == 0 && !(acc_signal(*jet) == 1))
+	 cand.jet["basejet"].add(*jet);
+     }
+   }
 
    //-----------------------------------------------------------------------
    // Fat jets
@@ -2519,7 +2576,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (cand.ph.find("ph") != cand.ph.end()) {
          cand.ph["ph"].add(*thisPh);
       }
-      ++cand.evt.n_ph;
+      if(thisPh->pt()>20e3) ++cand.evt.n_ph;
+      ++cand.evt.n_ph10;
+      if(thisPh->pt()>20e3) ++cand.evt.n_ph15;
    }
 
    /////////////////////////////

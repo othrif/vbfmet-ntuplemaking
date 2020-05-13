@@ -64,6 +64,7 @@ void Analysis::outEvent::reset()
    MGVTruthPt=-9999;
    SherpaVTruthPt=-9999;
    in_vy_overlap=false;
+   in_vy_overlap10=false;
    in_vy_overlap_iso=false;
 
    // PDF
@@ -165,6 +166,8 @@ void Analysis::outEvent::reset()
    n_mu_baseline_loose_noOR = 0;
    n_mu_baseline_iso = 0;
    n_ph          = 0;
+   n_ph10          = 0;
+   n_ph15          = 0;
    n_ph_crackVetoCleaning          = 0;
 
    jj_mass               = -9999;
@@ -255,6 +258,7 @@ void Analysis::outEvent::attachToTree(TTree *tree)
      tree->Branch(prefix + "MGVTruthPt", &MGVTruthPt);
      tree->Branch(prefix + "SherpaVTruthPt", &SherpaVTruthPt);
      tree->Branch(prefix + "in_vy_overlap", &in_vy_overlap);
+     tree->Branch(prefix + "in_vy_overlap10", &in_vy_overlap10);
      tree->Branch(prefix + "in_vy_overlap_iso", &in_vy_overlap_iso);
    }
    for (auto &itrig : trigger) {
@@ -371,6 +375,8 @@ void Analysis::outEvent::attachToTree(TTree *tree)
    tree->Branch(prefix + "n_mu_baseline_loose_noOR", &n_mu_baseline_loose_noOR);
    tree->Branch(prefix + "n_mu_baseline_iso", &n_mu_baseline_iso);
    tree->Branch(prefix + "n_ph", &n_ph);
+   tree->Branch(prefix + "n_ph10", &n_ph10);
+   tree->Branch(prefix + "n_ph15", &n_ph15);
    tree->Branch(prefix + "n_ph_crackVetoCleaning", &n_ph_crackVetoCleaning);
 
    tree->Branch(prefix + "jj_mass", &jj_mass);
