@@ -1966,9 +1966,9 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if (acc_in_vy_overlap_iso.isAvailable(*content.eventInfo))
          cand.evt.in_vy_overlap_iso = acc_in_vy_overlap_iso(*content.eventInfo);
 
-      // VGamma/VJets overlap removal tool
+      // VGamma/VJets overlap removal tool      
       Bool_t in_vy_overlap10=false;
-      ANA_CHECK( m_VyORTool->inOverlap(in_vy_overlap10) );
+      //ANA_CHECK( m_VyORTool->inOverlap(in_vy_overlap10) );
 
       // electron anti-id SF
       // implementing setup
@@ -2340,16 +2340,45 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       const xAOD::TruthParticleContainer *truthParticles(nullptr);
       ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
       cand.evt.n_ph_truth = 0; //truthPhotons->size();
+      std::vector<TVector3> ph_4v,lep_4v;
+      TVector3 tmpv;
+      //std::vector<int> m_lepton_veto_origins = {3, 5, 6, 7, 8, 9, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+      //			       32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42};
+      //std::vector<int> m_preferred_lepton_origins = {1, 2, 4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
+      //std::vector<int> m_veto_photon_origins = {9, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,42};
+
       for (const auto &part : *truthParticles) {
+         if (part->status() != 1) continue;
+	 if ((abs(part->pdgId()) == 11 || abs(part->pdgId()) == 13 || abs(part->pdgId()) == 15)){
+	   //int lep_origin = acc_classifierParticleOrigin(*part);
+	   //const bool use = std::find(m_preferred_lepton_origins.begin(), m_preferred_lepton_origins.end(), lep_origin) != m_preferred_lepton_origins.end();
+	   //bool vetome = std::find(m_lepton_veto_origins.begin(), m_lepton_veto_origins.end(), lep_origin) != m_lepton_veto_origins.end();
+	   //if(!use){ // veto if not preferred
+	   //  if(vetome) continue;
+	   //}
+	   tmpv.SetPtEtaPhi(part->pt(), part->eta(), part->phi());
+	   lep_4v.push_back(tmpv);
+	 }
          if (part->pdgId() != 22) continue;
          if (part->pt() < 10.0e3) continue;
-         if (part->status() != 1) continue;
 	 //if( part->pt() >20.0e3) std::cout << "origin ph: " << acc_classifierParticleOrigin(*part) << " pt: " << part->pt() << " eta: " << part->eta() <<std::endl;
 	 if(lead_truth_ph_pt<part->pt()) lead_truth_ph_pt=part->pt();
          cand.evt.truth_ph_pt.push_back(part->pt());
          cand.evt.truth_ph_eta.push_back(part->eta());
          cand.evt.truth_ph_phi.push_back(part->phi());
 	 ++cand.evt.n_ph_truth;
+	 //int ph_origin = acc_classifierParticleOrigin(*part);
+	 //bool phvetoed = std::find(m_veto_photon_origins.begin(), m_veto_photon_origins.end(), ph_origin) != m_veto_photon_origins.end();
+	 //if(!phvetoed){
+	 tmpv.SetPtEtaPhi(part->pt(), part->eta(), part->phi());
+	   ph_4v.push_back(tmpv);
+	   //}
+      }
+      // check for overlap of photons and leptons
+      for(unsigned j=0; j<ph_4v.size(); ++j){
+	for(unsigned ij=0; ij<lep_4v.size(); ++ij){
+	  if(ph_4v.at(j).DeltaR(lep_4v.at(ij))<0.1) { in_vy_overlap10=true; break; }
+	}
       }
       // update for the 10-15 GeV range only
       if(lead_truth_ph_pt>10e3 && lead_truth_ph_pt<15e3) cand.evt.in_vy_overlap10=in_vy_overlap10;

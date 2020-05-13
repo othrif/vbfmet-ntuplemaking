@@ -1,3 +1,12 @@
+mc16_13TeV.600069.PhPy8_VBF_H125_yyv_myv0_MET75.recon.AOD.e8092_s3126_r9364
+mc16_13TeV.600069.PhPy8_ggH_H125_yyv_myv0_MET75.recon.AOD.e8092_s3126_r9364
+mc16_13TeV.700018.Sh_228_eegamma_pty7_ptV90.recon.AOD.e7947_s3126_r9364
+mc16_13TeV.700019.Sh_228_mmgamma_pty7_ptV90.recon.AOD.e7947_s3126_r9364
+mc16_13TeV.700020.Sh_228_ttgamma_pty7_ptV90.recon.AOD.e7947_s3126_r9364
+mc16_13TeV.700021.Sh_228_vvgamma_pty7_ptV90.recon.AOD.e7947_s3126_r9364
+mc16_13TeV.700022.Sh_228_evgamma_pty7_ptV90.recon.AOD.e7947_s3126_r9364 
+mc16_13TeV.700023.Sh_228_mvgamma_pty7_ptV90.recon.AOD.e7947_s3126_r9364 
+mc16_13TeV.700024.Sh_228_tvgamma_pty7_ptV90.recon.AOD.e7947_s3126_r9364 
 mc16_13TeV.830006.H7_720_WmunujjEW.recon.AOD.e8022_s3126_r9364
 mc16_13TeV.830007.H7_720_ZmumujjEW.recon.AOD.e8022_s3126_r9364
 mc16_13TeV.700011.Sh_228_eegamma_pty7_EnhMaxpTVpTy.recon.AOD.e7947_s3126_r9364
