@@ -76,6 +76,7 @@ float getZ0sig(T p)
 
 void computeMaxjj(xAOD::JetContainer jets, double &e_DiJetMass_Max, double &e_JetsDEta_Max);
 void computejj(xAOD::JetContainer jets, double &e_DiJetMass, double &e_JetsDEta, double &e_JetsDPhi);
+void computejj(std::vector<TLorentzVector> *jet_tlv, double &e_DiJetMass, double &e_JetsDEta, double &e_JetsDPhi);
 void computeMETj(TLorentzVector met, xAOD::JetContainer jets, double &e_met_j1_dphi, double &e_met_j2_dphi);
 } // namespace HelperFunctions
 

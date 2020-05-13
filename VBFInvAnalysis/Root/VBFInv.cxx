@@ -51,7 +51,7 @@ ClassImp(VBFInv)
      MC_campaign(""), skip_syst(""), trigger_list(""), pt1Skim(0), pt1SkimForSyst(0), pt2Skim(0), pt2SkimForSyst(0),
      metSkim(0), metSkimForSyst(0), mjjSkim(0), mjjSkimForSyst(0), detajjSkim(0), detajjSkimForSyst(0),
      rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false),
-     doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doElectronDetail(false), doMuonDetail(false),
+     doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doTrackMET(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
      doContLepDetail(false), doVertexDetail(false), doORDetail(false), doTTMet(false), savePVOnly(false), doBaseJet(false),
      copyEMTopoFJVT(false), JetEtaFilter(5.0), JetpTFilter(20.0e3), MjjFilter(800.0e3),
@@ -477,7 +477,7 @@ EL::StatusCode VBFInv::initialize()
       if((mcchannel==312523 || mcchannel==312454) && mc_campaign=="mc16e")
 	prwConfigFile = "data/VBFInvAnalysis/prwfiles/pileup_" + mc_campaign + "_dsid" + std::to_string(mcchannel) + "_" + simType + ".root";
       if(mcchannel>=363236 && mcchannel<=363239)
-	prwConfigFile = "data/VBFInvAnalysis/prwfiles/pileup_" + mc_campaign + "_dsid" + std::to_string(mcchannel) + "_" + simType + ".root";	
+	prwConfigFile = "data/VBFInvAnalysis/prwfiles/pileup_" + mc_campaign + "_dsid" + std::to_string(mcchannel) + "_" + simType + ".root";
       std::cout << "input:  " << prwConfigFile << " " << PathResolverFindCalibFile(prwConfigFile) << std::endl;
       prwConfigFile = PathResolverFindCalibFile(prwConfigFile);
       if (prwConfigFile.empty()) {
@@ -696,6 +696,9 @@ EL::StatusCode VBFInv::initialize()
       if (doFatJetDetail) m_cand[thisSyst].fatjet["fatjet"] = Analysis::outFatJet("fatjet", (trim && !doFatJetDetail));
       if (doTrackJetDetail)
          m_cand[thisSyst].trackjet["trackjet"] = Analysis::outTrackJet("trackjet", (trim && !doTrackJetDetail));
+      if (doTrackMET) {
+         m_cand[thisSyst].track_met["track_met"]       = Analysis::outTrackMET("track_met", (trim && !doTrackMET));
+      }
       if (doTauDetail) m_cand[thisSyst].tau["tau"] = Analysis::outTau("tau", trim && !doTauDetail);
       m_cand[thisSyst].ph["ph"] = Analysis::outPhoton("ph", trim && !doPhotonDetail);
       if(doPhotonDetail) m_cand[thisSyst].ph["baseph"] = Analysis::outPhoton("baseph", trim && !doPhotonDetail);
@@ -709,6 +712,14 @@ EL::StatusCode VBFInv::initialize()
       m_cand[thisSyst].evt.setDoORDetail(doORDetail);
       m_cand[thisSyst].rns.setDoTrim((trim && !doRnS));
       m_cand[thisSyst].attachToTree(m_tree[thisSyst]);
+
+      //m_cand[thisSyst].evt.setDoORDetail(doORDetail);
+      //m_cand[thisSyst].tau["tau"].setDoORDetail(doORDetail);
+      //m_cand[thisSyst].ph["ph"].setDoORDetail(doORDetail);
+      //m_cand[thisSyst].el["el"].setDoORDetail(doORDetail);
+      //m_cand[thisSyst].mu["mu"].setDoORDetail(doORDetail);
+      //m_cand[thisSyst].jet["jet"].setDoORDetail(doORDetail);
+
    }
    return EL::StatusCode::SUCCESS;
 }
@@ -889,6 +900,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    content.doJets           = (syst_affectsJets || content.isNominal);
    content.doFatJets        = (syst_affectsFatJets || content.isNominal) && doFatJetDetail;
    content.doTrackJets      = (syst_affectsTrackJets || content.isNominal) && doTrackJetDetail;
+   content.doTrackMET       = content.isNominal && doTrackMET;
    content.doPhotons        = (syst_affectsPhotons || content.isNominal); // needed for overlap removal
    content.doTaus           = (syst_affectsTaus || content.isNominal);
    content.doMET            = kTRUE;
@@ -1191,8 +1203,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto muon : content.allMuons) {
       if (acc_baseline(*muon) == 1 && acc_passOR(*muon) == 1) { // cosmic, baseline, bad muon already applied
          content.baselineMuons.push_back(muon);
-         if(muon->quality()<3 && (muon->pt()<200.0e3 ? acc_isol(*muon) : acc_isolHighPt(*muon)) && 
-	    fabs(acc_z0sinTheta(*muon))<0.5 && 
+         if(muon->quality()<3 && (muon->pt()<200.0e3 ? acc_isol(*muon) : acc_isolHighPt(*muon)) &&
+	    fabs(acc_z0sinTheta(*muon))<0.5 &&
 	    fabs(acc_d0sig(*muon))<3.0) content.goodMuons.push_back(muon); // add iso, impact parameter cuts and Loose PID
 	 else if(acc_signal(*muon) == 1) content.goodMuons.push_back(muon); // make sure we don't miss a signal muon. shouldn't happen ever.
          if (acc_signal(*muon) == 1) {
@@ -1205,10 +1217,10 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto electron : content.allElectrons) {
       if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) { // baseline is already applied
          content.baselineElectrons.push_back(electron);
-         if((electron->pt()<200.0e3 ? acc_isol(*electron) : acc_isolHighPt(*electron)) && 
-	    fabs(acc_z0sinTheta(*electron))<0.5 && 
+         if((electron->pt()<200.0e3 ? acc_isol(*electron) : acc_isolHighPt(*electron)) &&
+	    fabs(acc_z0sinTheta(*electron))<0.5 &&
 	    fabs(acc_d0sig(*electron))<5.0) content.goodElectrons.push_back(electron); // add iso, impact parameter cuts
-	 else if(acc_signal(*electron) == 1) content.goodElectrons.push_back(electron); // make sure we don't miss a signal electron. shouldn't happen ever. 
+	 else if(acc_signal(*electron) == 1) content.goodElectrons.push_back(electron); // make sure we don't miss a signal electron. shouldn't happen ever.
          if (acc_signal(*electron) == 1) content.wElectrons.push_back(electron); // CR electrons
       }
    }
@@ -1219,7 +1231,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    for (auto electron : content.goodElectrons) { dec_signalSel(*electron) = acc_signal(*electron); dec_signal(*electron)=1; }
    for (auto muon : content.goodMuons) { dec_signalSel(*muon) = acc_signal(*muon);  dec_signal(*muon)=1; }
 
-   static const SG::AuxElement::Accessor<uint8_t> acc_ambiguityType("ambiguityType");  
+   static const SG::AuxElement::Accessor<uint8_t> acc_ambiguityType("ambiguityType");
    static const SG::AuxElement::Accessor<ElementLink<xAOD::EgammaContainer> > acc_ambiguityLink("ambiguityLink");
    //-- PHOTONS --
    for (auto photon : content.allPhotons) {
@@ -1387,9 +1399,16 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
      content.met_cst_em_phi = (*content.met_cst_em)["RefJet"]->phi();
    }
    // track MET
-   //getTrackMET(content.met_track, content.met_trackAux,
-   //            content.jets, // use all objects (before OR and after corrections) for MET utility
-   //            content.electrons, content.muons);
+   if (content.doTrackMET) {
+      /*
+      getTrackMET(content.met_track, content.met_trackAux,
+                  content.jets, // use all objects (before OR and after corrections) for MET utility
+                  content.electrons, content.muons);
+      */
+      if( evtStore()->retrieve(content.track_met, "MET_Track").isFailure()) {
+         ATH_MSG_WARNING("Unable to retrieve MET_Track container");
+      }
+   }
 
    // truth MET
    TLorentzVector myTruthMET;
@@ -1635,7 +1654,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       is2017 = kTRUE; // data2017
    if ((cand.evt.year == 0 && cand.evt.runNumber >= 348197 && cand.evt.runNumber <= 364485) || cand.evt.year == 2018)
       is2018 = kTRUE; // data2018
-   
+
    //
    // trigger. Loading the trigger decisions
    //
@@ -1660,42 +1679,42 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    std::vector<std::string> single_ele_2016_run298687 = {"HLT_e24_lhmedium_nod0_L1EM20VH","HLT_e24_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e60_medium","HLT_e140_lhloose_nod0","HLT_e300_etcut"};
    std::vector<std::string> single_ele_2016_perD4L = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e60_medium","HLT_e140_lhloose_nod0","HLT_e300_etcut"};
    std::vector<std::string> single_lep_2017 = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e60_lhmedium_nod0","HLT_e140_lhloose_nod0","HLT_e300_etcut","HLT_mu26_ivarmedium","HLT_mu50","HLT_mu60_0eta105_msonly"};
-   std::vector<std::string> single_lep_2018 = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e26_lhtight_nod0","HLT_e60_lhmedium_nod0","HLT_e140_lhloose_nod0","HLT_e300_etcut", // HLT_e26_lhtight_nod0 - Unprescaled since run 349169 
+   std::vector<std::string> single_lep_2018 = {"HLT_e26_lhtight_nod0_ivarloose","HLT_e26_lhtight_nod0","HLT_e60_lhmedium_nod0","HLT_e140_lhloose_nod0","HLT_e300_etcut", // HLT_e26_lhtight_nod0 - Unprescaled since run 349169
 					       "HLT_mu26_ivarmedium","HLT_mu50","HLT_mu60_0eta105_msonly"};
 
    std::string str_muon_trigger_OR="";
    //
    // Fill the single lepton triggers with periods
    //
-   if(is2015){ 
-     for(unsigned i=0; i<single_lep_2015.size(); ++i) if(cand.evt.trigger[single_lep_2015.at(i)]) cand.evt.trigger_lep = 1; 
-     m_susytools_handle->TrigMatch(&(content.goodElectrons), single_lep_2015); 
+   if(is2015){
+     for(unsigned i=0; i<single_lep_2015.size(); ++i) if(cand.evt.trigger[single_lep_2015.at(i)]) cand.evt.trigger_lep = 1;
+     m_susytools_handle->TrigMatch(&(content.goodElectrons), single_lep_2015);
      m_susytools_handle->TrigMatch(&(content.goodMuons), single_lep_2015);
      str_muon_trigger_OR="HLT_mu20_iloose_L1MU15_OR_HLT_mu50";
    }
-   if(is2016){ 
+   if(is2016){
      str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
      if     (cand.evt.randomRunNumber<=300287){ for(unsigned i=0; i<single_muo_2016_perA.size(); ++i)      if(cand.evt.trigger[single_muo_2016_perA.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.goodMuons), single_muo_2016_perA);      }
      else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_muo_2016_perBD3.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perBD3.at(i)]) cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.goodMuons), single_muo_2016_perBD3); }
      if     (cand.evt.randomRunNumber==298687){ for(unsigned i=0; i<single_ele_2016_run298687.size(); ++i) if(cand.evt.trigger[single_ele_2016_run298687.at(i)]) cand.evt.trigger_lep = 1;  m_susytools_handle->TrigMatch(&(content.goodElectrons), single_ele_2016_run298687); }
      else if(cand.evt.randomRunNumber<=302872){ for(unsigned i=0; i<single_ele_2016_perAD3.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perAD3.at(i)])    cand.evt.trigger_lep = 1; m_susytools_handle->TrigMatch(&(content.goodElectrons), single_ele_2016_perAD3); }
-     else                                     { 
-       for(unsigned i=0; i<single_ele_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1; 
-       for(unsigned i=0; i<single_muo_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1; 
-       m_susytools_handle->TrigMatch(&(content.goodElectrons), single_ele_2016_perD4L); 
+     else                                     {
+       for(unsigned i=0; i<single_ele_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_ele_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1;
+       for(unsigned i=0; i<single_muo_2016_perD4L.size(); ++i)    if(cand.evt.trigger[single_muo_2016_perD4L.at(i)])    cand.evt.trigger_lep = 1;
+       m_susytools_handle->TrigMatch(&(content.goodElectrons), single_ele_2016_perD4L);
        m_susytools_handle->TrigMatch(&(content.goodMuons),     single_muo_2016_perD4L);
      }
    }
-   if(is2017){ 
+   if(is2017){
      str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
-     for(unsigned i=0; i<single_lep_2017.size(); ++i) if(cand.evt.trigger[single_lep_2017.at(i)]) cand.evt.trigger_lep = 1; 
-       m_susytools_handle->TrigMatch(&(content.goodElectrons), single_lep_2017); 
-       m_susytools_handle->TrigMatch(&(content.goodMuons),     single_lep_2017);     
+     for(unsigned i=0; i<single_lep_2017.size(); ++i) if(cand.evt.trigger[single_lep_2017.at(i)]) cand.evt.trigger_lep = 1;
+       m_susytools_handle->TrigMatch(&(content.goodElectrons), single_lep_2017);
+       m_susytools_handle->TrigMatch(&(content.goodMuons),     single_lep_2017);
    }
-   if(is2018){ 
+   if(is2018){
      str_muon_trigger_OR="HLT_mu26_ivarmedium_OR_HLT_mu50";
-     for(unsigned i=0; i<single_lep_2018.size(); ++i) if(cand.evt.trigger[single_lep_2018.at(i)]) cand.evt.trigger_lep = 1; 
-       m_susytools_handle->TrigMatch(&(content.goodElectrons), single_lep_2018); 
+     for(unsigned i=0; i<single_lep_2018.size(); ++i) if(cand.evt.trigger[single_lep_2018.at(i)]) cand.evt.trigger_lep = 1;
+       m_susytools_handle->TrigMatch(&(content.goodElectrons), single_lep_2018);
        m_susytools_handle->TrigMatch(&(content.goodMuons),     single_lep_2018);
 
    }
@@ -1753,7 +1772,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
      : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"] : cand.evt.trigger["HLT_2e24_lhvloose_nod0"]); // recovers 0.9%, but is partially prescaled in 1 run
    bool diEleYearlyOpt2 = is2015 ? (cand.evt.trigger["HLT_2e12_lhloose_L12EM10VH"])
      : (is2016 ? cand.evt.trigger["HLT_2e17_lhvloose_nod0"]
-	: (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"] // prefer this one because it isn't accidently prescaled. also recovers 1.2% 
+	: (is2017 ? cand.evt.trigger["HLT_2e24_lhvloose_nod0"] // prefer this one because it isn't accidently prescaled. also recovers 1.2%
 	   : cand.evt.trigger["HLT_2e17_lhvloose_nod0_L12EM15VHI"]));
    if (diMuon) cand.evt.trigger_lep += 0x10;
    if (diMuonYearlyOpt1L1) cand.evt.trigger_lep += 0x20; // this one is preferred. 5% unique rate
@@ -2045,7 +2064,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
       if((cand.evt.n_el==2 || cand.evt.n_el_baseline>1 ) && cand.evt.n_mu==0){
 	cand.evt.elSFWeight     = m_susytools_Tighter_handle->GetTotalElectronSF(content.goodElectrons, true, true, false, true, "");
 	cand.evt.elSFTrigWeight = m_susytools_Tighter_handle->GetTotalElectronSF(content.goodElectrons, false, false, true, false, "singleLepton");
-      }else{ // for the tigher lepton selection  
+      }else{ // for the tigher lepton selection
 	cand.evt.elSFWeight = m_susytools_handle->GetTotalElectronSF(content.wElectrons, true, true, false, true, "");
 	cand.evt.elSFTrigWeight = m_susytools_handle->GetTotalElectronSF(content.wElectrons, false, false, true, false, "singleLepton");
       }
@@ -2107,7 +2126,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 		 sysSF2        = m_susytools_handle->GetTotalElectronSF(content.wElectrons, false, false, true, false,"singleLepton");
                float &sysSF3 = cand.evt.GetSystVar("dilepTrigSFWeight", thisSyst, m_tree[""]);
 	       if(content.goodElectrons.size()>1 || content.goodMuons.size()>1){
-		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.goodElectrons,content.goodMuons, sysWeight,"diLepton");		 
+		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.goodElectrons,content.goodMuons, sysWeight,"diLepton");
 	       }
             } else if (thisSyst.Contains("EL_EFF")) {
                float &sysSF = cand.evt.GetSystVar("elSFWeight", thisSyst, m_tree[""]);
@@ -2122,7 +2141,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 	       else sysSF2        = m_susytools_handle->GetTotalMuonSF(content.wMuons, false, false,str_muon_trigger_OR);
                float &sysSF3 = cand.evt.GetSystVar("dilepTrigSFWeight", thisSyst, m_tree[""]);
 	       if(content.goodElectrons.size()>1 || content.goodMuons.size()>1){
-		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.goodElectrons,content.goodMuons,sysWeight,"diLepton");		 
+		 sysSF3 = m_susytools_handle->GetTriggerGlobalEfficiencySFsys(content.goodElectrons,content.goodMuons,sysWeight,"diLepton");
 	       }
             } else if (thisSyst.Contains("MUON_EFF")) {
                float &sysSF = cand.evt.GetSystVar("muSFWeight", thisSyst, m_tree[""]);
@@ -2130,7 +2149,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 		 sysSF        = m_susytools_Tighter_handle->GetTotalMuonSF(content.goodMuons, true, true, "");
 	       else sysSF        = m_susytools_handle->GetTotalMuonSF(content.wMuons, true, true, "");
             } else if (thisSyst.Contains("TAUS_EFF")) { // not implemented!! we do not use taus
-            } else if (thisSyst.Contains("PH_EFF")) {   // photon efficiency SF 
+            } else if (thisSyst.Contains("PH_EFF")) {   // photon efficiency SF
 	      float &sysSF = cand.evt.GetSystVar("phSFWeight", thisSyst, m_tree[""]);
 	      sysSF = m_susytools_handle->GetTotalPhotonSF(content.goodPhotons,true,true,false);
             } else if (thisSyst.Contains("EL_CHARGEID_")) {   // electron charge flip working point. Skipping because we don't use this
@@ -2201,7 +2220,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
 	      std::cout << "Event with nparton: " << cand.evt.nParton <<std::endl;
 	      for (const auto &truthP_itr : *truthP) {
 		std::cout << "   part: " << truthP_itr->status() << " pt: " << truthP_itr->pt() << " eta " << truthP_itr->eta() << " id: " << truthP_itr->pdgId() << std::endl;
-	      }	      
+	      }
 	    }
             for (const auto &truthJ_itr : *truthJets) {
                if (truthJ_itr->pt() > 20000.) { // no eta cut
@@ -2602,7 +2621,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    //  cand.met["met_tst_noelectron"].add(*((*content.met_tst_noelectron)["Final"]));
    cand.met["met_tst_nolep"].add(*((*content.met_tst_nolep)["Final"]));
 
-   //cand.met["met_track"].add(*((*content.met_track)["Track"]));
+   // TrackMET
+   if (content.doTrackMET) {
+      cand.track_met["track_met"].add(content.track_met, content.vertices);
+   }
    if (m_isMC) cand.met["met_truth"].add(*((*content.met_truth)["NonInt"]));
    //-----------------------------------------------------------------------
    // write tree
@@ -2683,6 +2705,7 @@ EL::StatusCode VBFInv::getMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
    return EL::StatusCode::SUCCESS;
 }
 
+/*
 EL::StatusCode VBFInv::getTrackMET(std::shared_ptr<xAOD::MissingETContainer> &   met,
                                    std::shared_ptr<xAOD::MissingETAuxContainer> &metAux, xAOD::JetContainer *jet,
                                    xAOD::ElectronContainer *el, xAOD::MuonContainer *mu)
@@ -2703,6 +2726,7 @@ EL::StatusCode VBFInv::getTrackMET(std::shared_ptr<xAOD::MissingETContainer> &  
 
    return EL::StatusCode::SUCCESS;
 }
+*/
 
 void VBFInv::GetAntiIDSF(Analysis::ContentHolder &content, const xAOD::TruthParticleContainer *truthElectrons,
                          float &antiIdSF)

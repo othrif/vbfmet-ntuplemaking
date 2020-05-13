@@ -1,7 +1,7 @@
 ###############################################
 # Grid submission STANDARD
 ###############################################
---algo=VBFInv
+--algo=VBFInvVjetsRW
 --driver=prun
 --configFile=VBFInvAnalysis/vbfinv.conf
 --replicationSite=DESY-HH_LOCALGROUPDISK
@@ -9,11 +9,21 @@
 ###############################################
 # TO MODIFY
 ###############################################
---version=v22
---doSyst
---doSkim
---doTrim
---doTrimSyst
+--version=v42
+#--doSyst
+#--doSkim
+#--doTrim
+#--doTrimSyst
+#--doORDetail 
+#--doPhotonDetail 
+#--doRnS 
+#--doMETDetail 
+#--doJetDetail 
+#--doElectronDetail 
+#--doMuonDetail 
+#--doTauDetail 
+#--doTrackMET 
+#--computeXS
 ###############################################
 # Other
 ###############################################

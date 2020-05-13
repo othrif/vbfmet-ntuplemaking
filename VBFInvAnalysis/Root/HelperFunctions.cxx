@@ -7,6 +7,10 @@ Bool_t comparePt(const xAOD::IParticle *a, const xAOD::IParticle *b)
 {
    return CxxUtils::fpcompare::greater(a->pt(), b->pt());
 }
+class SortByPt {
+public:
+   bool operator()(const TLorentzVector &a, const TLorentzVector &b) const { return (a.Perp() > b.Perp()); }
+};
 
 void computeMaxjj(xAOD::JetContainer jets, double &e_DiJetMass_Max, double &e_JetsDEta_Max)
 {
@@ -50,6 +54,20 @@ void computejj(xAOD::JetContainer jets, double &e_DiJetMass, double &e_JetsDEta,
       e_JetsDEta             = fabs(jet_tlv.at(0).Eta() - jet_tlv.at(1).Eta());
       e_DiJetMass            = (jet_sum).M();
       e_JetsDPhi             = fabs(jet_tlv.at(0).DeltaPhi(jet_tlv.at(1)));
+   }
+}
+
+void computejj(std::vector<TLorentzVector> *jet_tlv, double &e_DiJetMass, double &e_JetsDEta, double &e_JetsDPhi)
+{
+
+   std::sort(jet_tlv->begin(), jet_tlv->end(), SortByPt());
+   TLorentzVector              jet_tmp;
+
+   if (jet_tlv->size() >= 2 /*&& jets.at(0)->pt() > 40000 && jets.at(1)->pt() > 40000*/) {
+      TLorentzVector jet_sum = jet_tlv->at(0) + jet_tlv->at(1);
+      e_JetsDEta             = fabs(jet_tlv->at(0).Eta() - jet_tlv->at(1).Eta());
+      e_DiJetMass            = (jet_sum).M();
+      e_JetsDPhi             = fabs(jet_tlv->at(0).DeltaPhi(jet_tlv->at(1)));
    }
 }
 

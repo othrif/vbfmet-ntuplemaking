@@ -1,0 +1,1 @@
+mc15_13TeV.308092.Sherpa_221_NNPDF30NNLO_Zee2jets_Min_N_TChannel.deriv.DAOD_TRUTH1.e5767_e5984_p3655

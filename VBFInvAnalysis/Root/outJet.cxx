@@ -89,7 +89,7 @@ void Analysis::outJet::attachToTree(TTree *tree)
       //tree->Branch(prefix + "raw_phi", &raw_phi);
       //tree->Branch(prefix + "raw_m", &raw_m);
       tree->Branch(prefix + "passJvt", &passJvt);           // not needed with signal jets
-      if(doORDetail()) tree->Branch(prefix + "passOR", &passOR);             // not needed with signal jets
+      if (doORDetail()) tree->Branch(prefix + "passOR", &passOR);             // not needed with signal jets
       tree->Branch(prefix + "passJetLoose", &passJetLoose); // not needed with signal jets
       tree->Branch(prefix + "passJetTight", &passJetTight); // not needed with signal jets
       tree->Branch(prefix + "btag_weight", &btag_weight);

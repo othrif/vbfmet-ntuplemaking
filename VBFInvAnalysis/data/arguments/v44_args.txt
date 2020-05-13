@@ -1,0 +1,38 @@
+###############################################
+# Grid submission STANDARD
+###############################################
+--algo=VBFInvVjetsRW
+--driver=prun
+--configFile=VBFInvAnalysis/vbfinv.conf
+--replicationSite=DESY-HH_LOCALGROUPDISK
+--user=othrif
+###############################################
+# TO MODIFY
+###############################################
+--version=v44
+#--doSyst
+#--doSkim
+#--doTrim
+#--doTrimSyst
+#--doORDetail
+#--doPhotonDetail
+#--doRnS
+#--doMETDetail
+#--doJetDetail
+#--doElectronDetail
+#--doMuonDetail
+#--doTauDetail
+#--doTrackMET
+#--computeXS
+###############################################
+# Other
+###############################################
+--submitDir=submitDir
+--inputRucioLists=
+--inputDirs=
+--inputRucio=
+--inputFile=
+--inputList=
+#--nevents=100
+#--debug
+#--noPileup
