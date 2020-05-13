@@ -13,6 +13,7 @@
 #include <xAODBase/IParticleHelpers.h>
 #include "FourMomUtils/xAODP4Helpers.h"
 #include "xAODMetaData/FileMetaData.h"
+#include <PhotonVertexSelection/PhotonPointingTool.h>
 
 // Core include(s):
 #include "EventLoop/Job.h"
@@ -61,6 +62,7 @@ ClassImp(VBFInv)
      m_susytools_Tighter_handle("ST::SUSYObjDef_xAOD/STTighter", this),
      m_susytools_Tenacious_handle("ST::SUSYObjDef_xAOD/STTenacious", this),
      m_jetFwdJvtTool("JetForwardJvtTool/JetForwardJvtTool_VBF", this),
+     m_photonPointingTool("CP::PhotonPointingTool", this),
      m_elecEfficiencySFTool_anti_id(
         "AsgElectronEfficiencyCorrectionTool/AsgElectronEfficiencyCorrectionTool_VBF_anti_id", this),
      m_elecEfficiencySFTool_anti_iso(
@@ -322,6 +324,11 @@ EL::StatusCode VBFInv::initialize()
    ANA_CHECK(m_jetFwdJvtTool.setProperty("EtaThresh", 2.5));
    ANA_CHECK(m_jetFwdJvtTool.setProperty("ForwardMaxPt", 120.0e3));
    ANA_CHECK(m_jetFwdJvtTool.retrieve());
+
+   ANA_MSG_INFO("Setting photon pointing tool (used for Z vertex selection)");
+   if(!m_photonPointingTool.isUserConfigured()){
+     ANA_CHECK(m_photonPointingTool.initialize());
+   }
 
    // anti-id sf's
    // if (m_eleId == "VeryLooseLLH" || m_eleId == "LooseLLH" || m_eleId == "Loose" )
@@ -955,6 +962,8 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    // primary vertex
    Bool_t       passesVertex(kFALSE);
    const UInt_t nMinTracks(2);
+   const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
+   const Float_t       primary_vertex_z = pv ? pv->z() : 0;
    content.vertices = nullptr;
    if (!event->retrieve(content.vertices, "PrimaryVertices").isSuccess()) {
       ANA_MSG_ERROR("Failed to retrieve PrimaryVertices container");
@@ -1081,8 +1090,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       for (auto mu : *content.muons) {
          if (acc_baseline(*mu) == 1 && acc_cosmic(*mu) == 0 && acc_bad(*mu) == 0) {
             // calculate d0 and z0
-            const xAOD::Vertex *pv               = m_susytools_handle->GetPrimVtx();
-            const Float_t       primary_vertex_z = pv ? pv->z() : 0;
             dec_new_d0(*mu)                      = HelperFunctions::getD0(mu);
             dec_new_d0sig(*mu)                   = HelperFunctions::getD0sig(mu, content.eventInfo);
             dec_new_z0(*mu)                      = HelperFunctions::getZ0(mu, primary_vertex_z);
@@ -1127,13 +1134,18 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    //-- PHOTONS --
    if (content.doPhotons) {
+     static SG::AuxElement::Decorator<float> dec_ph_zvx("ph_zvx"); 
+     static SG::AuxElement::Decorator<float> dec_ph_zvx_err("ph_zvx_err"); 
       content.photons    = nullptr;
       content.photonsAux = nullptr;
       content.allPhotons.clear(SG::VIEW_ELEMENTS);
       ANA_CHECK(m_susytools_handle->GetPhotons(content.photons, content.photonsAux, kTRUE));
       for (auto ph : *content.photons) {
          if (acc_baseline(*ph) == 1) {
-            content.allPhotons.push_back(ph);
+	   std::pair<float, float> pointedZ = m_photonPointingTool->getCaloPointing( ph ); 
+	   dec_ph_zvx(*ph) = pointedZ.first - primary_vertex_z;
+	   dec_ph_zvx_err(*ph) = pointedZ.second;
+	   content.allPhotons.push_back(ph);
          }
       }
       content.allPhotons.sort(&HelperFunctions::comparePt);
@@ -1233,6 +1245,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 
    static const SG::AuxElement::Accessor<uint8_t> acc_ambiguityType("ambiguityType");
    static const SG::AuxElement::Accessor<ElementLink<xAOD::EgammaContainer> > acc_ambiguityLink("ambiguityLink");
+
    //-- PHOTONS --
    for (auto photon : content.allPhotons) {
      if (acc_baseline(*photon) == 1 && acc_passOR(*photon) == 1) { // baseline already applied

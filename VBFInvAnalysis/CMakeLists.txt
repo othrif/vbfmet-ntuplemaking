@@ -32,6 +32,7 @@ atlas_depends_on_subdirs(
    PhysicsAnalysis/TauID/TauAnalysisTools
    PhysicsAnalysis/ElectronPhotonID/ElectronEfficiencyCorrection
    PhysicsAnalysis/Interfaces/EgammaAnalysisInterfaces
+   PhysicsAnalysis/AnalysisCommon/PhotonVertexSelection
    Trigger/TrigAnalysis/TrigDecisionTool
    Trigger/TrigConfiguration/TrigConfxAOD
    Trigger/TrigAnalysis/TriggerMatchingTool

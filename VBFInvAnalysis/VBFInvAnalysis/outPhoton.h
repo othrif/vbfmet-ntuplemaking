@@ -20,7 +20,11 @@ private:
    std::vector<Float_t> topoetcone40;
    std::vector<Float_t> ptcone20;
    std::vector<Int_t>   truthOrigin;
+   std::vector<Int_t>   truthType;
    std::vector<Bool_t>  passOR;
+   std::vector<float>  vtxpos;
+   std::vector<float>  vtxerr;
+   std::vector<Int_t> isConv;
 
 public:
    outPhoton(TString name = "", Bool_t doTrim = false);
