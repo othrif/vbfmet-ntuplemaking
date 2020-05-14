@@ -699,7 +699,7 @@ EL::StatusCode VBFInv::initialize()
       if (doContLepDetail) m_cand[thisSyst].el["contel"] = Analysis::outElectron("contel", (trim && !doContLepDetail));
       m_cand[thisSyst].jet["jet"] = Analysis::outJet("jet", (trim && !doJetDetail && !doRnS));
       m_cand[thisSyst].jet["jet"].setOutPV(savePVOnly);
-      if(doBaseJet)       m_cand[thisSyst].jet["basejet"] = Analysis::outJet("jet", (trim && !doJetDetail && !doRnS));
+      if(doBaseJet)       m_cand[thisSyst].jet["basejet"] = Analysis::outJet("basejet", (trim && !doJetDetail && !doRnS));
       if (doFatJetDetail) m_cand[thisSyst].fatjet["fatjet"] = Analysis::outFatJet("fatjet", (trim && !doFatJetDetail));
       if (doTrackJetDetail)
          m_cand[thisSyst].trackjet["trackjet"] = Analysis::outTrackJet("trackjet", (trim && !doTrackJetDetail));
@@ -1394,6 +1394,25 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       print("MHT without jVT", mht * 1e-3);
    }
 
+   // MET CST, for HT without the photon
+   TLorentzVector myMET_cst_noph;
+   double         myMETsig_cst_noph;
+   getMET(content.met_cst_noph, content.met_cst_nophAux,
+          content.jets, // use all objects (before OR and after corrections) for MET utility
+          &(content.baselineElectrons), &(content.baselineMuons),
+          nullptr, // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
+                                  // Muons do not, but they do have cleaning
+          kFALSE,                 // do TST
+          kFALSE,                 // do JVT
+          nullptr,                // invisible particles
+          myMET_cst_noph, myMETsig_cst_noph, 0);
+
+   double met_cst_jet_noph  = -1.;
+   met_cst_jet_noph         = (*content.met_cst_noph)["RefJet"]->met();
+
+   content.met_cst_noph_jet = met_cst_jet_noph;
+   content.met_cst_noph_phi =  (*content.met_cst_noph)["RefJet"]->phi();
+
    // MET CST, for HT
    TLorentzVector myMET_cst_em;
    double         myMETsig_cst_em;
@@ -1918,6 +1937,8 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    cand.evt.met_tst_nolep_j2_dphi = content.met_tst_nolep_j2_dphi;
    cand.evt.met_cst_jet           = content.met_cst_jet;
    cand.evt.met_cst_phi           = content.met_cst_phi;
+   cand.evt.met_cst_noph_jet      = content.met_cst_noph_jet;
+   cand.evt.met_cst_noph_phi      = content.met_cst_noph_phi;
    cand.evt.met_cst_em_jet        = content.met_cst_em_jet;
    cand.evt.met_cst_em_phi        = content.met_cst_em_phi;
    cand.evt.metsig_tst            = content.metsig_tst;

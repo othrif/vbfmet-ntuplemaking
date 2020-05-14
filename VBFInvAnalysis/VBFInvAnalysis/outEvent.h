@@ -163,7 +163,9 @@ public:
    Double_t met_tst_nolep_j1_dphi;
    Double_t met_tst_nolep_j2_dphi;
    Double_t met_cst_jet;
-   Float_t met_cst_phi;
+   Float_t met_cst_phi;   
+   Float_t met_cst_noph_jet;
+   Float_t met_cst_noph_phi;
    Float_t met_cst_em_jet;
    Float_t met_cst_em_phi;
    Double_t metsig_tst;
