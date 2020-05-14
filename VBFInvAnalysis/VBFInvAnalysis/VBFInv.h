@@ -11,6 +11,7 @@
 #include <AsgAnalysisInterfaces/IGoodRunsListSelectionTool.h>
 #include <SUSYTools/ISUSYObjDef_xAODTool.h>
 #include <JetInterface/IJetModifier.h>
+#include "PhotonVertexSelection/IPhotonPointingTool.h"
 #include <EgammaAnalysisInterfaces/IAsgElectronEfficiencyCorrectionTool.h>
 #include <SUSYTools/SUSYCrossSection.h>
 #include "BoostedJetTaggers/JSSWTopTaggerDNN.h"
@@ -149,6 +150,7 @@ private:
    asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool>             m_susytools_Tighter_handle;      //!
    asg::AnaToolHandle<ST::ISUSYObjDef_xAODTool>             m_susytools_Tenacious_handle;    //!
    asg::AnaToolHandle<IJetModifier>                         m_jetFwdJvtTool;                 //!
+   asg::AnaToolHandle<CP::IPhotonPointingTool>              m_photonPointingTool;            //!
    asg::AnaToolHandle<IAsgElectronEfficiencyCorrectionTool> m_elecEfficiencySFTool_anti_id;  //!
    asg::AnaToolHandle<IAsgElectronEfficiencyCorrectionTool> m_elecEfficiencySFTool_anti_iso; //!
    asg::AnaToolHandle<IJetSelectorTool>                     m_DNNTop80;                      //!
