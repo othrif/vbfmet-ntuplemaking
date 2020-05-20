@@ -1266,7 +1266,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
      }
 
      // Procedure to mark one photon (matched to truth) as invis for ZHyy sample
-     if (runNbr == 345322) {     
+     if (runNbr == 345319) {     
        xAOD::IParticleContainer phMatched(SG::VIEW_ELEMENTS);
 
        // Check if truth photon is within dR < 0.3 of reco photon
@@ -1300,6 +1300,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	   phInvis.push_back(phMatched[1]);
 	 }
        }
+       // Remove the invisible photon from
+       // goodPhotons collection!
+       for(uint iph=0; iph < phInvis.size(); iph++){
+	 content.goodPhotons.erase(std::remove(content.goodPhotons.begin(), content.goodPhotons.end(), phInvis[iph]), content.goodPhotons.end());
+	 //	 if(std::find(content.goodPhotons.begin(), content.goodPhotons.end(), phInvis[iph]) != content.goodPhotons.end()){
+       }
+       
      }
    }
    
