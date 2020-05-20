@@ -1245,16 +1245,76 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
       }
    }
 
+   xAOD::IParticleContainer phInvis(SG::VIEW_ELEMENTS);
+   if(m_isMC){
+     //-- TRUTH PHOTONS --
+     const xAOD::TruthParticleContainer *truthParticles(nullptr);
+     ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
+     cand.evt.n_ph_truth = 0; //truthPhotons->size();
+     std::vector<TLorentzVector> vTruthPhotons;
+     for (const auto &part : *truthParticles) {
+       if (part->pdgId() != 22) continue;
+       if (part->pt() < 10.0e3) continue;
+       if (part->status() != 1) continue;
+       //if( part->pt() >20.0e3) std::cout << "origin ph: " << acc_classifierParticleOrigin(*part) << " pt: " << part->pt() << " eta: " << part->eta() <<std::endl;
+       cand.evt.truth_ph_pt.push_back(part->pt());
+       cand.evt.truth_ph_eta.push_back(part->eta());
+       cand.evt.truth_ph_phi.push_back(part->phi());
+       TLorentzVector tmp; tmp.SetPtEtaPhiM(part->pt(), part->eta(), part->phi(), 0);
+       vTruthPhotons.push_back(tmp);
+       ++cand.evt.n_ph_truth;
+     }
+
+     // Procedure to mark one photon (matched to truth) as invis for ZHyy sample
+     if (runNbr == 345322) {     
+       xAOD::IParticleContainer phMatched(SG::VIEW_ELEMENTS);
+
+       // Check if truth photon is within dR < 0.3 of reco photon
+       // selecting only max leading 2 truth photons
+       for(uint itruth=0; itruth < std::min(2,(int)vTruthPhotons.size()); itruth++){
+
+	 // Loop through reco photons
+	 for(uint iph=0; iph < content.goodPhotons.size(); iph++){
+	   // Make sure reco photon hasn't been checked already
+	   if (std::find(phMatched.begin(), phMatched.end(), content.goodPhotons[iph]) != phMatched.end()){
+	     continue;
+	   } else {
+	     // If dR(truth ph, reco ph) < 0.3, add to matched ph container
+	     if (fabs(vTruthPhotons[itruth].DeltaR(content.goodPhotons[iph]->p4())) < 0.3) {
+	       phMatched.push_back(content.goodPhotons[iph]);
+	     }
+	   }
+	 }
+       }
+       // If only one matched reco ph then mark 
+       // it invis half the time to limit bias
+       if(phMatched.size()==1 && rand() < 0.5){
+	 phInvis.push_back(phMatched[0]);
+       } 
+       // Otherwise choose which of two
+       // matched ph to mark invis randomly
+       else if (phMatched.size() >= 2) {
+	 if (rand() < 0.5) { 
+	   phInvis.push_back(phMatched[0]);
+	 } else {
+	   phInvis.push_back(phMatched[1]);
+	 }
+       }
+     }
+   }
+   
+   
+   
    //-- TAUS --
    for (auto tau : content.allTaus) {
-      // apply baseline
-      if (acc_baseline(*tau) == 1) {
-         content.baselineTaus.push_back(tau);
-         if (acc_signal(*tau) == 1) content.goodTaus.push_back(tau);
-      }
+     // apply baseline
+     if (acc_baseline(*tau) == 1) {
+       content.baselineTaus.push_back(tau);
+       if (acc_signal(*tau) == 1) content.goodTaus.push_back(tau);
+     }
    }
    //-- MET --
-
+   
    // real MET, with el mu ph soft
    TLorentzVector myMET_tst;
    double         myMETsig_tst;
@@ -1265,8 +1325,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
                                   // Muons do not, but they do have cleaning
           kTRUE,                  // do TST
           kTRUE,                  // do JVT
-          nullptr,                // invisible particles
+          &phInvis,                // invisible particles
           myMET_tst, myMETsig_tst, 0);
+
    content.metsig_tst = myMETsig_tst;
 
    TLorentzVector myMET_Tight_tst;
@@ -1275,16 +1336,16 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
           &(content.baselineMuons),
           &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
                                   // Muons do not, but they do have cleaning
-          kTRUE, kTRUE, nullptr, myMET_Tight_tst, myMETsig_Tight_tst, 1);
-
+          kTRUE, kTRUE, &phInvis, myMET_Tight_tst, myMETsig_Tight_tst, 1);
+   
    TLorentzVector myMET_Tenacious_tst;
    double         myMETsig_Tenacious_tst;
    getMET(content.met_tenacious_tst, content.met_tenacious_tstAux, content.jets, &(content.baselineElectrons),
           &(content.baselineMuons),
           &(content.goodPhotons), // note baseline is applied inside SUSYTools. Electrons and photons have OR applied.
                                   // Muons do not, but they do have cleaning
-          kTRUE, kTRUE, nullptr, myMET_Tenacious_tst, myMETsig_Tenacious_tst, 3);
-
+          kTRUE, kTRUE, &phInvis, myMET_Tenacious_tst, myMETsig_Tenacious_tst, 3);
+   
    double met_tst_j1_dphi = -1., met_tst_j2_dphi = -1.;
    HelperFunctions::computeMETj(myMET_tst, content.goodJets, met_tst_j1_dphi, met_tst_j2_dphi);
    if (debug) {
@@ -1972,15 +2033,17 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          ANA_MSG_ERROR("Failed to retrieve TruthElectrons container");
          return EL::StatusCode::FAILURE;
       }
-      //-- PHOTONS --
+      // //-- PHOTONS --
       // const xAOD::TruthParticleContainer *truthPhotons = nullptr;
       // const TString ph_container = (m_isEXOT5) ? "EXOT5TruthPhotons" : "TruthPhotons";
       // if (!event->retrieve(truthPhotons, ph_container.Data())
-      // 	  .isSuccess()) { // retrieve arguments: container type, container key
-      // 	ANA_MSG_ERROR("Failed to retrieve TruthPhotons container");
-      // 	return EL::StatusCode::FAILURE;
+      //  	  .isSuccess()) { // retrieve arguments: container type, container key
+      //  	ANA_MSG_ERROR("Failed to retrieve TruthPhotons container");
+      //  	return EL::StatusCode::FAILURE;
       // }
-      //-- TAUS --
+      
+      
+      //-- Taus --
       const xAOD::TruthParticleContainer *truthTaus = nullptr;
       if (!event->retrieve(truthTaus, "TruthTaus").isSuccess()) { // retrieve arguments: container type, container key
          ANA_MSG_ERROR("Failed to retrieve TruthTaus container");
@@ -2314,20 +2377,6 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_el_m.push_back(part->m());
          cand.evt.truth_el_status.push_back(part->status());
       }
-      //-- PHOTONS --
-      const xAOD::TruthParticleContainer *truthParticles(nullptr);
-      ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
-      cand.evt.n_ph_truth = 0; //truthPhotons->size();
-      for (const auto &part : *truthParticles) {
-         if (part->pdgId() != 22) continue;
-         if (part->pt() < 10.0e3) continue;
-         if (part->status() != 1) continue;
-	 //if( part->pt() >20.0e3) std::cout << "origin ph: " << acc_classifierParticleOrigin(*part) << " pt: " << part->pt() << " eta: " << part->eta() <<std::endl;
-         cand.evt.truth_ph_pt.push_back(part->pt());
-         cand.evt.truth_ph_eta.push_back(part->eta());
-         cand.evt.truth_ph_phi.push_back(part->phi());
-	 ++cand.evt.n_ph_truth;
-      }
 
       //-- TAUS --
       cand.evt.n_tau_truth = truthTaus->size();
@@ -2341,6 +2390,10 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_tau_m.push_back(part->m());
          cand.evt.truth_tau_status.push_back(part->status());
       }
+
+     //-- TRUTH PHOTONS --
+     const xAOD::TruthParticleContainer *truthParticles(nullptr);
+     ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
 
       //-- BOSONS --
       // Dressed
