@@ -1244,6 +1244,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	//if (acc_isol(*photon) && acc_passOR(*photon) == 1){ content.goodPhotons.push_back(photon); dec_signal(*photon)=1; }
       }
    }
+   if (debug) {
+     std::cout << "Number of goodPhotons: " << content.goodPhotons.size() << std::endl;
+   }
 
    xAOD::IParticleContainer phInvis(SG::VIEW_ELEMENTS);
    if(m_isMC){
@@ -1266,7 +1269,7 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
      }
 
      // Procedure to mark one photon (matched to truth) as invis for ZHyy sample
-     if (runNbr == 345319) {     
+     if (content.eventInfo->mcChannelNumber() == 345319) {     
        xAOD::IParticleContainer phMatched(SG::VIEW_ELEMENTS);
 
        // Check if truth photon is within dR < 0.3 of reco photon
@@ -1285,6 +1288,9 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	     }
 	   }
 	 }
+       }
+       if(debug){
+	 std::cout << "Number of matched photons: " << phMatched.size() << std::endl;
        }
        // If only one matched reco ph then mark 
        // it invis half the time to limit bias
@@ -1310,6 +1316,11 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
      }
    }
    
+   if (debug) {
+
+     std::cout << "Number of invisPhotons     : " << phInvis.size() << std::endl;
+     std::cout << "Number of goodPhotons after: " << content.goodPhotons.size() << std::endl;
+   }
    
    
    //-- TAUS --
