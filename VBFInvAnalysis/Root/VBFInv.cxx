@@ -2354,6 +2354,18 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          }
       }
 
+      // declare truth met
+      TLorentzVector myTruthMETnolep;
+      xAOD::MissingETContainer::const_iterator met_truth_it = content.met_truth->find("NonInt");
+      if (met_truth_it == content.met_truth->end()) {
+	ANA_MSG_ERROR("VBFInv::getObjects : No NonInt inside truth MET container");
+	return EL::StatusCode::FAILURE;
+      } else {
+	float Etmiss_Etx = (*met_truth_it)->mpx();
+	float Etmiss_Ety = (*met_truth_it)->mpx();
+	float Etmiss_Et  = sqrt(Etmiss_Etx * Etmiss_Etx + Etmiss_Ety * Etmiss_Ety);
+	myTruthMETnolep.SetPxPyPzE(Etmiss_Etx, Etmiss_Ety, 0., Etmiss_Et);
+      }
       //-- MUONS --
       const xAOD::TruthParticleContainer *truthMuons   = nullptr;
       const TString                       mu_container = (m_isEXOT5) ? "EXOT5TruthMuons" : "TruthMuons";
@@ -2373,6 +2385,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_mu_m.push_back(part->m());
          //cand.evt.truth_mu_status.push_back(part->status());
 	 cand.evt.truth_mu_status.push_back(acc_classifierParticleOrigin(*part));
+	 if(acc_classifierParticleOrigin(*part)==12 || acc_classifierParticleOrigin(*part)==13) myTruthMETnolep-=part->p4();
       }
 
       //-- ELECTRONS --
@@ -2387,6 +2400,7 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_el_m.push_back(part->m());
          //cand.evt.truth_el_status.push_back(part->status());
 	 cand.evt.truth_el_status.push_back(acc_classifierParticleOrigin(*part));
+	 if(acc_classifierParticleOrigin(*part)==12 || acc_classifierParticleOrigin(*part)==13) myTruthMETnolep-=part->p4();
       }
       //-- PHOTONS --
       float lead_truth_ph_pt=0.0;
@@ -2446,6 +2460,14 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_tau_phi.push_back(part->phi());
          cand.evt.truth_tau_m.push_back(part->m());
          cand.evt.truth_tau_status.push_back(part->status());
+	 if(acc_classifierParticleOrigin(*part)==12 || acc_classifierParticleOrigin(*part)==13) myTruthMETnolep-=part->p4();
+      }
+
+      // set truth pT no leptons if this is not MG. just reusing a variable that would otherwise be empty
+      if(cand.evt.MGVTruthPt<1.0e3){
+	unsigned runNumber = cand.evt.runNumber;
+	bool isMG = (runNumber >= 363600 && runNumber <= 363671) || (runNumber>=311445 && runNumber<=311453) || (runNumber >= 363147 && runNumber <= 363170) || (runNumber >= 363123 && runNumber <= 363146) || (runNumber >= 361510 && runNumber <= 361519) || (runNumber>=311429 && runNumber<=311444);
+	if(!isMG) cand.evt.MGVTruthPt = myTruthMETnolep.Pt();
       }
 
       //-- BOSONS --
