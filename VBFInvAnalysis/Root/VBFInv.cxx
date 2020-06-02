@@ -2597,8 +2597,21 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    }
    cand.evt.n_el = content.goodElectrons.size();
    cand.evt.n_el_w = content.wElectrons.size();
+   cand.evt.n_el_med = 0;
+   const static SG::AuxElement::ConstAccessor<char> acc_EG_Medium("DFCommonElectronsLHMedium");
+   const static SG::AuxElement::ConstAccessor<char> acc_EG_Tight("DFCommonElectronsLHTight");
+   static SG::AuxElement::Accessor<char> acc_passOR("passOR");
+   const static SG::AuxElement::ConstAccessor<float> acc_d0sig("d0sig");
+   const static SG::AuxElement::ConstAccessor<float> acc_z0sinTheta("z0sinTheta");
    for (auto electron : content.goodElectrons) {
       cand.el["el"].add(*electron);
+      // counting the mediumLH+FCLoose electrons
+      if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) { // baseline is already applied
+         if((electron->pt()<200.0e3 ? acc_isol(*electron) : acc_isolHighPt(*electron)) &&
+	    fabs(acc_z0sinTheta(*electron))<0.5 &&
+	    fabs(acc_d0sig(*electron))<5.0 && (acc_EG_Medium(*electron) || acc_EG_Tight(*electron))) ++(cand.evt.n_el_med); // add iso, impact parameter cuts 
+	 else if(acc_signal(*electron) == 1) ++(cand.evt.n_el_med);// add W electrons just in case, but should not happen
+      }
    }
    static SG::AuxElement::Accessor<char> acc_DFCommonCrackVetoCleaning("DFCommonCrackVetoCleaning");
    for (auto electron : content.baselineElectrons) { // saving leptons failing the signal selection, but still baseline
