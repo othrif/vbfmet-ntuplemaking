@@ -35,20 +35,7 @@ parser.add_argument("--configFile", type=str, dest="configFile", default="VBFInv
 parser.add_argument("--doSyst", dest="doSystematics", action="store_true", default=False, help="do systematic variations")
 parser.add_argument("--noPileup", dest="noPileup", action="store_true", default=False, help="no pileup reweighting")
 parser.add_argument("--doSkim", dest="doSkim", action="store_true", default=False, help="Apply skimming")
-parser.add_argument("--pt1Skim", type=float, dest="pt1Skim", default=50000, help="leading jet pt skim (nominal tree), in MeV", metavar="cut")
-parser.add_argument("--pt1SkimForSyst", type=float, dest="pt1SkimForSyst", default=25000, help="leading jet pt skim (systematics), in MeV", metavar="cut")
-parser.add_argument("--pt2Skim", type=float, dest="pt2Skim", default=35000, help="subleading jet pt skim (nominal tree), in MeV", metavar="cut")
-parser.add_argument("--pt2SkimForSyst", type=float, dest="pt2SkimForSyst", default=25000, help="subleading jet pt skim (systematics), in MeV", metavar="cut")
-parser.add_argument("--metSkim", type=float, dest="metSkim", default=100000, help="MET skim (nominal tree), in MeV", metavar="cut")
-parser.add_argument("--metSkimForSyst", type=float, dest="metSkimForSyst", default=100000, help="MET skim (systematics), in MeV", metavar="cut")
-parser.add_argument("--mjjSkim", type=float, dest="mjjSkim", default=200000, help="jet invariant mass skim (nominal tree), in MeV", metavar="cut")
-parser.add_argument("--mjjSkimForSyst", type=float, dest="mjjSkimForSyst", default=200000, help="jet invariant mass skim (systematics), in MeV", metavar="cut")
-parser.add_argument("--detajjSkim", type=float, dest="detajjSkim", default=2.5, help="jet DEta skim (nominal tree)", metavar="cut")
-parser.add_argument("--detajjSkimForSyst", type=float, dest="detajjSkimForSyst", default=2.5, help="jet DEta skim (systematics)V", metavar="cut")
-parser.add_argument("--JetEtaFilter", type=float, dest="JetEtaFilter", default=5.0, help="Truth jet eta for di-jets of the VBF filter", metavar="cut")
-parser.add_argument("--JetpTFilter", type=float, dest="JetpTFilter", default=20000, help="Truth jet pt for di-jets of the VBF filter, in MeV", metavar="cut")
-parser.add_argument("--MjjFilter", type=float, dest="MjjFilter", default=800000, help="Truth jet invariant mass for di-jets of the VBF filter, in MeV", metavar="cut")
-parser.add_argument("--PhijjFilter", type=float, dest="PhijjFilter", default=2.5, help="Truth jet delta Phi for di-jets of the VBF filter", metavar="cut")
+parser.add_argument("--doPhotonSkim", dest="doPhotonSkim", action="store_true", default=False, help="Apply N photon skimming")
 parser.add_argument("--doTrim", dest="doTrim", action="store_true", default=False, help="Apply trimming, only to nominal as systematics is trimmed by default")
 parser.add_argument("--doDetail", dest="doDetail", action="store_true", default=False, help="add detailed branches for all")
 parser.add_argument("--doTrimSyst", dest="doTrimSyst", action="store_true", default=False, help="Apply trimming and remove details for the systematics. Nominal is unchanged")
@@ -177,22 +164,9 @@ if( args.algoName == "VBFInv" ):
   alg.doPileup = not args.noPileup
   alg.doSystematics = args.doSystematics
   alg.doSkim = args.doSkim
+  alg.doPhotonSkim = args.doPhotonSkim
   alg.doTrim = args.doTrim
   alg.doTrimSyst = args.doTrimSyst
-  alg.pt1Skim = args.pt1Skim
-  alg.pt1SkimForSyst = args.pt1SkimForSyst
-  alg.pt2Skim = args.pt2Skim
-  alg.pt2SkimForSyst = args.pt2SkimForSyst
-  alg.metSkim = args.metSkim
-  alg.metSkimForSyst = args.metSkimForSyst
-  alg.mjjSkim = args.mjjSkim
-  alg.mjjSkimForSyst = args.mjjSkimForSyst
-  alg.detajjSkim = args.detajjSkim
-  alg.detajjSkimForSyst = args.detajjSkimForSyst
-  alg.JetEtaFilter = args.JetEtaFilter
-  alg.JetpTFilter = args.JetpTFilter
-  alg.MjjFilter = args.MjjFilter
-  alg.PhijjFilter = args.PhijjFilter
   alg.doElectronDetail = args.doElectronDetail or args.doDetail
   alg.doMuonDetail = args.doMuonDetail or args.doDetail
   alg.doJetDetail = args.doJetDetail or args.doDetail
@@ -293,7 +267,7 @@ elif (args.driver == 'condor'):
     condor_options+="+RequestRuntime = 50000" + "\n"
     condor_options+="RequestMemory = 2G" + "\n"
     condor_options+="RequestDisk = 500M" + "\n"
-    condor_options+="notify_user = christian.sander@desy.de" + "\n"
+    condor_options+="notify_user = stanislava.sevova@cern.ch" + "\n"
     condor_options+="notification = Error" + "\n"
     condor_options+="should_transfer_files = NO" + "\n"
     condor_options+="Requirements = ( OpSysAndVer == \"SL6\")" + "\n"

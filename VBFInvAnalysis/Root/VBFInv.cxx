@@ -49,7 +49,7 @@ ClassImp(VBFInv)
    VBFInv ::VBFInv()
    : debug(false), verbose(false), config_file(""), ST_config_file(""), prw_file(""), lumicalc_file(""), GRL_file(""),
      MC_campaign(""), skip_syst(""), trigger_list(""), 
-     rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doTrim(false), doTrimSyst(false),
+     rebalancedJetPt(20000.), doPileup(true), doSystematics(false), doSkim(false), doPhotonSkim(false), doTrim(false), doTrimSyst(false),
      doRnS(false), doFatJetDetail(false), doTrackJetDetail(false), doTrackMET(false), doElectronDetail(false), doMuonDetail(false),
      doJetDetail(false), doTauDetail(false), doPhotonDetail(false), doMETDetail(false), doEventDetail(false),
      doContLepDetail(false), doVertexDetail(false), doORDetail(false), doTTMet(false), savePVOnly(false), 
@@ -123,12 +123,6 @@ EL::StatusCode VBFInv ::histInitialize()
    m_CutFlow.addCut("Jet cleaning");
    m_CutFlow.addCut("PhotonN skim");
    m_CutFlow.addCut("Baseline LepN skim");
-   // m_CutFlow.addCut("MET skim");
-   // m_CutFlow.addCut("JetN skim");
-   // m_CutFlow.addCut("Jet pT1 skim");
-   // m_CutFlow.addCut("Jet pT2 skim");
-   // m_CutFlow.addCut("Mjj skim");
-   // m_CutFlow.addCut("DEta skim");
 
    return EL::StatusCode::SUCCESS;
 }
@@ -257,6 +251,7 @@ EL::StatusCode VBFInv::initialize()
    ANA_MSG_INFO("  - GRL_file = " << GRL_file);
    ANA_MSG_INFO("  - MC campaign = " << MC_campaign);
    ANA_MSG_INFO("  - doSkim = " << doSkim);
+   ANA_MSG_INFO("  - doPhotonSkim = " << doPhotonSkim);
    ANA_MSG_INFO("  - doTrim = " << doTrim);
    ANA_MSG_INFO("  - doTrimSyst = " << doTrimSyst);
    ANA_MSG_INFO("  - JetEtaFilter = " << JetEtaFilter);
@@ -838,16 +833,6 @@ EL::StatusCode VBFInv ::readConfig()
    skip_syst         = env.GetValue("VBF.skip_syst", "");
    trigger_list      = env.GetValue("VBF.trigger_list", "");
    
-   // pt1Skim           = env.GetValue("VBF.pt1Skim", 0);
-   // pt2Skim           = env.GetValue("VBF.pt2Skim", 0);
-   // metSkim           = env.GetValue("VBF.metSkim", 0);
-   // mjjSkim           = env.GetValue("VBF.mjjSkim", 0);
-   // detajjSkim        = env.GetValue("VBF.detajjSkim", 0);
-   // pt1SkimForSyst    = env.GetValue("VBF.pt1SkimForSyst", 0);
-   // pt2SkimForSyst    = env.GetValue("VBF.pt2SkimForSyst", 0);
-   // metSkimForSyst    = env.GetValue("VBF.metSkimForSyst", 0);
-   // mjjSkimForSyst    = env.GetValue("VBF.mjjSkimForSyst", 0);
-   // detajjSkimForSyst = env.GetValue("VBF.detajjSkimForSyst", 0);
 
    return EL::StatusCode::SUCCESS;
 }
@@ -1244,32 +1229,28 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	//if (acc_isol(*photon) && acc_passOR(*photon) == 1){ content.goodPhotons.push_back(photon); dec_signal(*photon)=1; }
       }
    }
-   if (debug) {
-     std::cout << "Number of goodPhotons: " << content.goodPhotons.size() << std::endl;
-   }
 
    xAOD::IParticleContainer phInvis(SG::VIEW_ELEMENTS);
    if(m_isMC){
      //-- TRUTH PHOTONS --
      const xAOD::TruthParticleContainer *truthParticles(nullptr);
      ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
-     cand.evt.n_ph_truth = 0; //truthPhotons->size();
      std::vector<TLorentzVector> vTruthPhotons;
      for (const auto &part : *truthParticles) {
        if (part->pdgId() != 22) continue;
        if (part->pt() < 10.0e3) continue;
        if (part->status() != 1) continue;
-       //if( part->pt() >20.0e3) std::cout << "origin ph: " << acc_classifierParticleOrigin(*part) << " pt: " << part->pt() << " eta: " << part->eta() <<std::endl;
-       cand.evt.truth_ph_pt.push_back(part->pt());
-       cand.evt.truth_ph_eta.push_back(part->eta());
-       cand.evt.truth_ph_phi.push_back(part->phi());
+
        TLorentzVector tmp; tmp.SetPtEtaPhiM(part->pt(), part->eta(), part->phi(), 0);
        vTruthPhotons.push_back(tmp);
-       ++cand.evt.n_ph_truth;
      }
 
      // Procedure to mark one photon (matched to truth) as invis for ZHyy sample
      if (content.eventInfo->mcChannelNumber() == 345319) {     
+
+       if (debug) {
+	 std::cout << "Number of goodPhotons: " << content.goodPhotons.size() << std::endl;
+       }
        xAOD::IParticleContainer phMatched(SG::VIEW_ELEMENTS);
 
        // Check if truth photon is within dR < 0.3 of reco photon
@@ -1313,14 +1294,13 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 	 //	 if(std::find(content.goodPhotons.begin(), content.goodPhotons.end(), phInvis[iph]) != content.goodPhotons.end()){
        }
        
+       if (debug) {
+	 std::cout << "Number of invisPhotons     : " << phInvis.size() << std::endl;
+	 std::cout << "Number of goodPhotons after: " << content.goodPhotons.size() << std::endl;
+       }
      }
    }
    
-   if (debug) {
-
-     std::cout << "Number of invisPhotons     : " << phInvis.size() << std::endl;
-     std::cout << "Number of goodPhotons after: " << content.goodPhotons.size() << std::endl;
-   }
    
    
    //-- TAUS --
@@ -1603,12 +1583,6 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
    //-----------------------------------------------------------------------
 
    // skimming
-   
-   // const Double_t pt1SkimToUse    = (content.isNominal) ? pt1Skim : pt1SkimForSyst;
-   // const Double_t pt2SkimToUse    = (content.isNominal) ? pt2Skim : pt2SkimForSyst;
-   // const Double_t metSkimToUse    = (content.isNominal) ? metSkim : metSkimForSyst;
-   // const Double_t mjjSkimToUse    = (content.isNominal) ? mjjSkim : mjjSkimForSyst;
-   // const Double_t detajjSkimToUse = (content.isNominal) ? detajjSkim : detajjSkimForSyst;
    // TVector2 met_nomuon_to_use     = TVector2((*content.met_tst_nomuon)["Final"]->mpx(),
    // 					     (*content.met_tst_nomuon)["Final"]->mpy()); 
    // TVector2 met_noelectron_to_use = TVector2((*content.met_tst_noelectron)["Final"]->mpx(), 
@@ -1617,36 +1591,14 @@ EL::StatusCode VBFInv ::analyzeEvent(Analysis::ContentHolder &content, const ST:
 					     (*content.met_tst_nolep)["Final"]->mpy());
 
    // Skimming
-   // Bool_t saveMe = ( met_nomuon_to_use.Mod() > metSkimToUse || met_noelectron_to_use.Mod() > metSkimToUse );
-   Bool_t saveMe = (content.goodPhotons.size() >= 1);
-   if(content.goodPhotons.size() < 1) // At least one good photon
+   Bool_t saveMe = (content.baselineElectrons.size() >= 1 || content.baselineMuons.size() >= 1);
+   if(content.baselineElectrons.size()==0 && content.baselineMuons.size()==0) // At least one baseline lepton
      return EL::StatusCode::SUCCESS;
+   if(saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::BaseLepN_skim, event_weight);   
+   if(doPhotonSkim)
+     saveMe &= (content.goodPhotons.size() >= 1);
    if(saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::PhotonN_skim, event_weight);
-   saveMe &= (content.baselineElectrons.size() >= 1 || content.baselineMuons.size() >= 1);
-   if(saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::BaseLepN_skim, event_weight);
-
-   // Bool_t saveMe = (met_nolep_to_use.Mod() > metSkimToUse);
-   // if (doMETDetail)
-   //    saveMe = saveMe || ((*content.met_tight_tst_nolep)["Final"]->met() > metSkimToUse) ||
-   //             ((*content.met_tight_tst)["Final"]->met() > metSkimToUse) ||
-   //             //((*content.met_tighter_tst_nolep)["Final"]->met() > metSkimToUse) ||
-   //             //((*content.met_tighter_tst)["Final"]->met() > metSkimToUse) ||
-   //             ((*content.met_tenacious_tst_nolep)["Final"]->met() > metSkimToUse) ||
-   //             ((*content.met_tenacious_tst)["Final"]->met() > metSkimToUse);
-   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::MET_skim, event_weight);
-   // if (content.goodJets.size() < 2) // At least two good jet
-   //    return EL::StatusCode::SUCCESS;
-   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::JetN_skim, event_weight);
-   // saveMe &= (content.goodJets[0]->pt() > pt1SkimToUse);
-   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::JetpT1_skim, event_weight);
-   // saveMe &= (content.goodJets[1]->pt() > pt2SkimToUse);
-   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::JetpT2_skim, event_weight);
-   // saveMe &= (mjjMax > mjjSkimToUse);
-   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::Mjj_skim, event_weight);
-   // saveMe &= (detajjMax > detajjSkimToUse);
-   // if (saveMe || !doSkim) m_CutFlow.hasPassed(VBFInvCuts::DEta_skim, event_weight);
-   // saveMe |= !doSkim; // user flag to skim or not
-
+  
    if (saveMe) fillTree(content, cand, systInfo);
 
    if (debug) ANA_MSG_INFO("====================================================================");
@@ -2409,9 +2361,21 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
          cand.evt.truth_tau_status.push_back(part->status());
       }
 
-     //-- TRUTH PHOTONS --
-     const xAOD::TruthParticleContainer *truthParticles(nullptr);
-     ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
+      //-- TRUTH PHOTONS --
+      const xAOD::TruthParticleContainer *truthParticles(nullptr);
+      ANA_CHECK(event->retrieve(truthParticles, "TruthParticles"));
+      cand.evt.n_ph_truth = 0;
+      for (const auto &part : *truthParticles) {
+	if (part->pdgId() != 22) continue;
+	if (part->pt() < 10.0e3) continue;
+	if (part->status() != 1) continue;
+	//if( part->pt() >20.0e3) std::cout << "origin ph: " << acc_classifierParticleOrigin(*part) << " pt: " << part->pt() << " eta: " << part->eta() <<std::endl;
+	cand.evt.truth_ph_pt.push_back(part->pt());
+	cand.evt.truth_ph_eta.push_back(part->eta());
+	cand.evt.truth_ph_phi.push_back(part->phi());
+	++cand.evt.n_ph_truth;
+	std::cout << "number truth photons: " << cand.evt.n_ph_truth << std::endl;
+     }
 
       //-- BOSONS --
       // Dressed
@@ -2530,8 +2494,22 @@ EL::StatusCode VBFInv::fillTree(Analysis::ContentHolder &content, Analysis::outH
    }
    cand.evt.n_el = content.goodElectrons.size();
    cand.evt.n_el_w = content.wElectrons.size();
+   cand.evt.n_el_med = 0;
+   const static SG::AuxElement::ConstAccessor<char> acc_EG_Medium("DFCommonElectronsLHMedium");
+   const static SG::AuxElement::ConstAccessor<char> acc_EG_Tight("DFCommonElectronsLHTight");
+   static SG::AuxElement::Accessor<char> acc_passOR("passOR");
+   const static SG::AuxElement::ConstAccessor<float> acc_d0sig("d0sig");
+   const static SG::AuxElement::ConstAccessor<float> acc_z0sinTheta("z0sinTheta");
    for (auto electron : content.goodElectrons) {
       cand.el["el"].add(*electron);
+      // counting the mediumLH+FCLoose electrons
+      if (acc_baseline(*electron) == 1 && acc_passOR(*electron) == 1) { // baseline is already applied
+	if((electron->pt()<200.0e3 ? acc_isol(*electron) : acc_isolHighPt(*electron)) &&
+	   fabs(acc_z0sinTheta(*electron))<0.5 &&
+	   fabs(acc_d0sig(*electron))<5.0 && 
+	   (acc_EG_Medium(*electron) || acc_EG_Tight(*electron))) ++(cand.evt.n_el_med); // add iso, impact parameter cuts 
+	else if(acc_signal(*electron) == 1) ++(cand.evt.n_el_med);// add W electrons just in case, but should not happen
+      }
    }
    static SG::AuxElement::Accessor<char> acc_DFCommonCrackVetoCleaning("DFCommonCrackVetoCleaning");
    for (auto electron : content.baselineElectrons) { // saving leptons failing the signal selection, but still baseline

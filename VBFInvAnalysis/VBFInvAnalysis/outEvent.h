@@ -178,6 +178,7 @@ public:
    Int_t n_mu_baseline_iso;
    Int_t n_el;
    Int_t n_el_w;
+   Int_t n_el_med;
    Int_t n_el_baseline;
    Int_t n_el_baseline_iso;
    Int_t n_el_baseline_noOR;

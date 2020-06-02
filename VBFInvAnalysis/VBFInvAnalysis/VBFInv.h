@@ -90,6 +90,7 @@ public:
    Bool_t   doPileup;
    Bool_t   doSystematics;
    Bool_t   doSkim;
+   Bool_t   doPhotonSkim;
    Bool_t   doTrim;
    Bool_t   doTrimSyst;
    Bool_t   doRnS;
