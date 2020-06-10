@@ -52,9 +52,9 @@ void Analysis::outElectron::attachToTree(TTree *tree)
    tree->Branch(prefix + "eta", &eta);
    tree->Branch(prefix + "phi", &phi);
    tree->Branch(prefix + "m", &m);
+   tree->Branch(prefix + "id", &id);
    if (!doTrim()) {
       tree->Branch(prefix + "iso", &iso);
-      tree->Branch(prefix + "id", &id);
       // tree->Branch(prefix + "ptcone20", &ptcone20);
       tree->Branch(prefix + "ptvarcone20", &ptvarcone20);
       // tree->Branch(prefix + "etcone20", &etcone20);
