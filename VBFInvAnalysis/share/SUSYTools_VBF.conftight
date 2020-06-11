@@ -56,7 +56,7 @@ Jet.Pt: 25000.
 Jet.Eta: 4.5
 Jet.JVT_WP: Medium
 Jet.JvtPtMax: 60.0e3
-Jet.UncertConfig: rel21/Fall2018/R4_CategoryReduction_SimpleJER.config
+Jet.UncertConfig: rel21/Fall2018/R4_CategoryReduction_FullJER.config
 #
 FwdJet.doJVT: false
 FwdJet.JvtEtaMin: 2.5

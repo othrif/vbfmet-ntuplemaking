@@ -288,6 +288,7 @@ elif (args.driver == 'prun'):
         driver.options().setString('nc_destSE', args.replicationSite)
 
     #driver.options().setString('nc_excludedSite', 'ANALY_MWT2_UCORE')
+    driver.options().setString('nc_excludedSite', 'INFN-CNAF')
     driver.submitOnly(job, args.submitDir )
 elif (args.driver == 'condor'):
     driver = ROOT.EL.CondorDriver()
